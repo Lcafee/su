@@ -47,7 +47,7 @@ h1,h2,h3{margin:0;color:var(--scarlet);line-height:1.6;font-weight:700}h1{font-f
 .result-note{font-size:10.5px;color:var(--muted);text-align:center;margin:13px 0 0;line-height:1.9}
 .footer{padding:18px 22px calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:10px;color:#9a9092}.footer b{color:var(--scarlet)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#251d1f;color:#fff;padding:10px 16px;border-radius:99px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:20}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.share-overlay{position:fixed;inset:0;background:var(--scarlet);z-index:40;display:none;padding:calc(22px + env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom));overscroll-behavior:contain}.share-overlay.active{display:block;animation:fade .25s ease}.share-close{width:42px;height:42px;min-height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:22px;cursor:pointer}
+.share-overlay{position:fixed;inset:0;background:rgba(25,15,18,.94);z-index:40;display:none;padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));overflow:auto}.share-overlay.active{display:flex;flex-direction:column;align-items:center}.share-toolbar{width:min(430px,100%);display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:12px}.share-toolbar button{width:42px;height:42px;min-height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:22px}.share-toolbar span{font-size:12px}.share-preview{width:min(430px,100%);border-radius:22px;display:block;background:#471019;box-shadow:0 20px 60px rgba(0,0,0,.35)}.share-help{width:min(430px,100%);color:#eadfe1;text-align:center;font-size:12px;line-height:1.9;margin:14px 0}.share-download{display:block;width:min(430px,100%);text-align:center;text-decoration:none;background:#f4f1eb;color:#471019;padding:14px 18px;border-radius:16px;font-weight:700}.share-copy{width:min(430px,100%);margin-top:10px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:16px;padding:13px}
 @media (hover:none){.answer:hover{transform:none;border-color:var(--line)}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media(min-width:700px){body{padding:30px 0}.app{border-radius:32px;min-height:calc(100vh - 60px)}.screen{min-height:calc(100vh - 152px)}}
@@ -127,7 +127,11 @@ h1,h2,h3{margin:0;color:var(--scarlet);line-height:1.6;font-weight:700}h1{font-f
 <div class="toast" id="toast">انجام شد</div>
 
 <div class="share-overlay" id="shareOverlay" aria-hidden="true">
-  <button class="share-close" id="shareClose" aria-label="بستن">×</button>
+  <div class="share-toolbar"><span>کارت نتیجه</span><button id="shareClose" aria-label="بستن">×</button></div>
+  <img class="share-preview" id="sharePreview" alt="کارت نتیجه Summer Pause" />
+  <p class="share-help">در آیفون یا اندروید می‌تونی تصویر رو نگه داری و ذخیره کنی، یا از دکمه زیر استفاده کنی.</p>
+  <a class="share-download" id="shareDownload" download="L-Cafe-Summer-Pause.png">ذخیره تصویر</a>
+  <button class="share-copy" id="copyResult">کپی متن نتیجه</button>
 </div>
 
 <script>
@@ -202,6 +206,7 @@ const items={
       "name": "رفرشر انبه و شاهتوت",
       "en": "Mango & Blackberry Refresher",
       "code": "RF-02",
+      "image": "assets/products/rf-02.jpg",
       "sense": "خنک، رنگی و میوه‌ای",
       "moodEn": "Tropical · Fruity · Sparkling",
       "profile": "انبه، شاه‌توت، عسل و مرکبات؛ گازدار، رنگی و طراوت‌بخش",
@@ -296,6 +301,7 @@ const items={
       "name": "فراپه ارده",
       "en": "Tahini Frappe",
       "code": "FR-02",
+      "image": "assets/products/fr-02.jpg",
       "sense": "غلیظ، آجیلی و قهوه‌دار",
       "moodEn": "Nutty · Deep · Coffee Dessert",
       "profile": "اسپرسو و ارده دوآتش؛ آجیلی، عمیق، مدرن و قهوه‌دار با شخصیت ایرانی",
@@ -430,8 +436,11 @@ const elements={
   shareBtn:document.getElementById('shareBtn'),
   startBtn:document.getElementById('startBtn'),
   restartBtn:document.getElementById('restartBtn'),
+  copyResult:document.getElementById('copyResult'),
   shareOverlay:document.getElementById('shareOverlay'),
-  shareClose:document.getElementById('shareClose')
+  shareClose:document.getElementById('shareClose'),
+  sharePreview:document.getElementById('sharePreview'),
+  shareDownload:document.getElementById('shareDownload')
 };
 
 elements.productImage.onerror=()=>{
@@ -644,15 +653,115 @@ function toast(message){
   window.setTimeout(()=>elements.toast.classList.remove('show'),1800);
 }
 
-function share(){
-  if(!lastResult) return;
+function makeShareImage(){
+  return new Promise(resolve=>{
+    const canvas=document.createElement('canvas');
+    canvas.width=1080;
+    canvas.height=1920;
+    const context=canvas.getContext('2d');
+    if(!context){
+      resolve(null);
+      return;
+    }
+    context.fillStyle='#471019';
+    context.fillRect(0,0,canvas.width,canvas.height);
+    canvas.toBlob(resolve,'image/png');
+  });
+}
+
+let shareObjectUrl=null;
+
+function closeSharePreview(){
+  elements.shareOverlay.classList.remove('active');
+  elements.shareOverlay.setAttribute('aria-hidden','true');
+
+  if(shareObjectUrl){
+    URL.revokeObjectURL(shareObjectUrl);
+    shareObjectUrl=null;
+  }
+}
+
+function openSharePreview(blob,fileName){
+  if(shareObjectUrl){
+    URL.revokeObjectURL(shareObjectUrl);
+  }
+
+  shareObjectUrl=URL.createObjectURL(blob);
+  elements.sharePreview.src=shareObjectUrl;
+  elements.shareDownload.href=shareObjectUrl;
+  elements.shareDownload.download=fileName;
   elements.shareOverlay.classList.add('active');
   elements.shareOverlay.setAttribute('aria-hidden','false');
 }
 
-function closeShareOverlay(){
-  elements.shareOverlay.classList.remove('active');
-  elements.shareOverlay.setAttribute('aria-hidden','true');
+async function copyResultText(){
+  if(!lastResult) return;
+
+  const text=`Summer Pause من در L Cafe: ${lastResult.main.name}`;
+
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('متن نتیجه کپی شد');
+  }catch(error){
+    const textarea=document.createElement('textarea');
+    textarea.value=text;
+    textarea.style.position='fixed';
+    textarea.style.opacity='0';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try{
+      document.execCommand('copy');
+      toast('متن نتیجه کپی شد');
+    }catch(copyError){
+      toast('کپی متن انجام نشد');
+    }finally{
+      textarea.remove();
+    }
+  }
+}
+
+async function share(){
+  if(!lastResult) return;
+
+  const oldText=elements.shareBtn.textContent;
+  elements.shareBtn.disabled=true;
+  elements.shareBtn.textContent='در حال ساخت کارت…';
+
+  try{
+    const blob=await makeShareImage();
+    if(!blob){
+      toast('ساخت کارت نتیجه انجام نشد');
+      return;
+    }
+
+    const fileName='L-Cafe-Summer-Pause.png';
+    const file=new File([blob],fileName,{type:'image/png'});
+    const text=`Summer Pause من در L Cafe: ${lastResult.main.name}`;
+
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({title:'My Summer Pause',text,files:[file]});
+        return;
+      }catch(error){
+        if(error?.name==='AbortError') return;
+      }
+    }
+
+    if(navigator.share){
+      try{
+        await navigator.share({title:'My Summer Pause',text});
+        return;
+      }catch(error){
+        if(error?.name==='AbortError') return;
+      }
+    }
+
+    openSharePreview(blob,fileName);
+  }finally{
+    elements.shareBtn.disabled=false;
+    elements.shareBtn.textContent=oldText;
+  }
 }
 
 function applyHistoryState(state){
@@ -710,12 +819,13 @@ elements.backBtn.onclick=()=>{
 
 elements.restartBtn.onclick=restart;
 elements.shareBtn.onclick=share;
-elements.shareClose.onclick=closeShareOverlay;
-elements.shareOverlay.onclick=event=>{if(event.target.id==='shareOverlay') closeShareOverlay();};
+elements.shareClose.onclick=closeSharePreview;
+elements.shareOverlay.onclick=event=>{if(event.target.id==='shareOverlay') closeSharePreview();};
+elements.copyResult.onclick=copyResultText;
 
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){
-    closeShareOverlay();
+    closeSharePreview();
   }
 });
 
