@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-labelledby="title description">
-  <title id="title">تصویر جایگزین محصول L Cafe</title>
-  <desc id="description">یک تصویر گرافیکی ساده برای زمانی که عکس محصول در دسترس نیست.</desc>
-  <rect width="720" height="720" fill="#471019"/>
-  <circle cx="360" cy="322" r="214" fill="#f3efe7"/>
-  <path d="M250 252h220l-32 230c-4 28-28 50-56 50h-44c-28 0-52-22-56-50l-32-230Z" fill="#d9cec6"/>
-  <path d="M286 325c45 23 103 23 148 0" fill="none" stroke="#471019" stroke-width="14" stroke-linecap="round"/>
-  <text x="360" y="625" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" letter-spacing="6" fill="#f3efe7">L CAFE</text>
-</svg>
