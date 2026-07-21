@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#123c2f">
+  <meta name="theme-color" content="#5b1729">
   <meta name="color-scheme" content="dark light">
   <meta name="format-detection" content="telephone=no">
   <meta name="description" content="با دو انتخاب کوتاه، نوشیدنی مخصوص حال‌وهوای تابستانی خودت را در L Cafe پیدا کن.">
   <link rel="icon" href="assets/brand/lcafe-logo.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="assets/images/it-01-640.webp" imagesrcset="assets/images/it-01-640.webp 640w, assets/images/it-01-960.webp 960w, assets/images/it-01.webp 1254w" imagesizes="(max-width: 480px) 88vw, 422px" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:wght@700&family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <link rel="stylesheet" href="assets/css/theme-brand.css">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:wght@700&family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:wght@700&family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260719-mobile-transition">
   <title>Find Your Summer Pause | L Cafe</title>
 </head>
 <body>
@@ -22,9 +23,9 @@
     <main id="mainContent" tabindex="-1">
       <section class="screen home-screen is-active" id="homeScreen" aria-labelledby="homeTitle">
         <div class="home-backdrop" aria-hidden="true">
-          <figure class="home-frame home-frame--one"><img id="homeImageA" alt="" width="1254" height="1254" fetchpriority="high" decoding="async"></figure>
-          <figure class="home-frame home-frame--two"><img id="homeImageB" alt="" width="1254" height="1254" fetchpriority="low" decoding="async"></figure>
-          <figure class="home-frame home-frame--three"><img id="homeImageC" alt="" width="1254" height="1254" fetchpriority="low" decoding="async"></figure>
+          <figure class="home-frame home-frame--one"><img id="homeImageA" alt="" src="assets/images/it-01.webp" srcset="assets/images/it-01-640.webp 640w, assets/images/it-01-960.webp 960w, assets/images/it-01.webp 1254w" width="1254" height="1254" sizes="(max-width: 480px) 88vw, 422px" loading="eager" fetchpriority="high" decoding="async"></figure>
+          <figure class="home-frame home-frame--two"><img id="homeImageB" alt="" width="1254" height="1254" sizes="(max-width: 480px) 44vw, 211px" loading="lazy" fetchpriority="low" decoding="async"></figure>
+          <figure class="home-frame home-frame--three"><img id="homeImageC" alt="" width="1254" height="1254" sizes="(max-width: 480px) 42vw, 202px" loading="lazy" fetchpriority="low" decoding="async"></figure>
           <div class="home-light"></div>
         </div>
 
@@ -53,8 +54,8 @@
 
       <section class="screen quiz-screen" id="quizScreen" aria-labelledby="questionTitle" hidden>
         <div class="quiz-scene" aria-hidden="true">
-          <img class="quiz-scene-image quiz-scene-image--a" id="quizSceneImageA" alt="" width="1254" height="1254" decoding="async">
-          <img class="quiz-scene-image quiz-scene-image--b" id="quizSceneImageB" alt="" width="1254" height="1254" decoding="async">
+          <img class="quiz-scene-image quiz-scene-image--a" id="quizSceneImageA" alt="" width="1254" height="1254" sizes="(max-width: 480px) 78vw, 374px" decoding="async">
+          <img class="quiz-scene-image quiz-scene-image--b" id="quizSceneImageB" alt="" width="1254" height="1254" sizes="(max-width: 480px) 72vw, 346px" decoding="async">
           <div class="quiz-scene-shade"></div>
         </div>
 
@@ -74,7 +75,7 @@
       </section>
 
       <section class="screen reveal-screen" id="revealScreen" aria-labelledby="revealTitle" hidden>
-        <div class="reveal-image-wrap" aria-hidden="true"><img id="revealImage" alt="" width="1254" height="1254" decoding="async"></div>
+        <div class="reveal-image-wrap" aria-hidden="true"><img id="revealImage" alt="" width="1254" height="1254" sizes="(max-width: 480px) 100vw, 480px" decoding="async"></div>
         <div class="reveal-mask" aria-hidden="true"></div>
         <div class="reveal-copy">
           <p dir="ltr">YOUR PAUSE IS READY</p>
@@ -85,7 +86,7 @@
       <section class="screen result-screen" id="resultScreen" aria-labelledby="resultName" hidden>
         <div class="result-hero">
           <div class="result-backdrop" aria-hidden="true">
-            <img class="result-image" id="resultImage" alt="" width="1254" height="1254" fetchpriority="high" decoding="async">
+            <img class="result-image" id="resultImage" alt="" width="1254" height="1254" sizes="(max-width: 480px) 100vw, 480px" fetchpriority="high" decoding="async">
             <div class="result-aura"></div>
             <div class="result-film"></div>
           </div>
@@ -131,7 +132,7 @@
             <span aria-hidden="true">Encore</span>
           </header>
           <div class="encore-stage">
-            <figure class="encore-visual"><img id="encoreImage" alt="" width="1254" height="1254" loading="lazy" decoding="async"></figure>
+            <figure class="encore-visual"><img id="encoreImage" alt="" width="1254" height="1254" sizes="(max-width: 480px) calc(100vw - 84px), 396px" loading="lazy" decoding="async"></figure>
             <div class="encore-copy">
               <div class="encore-meta"><span id="encoreLine">فراپه</span><strong id="encorePrice">۳۷۰٬۰۰۰ تومان</strong></div>
               <h3 id="encoreName">فراپه ارده</h3>
@@ -151,9 +152,9 @@
       <section class="screen menu-screen" id="menuScreen" aria-labelledby="menuTitle" hidden>
         <div class="menu-cover">
           <div class="menu-cover-gallery" aria-hidden="true">
-            <figure class="menu-cover-frame menu-cover-frame--one"><img id="menuCoverImageA" alt="" width="1254" height="1254" decoding="async"></figure>
-            <figure class="menu-cover-frame menu-cover-frame--two"><img id="menuCoverImageB" alt="" width="1254" height="1254" decoding="async"></figure>
-            <figure class="menu-cover-frame menu-cover-frame--three"><img id="menuCoverImageC" alt="" width="1254" height="1254" decoding="async"></figure>
+            <figure class="menu-cover-frame menu-cover-frame--one"><img id="menuCoverImageA" alt="" width="1254" height="1254" sizes="(max-width: 480px) 74vw, 355px" decoding="async"></figure>
+            <figure class="menu-cover-frame menu-cover-frame--two"><img id="menuCoverImageB" alt="" width="1254" height="1254" sizes="(max-width: 480px) 58vw, 278px" loading="lazy" decoding="async"></figure>
+            <figure class="menu-cover-frame menu-cover-frame--three"><img id="menuCoverImageC" alt="" width="1254" height="1254" sizes="(max-width: 480px) 70vw, 336px" loading="lazy" decoding="async"></figure>
             <div class="menu-cover-shade"></div>
           </div>
 
@@ -165,7 +166,7 @@
 
           <div class="menu-intro">
             <p class="eyebrow" dir="ltr">THE SUMMER COLLECTION</p>
-            <h1 id="menuTitle" tabindex="-1">هشت مکث<br>برای تابستان</h1>
+            <h1 id="menuTitle" tabindex="-1">ده مکث<br>برای تابستان</h1>
             <div class="menu-intro-foot"><p>چهار فصل کوتاه از طعم، بافت و خنکی؛ هر نوشیدنی با صحنه و شخصیت خودش.</p></div>
           </div>
         </div>
@@ -177,11 +178,16 @@
       </section>
     </main>
 
+    <div class="transition-pattern" id="transitionPattern" aria-hidden="true">
+      <div class="transition-pattern__grid"></div>
+      <span class="transition-pattern__label" dir="ltr">YOUR DAILY PAUSE</span>
+    </div>
+
     <div class="sr-status" id="screenReaderStatus" role="status" aria-live="polite"></div>
   </div>
 
   <noscript><div class="noscript">برای استفاده از کوییز و مشاهده منو، JavaScript مرورگر را فعال کنید.</div></noscript>
   <script src="assets/js/data.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/app.js?v=20260719-mobile-transition" defer></script>
 </body>
 </html>

@@ -8,6 +8,7 @@
     resultCode: null,
     previousScreenBeforeMenu: "homeScreen",
     transitioning: false,
+    screenTransitioning: false,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches
   };
 
@@ -18,6 +19,9 @@
     revealScreen: document.getElementById("revealScreen"),
     resultScreen: document.getElementById("resultScreen"),
     menuScreen: document.getElementById("menuScreen"),
+    homeBackdrop: document.querySelector(".home-backdrop"),
+    quizScene: document.querySelector(".quiz-scene"),
+    menuCoverGallery: document.querySelector(".menu-cover-gallery"),
     homeShowcaseImages: [document.getElementById("homeImageA"), document.getElementById("homeImageB"), document.getElementById("homeImageC")],
     menuCoverImages: [document.getElementById("menuCoverImageA"), document.getElementById("menuCoverImageB"), document.getElementById("menuCoverImageC")],
     startQuizButton: document.getElementById("startQuizButton"),
@@ -64,7 +68,14 @@
   let announceTimer = 0;
   let transitionTimer = 0;
   let revealTimer = 0;
+  let screenExitTimer = 0;
+  let screenUnlockTimer = 0;
   let menuBuilt = false;
+  const warmedImageSources = new Set();
+  const SCREEN_EXIT_DURATION = 420;
+  const SCREEN_ENTER_DURATION = 560;
+  const INITIAL_HERO_CODE = "IT-01";
+  const RESPONSIVE_IMAGE_PATTERN = /\.webp$/i;
 
   function toPersianDigits(value) {
     return String(value).replace(/\d/g, digit => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
@@ -80,10 +91,35 @@
     const nextSource = source || DEFAULT_PRODUCT_IMAGE;
     imageElement.onerror = () => {
       imageElement.onerror = null;
+      imageElement.removeAttribute("srcset");
       imageElement.src = DEFAULT_PRODUCT_IMAGE;
     };
+
+    if (RESPONSIVE_IMAGE_PATTERN.test(nextSource)) {
+      const baseSource = nextSource.replace(RESPONSIVE_IMAGE_PATTERN, "");
+      const nextSrcset = `${baseSource}-640.webp 640w, ${baseSource}-960.webp 960w, ${nextSource} 1254w`;
+      if (imageElement.getAttribute("srcset") !== nextSrcset) imageElement.srcset = nextSrcset;
+    } else {
+      imageElement.removeAttribute("srcset");
+    }
+
     if (imageElement.getAttribute("src") !== nextSource) imageElement.src = nextSource;
     imageElement.alt = altText !== undefined && altText !== null ? altText : "تصویر نوشیدنی L Cafe";
+  }
+
+  function warmImage(source) {
+    if (!source || warmedImageSources.has(source)) return;
+    warmedImageSources.add(source);
+    const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = "low";
+    image.sizes = "(max-width: 480px) 100vw, 480px";
+    if (RESPONSIVE_IMAGE_PATTERN.test(source)) {
+      const baseSource = source.replace(RESPONSIVE_IMAGE_PATTERN, "");
+      image.srcset = `${baseSource}-640.webp 640w, ${baseSource}-960.webp 960w, ${source} 1254w`;
+    }
+    image.src = source;
+    if (typeof image.decode === "function") image.decode().catch(() => {});
   }
 
   function randomProducts(count) {
@@ -98,10 +134,37 @@
   function renderRandomShowcase(imageElements) {
     randomProducts(imageElements.length).forEach((product, index) => {
       const image = imageElements[index];
-      image.loading = "eager";
+      image.loading = index === 0 ? "eager" : "lazy";
       if ("fetchPriority" in image) image.fetchPriority = index === 0 ? "high" : "low";
       setImage(image, product.image, "");
     });
+  }
+
+  function renderInitialShowcase() {
+    const hero = productByCode.get(INITIAL_HERO_CODE) || CAFE_PRODUCTS[0];
+    const supportingProducts = randomProducts(3).filter(product => product.code !== hero.code).slice(0, 2);
+    setImage(elements.homeShowcaseImages[0], hero.image, "");
+    supportingProducts.forEach((product, index) => setImage(elements.homeShowcaseImages[index + 1], product.image, ""));
+  }
+
+  function deferNonCriticalWork(callback) {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(callback, { timeout: 1800 });
+      return;
+    }
+    window.setTimeout(callback, 800);
+  }
+
+  function initMotionBudget() {
+    if (state.reducedMotion || !("IntersectionObserver" in window)) return;
+    const motionRegions = [elements.homeBackdrop, elements.quizScene, elements.menuCoverGallery].filter(Boolean);
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => entry.target.classList.toggle("is-motion-paused", !entry.isIntersecting));
+    }, { rootMargin: "80px" });
+    motionRegions.forEach(region => observer.observe(region));
+    document.addEventListener("visibilitychange", () => {
+      document.documentElement.classList.toggle("is-document-hidden", document.hidden);
+    }, { passive: true });
   }
 
   function announce(message) {
@@ -126,19 +189,61 @@
     }, delay);
   }
 
-  function showScreen(screenId, focusTarget) {
-    elements.screens.forEach(screen => {
-      const active = screen.id === screenId;
-      screen.hidden = !active;
-      screen.classList.toggle("is-active", active);
-      screen.setAttribute("aria-hidden", String(!active));
-    });
-    state.currentScreen = screenId;
-    window.scrollTo({ top: 0, behavior: state.reducedMotion ? "auto" : "smooth" });
-    if (focusTarget) window.setTimeout(() => focusTarget.focus({ preventScroll: true }), state.reducedMotion ? 0 : 80);
+  function showScreen(screenId, focusTarget, { forceTransition = false } = {}) {
+    const nextScreen = elements.screens.find(screen => screen.id === screenId);
+    const currentScreen = elements.screens.find(screen => !screen.hidden);
+    if (!nextScreen) return;
+
+    const focusNextScreen = () => {
+      if (focusTarget) window.setTimeout(() => focusTarget.focus({ preventScroll: true }), state.reducedMotion ? 0 : 80);
+    };
+
+    const activateNextScreen = () => {
+      elements.screens.forEach(screen => {
+        const active = screen === nextScreen;
+        screen.hidden = !active;
+        screen.classList.remove("is-active", "is-leaving");
+        screen.setAttribute("aria-hidden", String(!active));
+      });
+      window.scrollTo({ top: 0, behavior: "auto" });
+      nextScreen.hidden = false;
+      void nextScreen.offsetWidth;
+      nextScreen.classList.add("is-active");
+      state.currentScreen = screenId;
+      focusNextScreen();
+
+      window.clearTimeout(screenUnlockTimer);
+      screenUnlockTimer = window.setTimeout(() => {
+        screenUnlockTimer = 0;
+        state.screenTransitioning = false;
+        document.documentElement.classList.remove("is-screen-transitioning");
+      }, state.reducedMotion ? 0 : SCREEN_ENTER_DURATION);
+    };
+
+    window.clearTimeout(screenExitTimer);
+    window.clearTimeout(screenUnlockTimer);
+
+    if (!currentScreen || state.reducedMotion) {
+      activateNextScreen();
+      return;
+    }
+
+    if (currentScreen === nextScreen && !forceTransition) {
+      activateNextScreen();
+      return;
+    }
+
+    state.screenTransitioning = true;
+    document.documentElement.classList.add("is-screen-transitioning");
+    currentScreen.classList.remove("is-active");
+    currentScreen.classList.add("is-leaving");
+    screenExitTimer = window.setTimeout(() => {
+      screenExitTimer = 0;
+      activateNextScreen();
+    }, SCREEN_EXIT_DURATION);
   }
 
-  function renderQuizStep() {
+  function renderQuizStep(withTransition = false) {
     state.transitioning = false;
     const firstStep = state.quizStep === 1;
     const content = firstStep ? QUIZ_CONTENT.first : QUIZ_CONTENT.second[state.selectedLine];
@@ -159,7 +264,7 @@
     });
 
     updateQuizScene();
-    showScreen("quizScreen", elements.questionTitle);
+    showScreen("quizScreen", elements.questionTitle, { forceTransition: withTransition });
     announce(`مرحله ${toPersianDigits(state.quizStep)} از ۲. ${content.question}`);
   }
 
@@ -183,14 +288,17 @@
     if (state.quizStep === 1) {
       state.selectedLine = answer.line;
       state.quizStep = 2;
-      scheduleTransition(renderQuizStep, state.reducedMotion ? 0 : 170);
+      productsByLine[answer.line].forEach(product => warmImage(product.image));
+      scheduleTransition(() => renderQuizStep(true), state.reducedMotion ? 0 : 170);
       return;
     }
     state.resultCode = answer.resultCode;
+    warmImage(productByCode.get(answer.resultCode)?.image);
     scheduleTransition(() => revealResult(answer.resultCode), state.reducedMotion ? 0 : 170);
   }
 
   function startQuiz() {
+    if (state.screenTransitioning) return;
     cancelPendingFlow();
     state.quizStep = 1;
     state.selectedLine = null;
@@ -199,6 +307,7 @@
   }
 
   function goBackFromQuiz() {
+    if (state.screenTransitioning) return;
     cancelPendingFlow();
     if (state.quizStep === 2) {
       state.quizStep = 1;
@@ -271,7 +380,6 @@
 
   function buildMenu() {
     const fragment = document.createDocumentFragment();
-    let imageIndex = 0;
     Object.values(CAFE_LINES).forEach(line => {
       const chapter = document.createElement("section");
       chapter.className = `menu-chapter menu-chapter--${line.key}`;
@@ -299,8 +407,7 @@
       const productsWrap = document.createElement("div");
       productsWrap.className = "chapter-products";
       productsByLine[line.key].forEach((product, productIndex) => {
-        productsWrap.append(createMenuProduct(product, productIndex, imageIndex));
-        imageIndex += 1;
+        productsWrap.append(createMenuProduct(product, productIndex));
       });
       chapter.append(chapterHead, productsWrap);
       fragment.append(chapter);
@@ -309,7 +416,7 @@
     elements.menuChapters.replaceChildren(fragment);
   }
 
-  function createMenuProduct(product, index, imageIndex) {
+  function createMenuProduct(product, index) {
     const article = document.createElement("article");
     article.className = `menu-product${index % 2 ? " menu-product--reverse" : ""}`;
     article.dataset.code = product.code;
@@ -322,8 +429,9 @@
     const image = document.createElement("img");
     image.width = 1254;
     image.height = 1254;
-    image.loading = imageIndex < 2 ? "eager" : "lazy";
-    if ("fetchPriority" in image) image.fetchPriority = imageIndex < 2 ? "high" : "low";
+    image.sizes = "(max-width: 480px) calc(100vw - 34px), 446px";
+    image.loading = "lazy";
+    if ("fetchPriority" in image) image.fetchPriority = "low";
     image.decoding = "async";
     setImage(image, product.image, `تصویر ${product.name}`);
     figure.append(image);
@@ -353,11 +461,15 @@
     return article;
   }
 
+  function ensureMenuBuilt() {
+    if (menuBuilt) return;
+    buildMenu();
+    menuBuilt = true;
+  }
+
   function openMenu(origin = state.currentScreen) {
-    if (!menuBuilt) {
-      buildMenu();
-      menuBuilt = true;
-    }
+    if (state.screenTransitioning) return;
+    ensureMenuBuilt();
     renderRandomShowcase(elements.menuCoverImages);
     state.previousScreenBeforeMenu = origin === "menuScreen" ? "homeScreen" : origin;
     showScreen("menuScreen", elements.menuTitle);
@@ -365,6 +477,7 @@
   }
 
   function closeMenu() {
+    if (state.screenTransitioning) return;
     const target = state.previousScreenBeforeMenu === "resultScreen" ? "resultScreen" : "homeScreen";
     const focusTarget = target === "resultScreen" ? elements.resultMenuButton : elements.openMenuButton;
     if (target === "homeScreen") renderRandomShowcase(elements.homeShowcaseImages);
@@ -373,6 +486,7 @@
   }
 
   function goHome() {
+    if (state.screenTransitioning) return;
     cancelPendingFlow();
     renderRandomShowcase(elements.homeShowcaseImages);
     showScreen("homeScreen", elements.startQuizButton);
@@ -390,12 +504,15 @@
     elements.menuQuizButton.addEventListener("click", startQuiz);
     window.addEventListener("keydown", event => {
       if (event.key !== "Escape") return;
+      if (state.screenTransitioning) return;
       if (state.currentScreen === "menuScreen") closeMenu();
       else if (state.currentScreen === "quizScreen") goBackFromQuiz();
       else if (state.currentScreen === "resultScreen") goHome();
     });
   }
 
-  renderRandomShowcase(elements.homeShowcaseImages);
+  initMotionBudget();
+  renderInitialShowcase();
   bindEvents();
+  if (!navigator.connection?.saveData) deferNonCriticalWork(ensureMenuBuilt);
 })();
