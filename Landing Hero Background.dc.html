@@ -117,9 +117,22 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 /* transitions.dev — texts reveal (18). Each copy block's lines rise out of a
    blur when the block reaches the viewport. Exit is decoupled from the
-   entrance so a block leaving never replays the stagger backwards. */
+   entrance so a block leaving never replays the stagger backwards.
+
+   The hidden start state is gated on data-armed, which only the reveal script
+   sets. Un-gated, this is copy that exists but is invisible until JS says
+   otherwise — and any failure on that path (blocked script, an observer that
+   never fires, an old browser) silently empties the page of its text. Default
+   to readable; animate only once something is there to un-hide it.
+
+   State lives in data-* rather than classes because the runtime rewrites
+   className from its template on every render: a class set from outside is
+   either wiped or baked in permanently, and both break this gate. Attributes
+   it doesn't own survive. */
 .t-stagger-line{
   display:block;
+}
+.t-stagger[data-armed] .t-stagger-line{
   opacity:0;
   transform:translateY(var(--stagger-distance));
   filter:blur(var(--stagger-blur));
@@ -131,12 +144,12 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 .t-stagger-line--2{transition-delay:var(--stagger-stagger)}
 .t-stagger-line--3{transition-delay:calc(var(--stagger-stagger) * 2)}
-.t-stagger.is-shown .t-stagger-line{
+.t-stagger[data-shown] .t-stagger-line{
   opacity:1;
   transform:translateY(0);
   filter:blur(0);
 }
-.t-stagger.is-hiding .t-stagger-line{
+.t-stagger[data-hiding] .t-stagger-line{
   opacity:0;
   transform:translateY(0);
   filter:blur(0);
@@ -165,22 +178,29 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
     opacity var(--reveal-dur) var(--reveal-ease),
     filter  var(--reveal-dur) var(--reveal-ease);
 }
+/* Same gate as the text above: unarmed, the content layer is simply visible
+   and the skeleton sits unseen behind it. Otherwise a script that never runs
+   leaves the photo permanently hidden behind its own placeholder. */
 .t-skel-content{
   z-index:2;
+}
+.t-skel[data-armed] .t-skel-content{
   opacity:0;
   filter:blur(var(--reveal-blur));
   transition:
     opacity var(--reveal-dur) var(--reveal-ease),
     filter  var(--reveal-dur) var(--reveal-ease);
 }
-.t-skel.is-revealed .t-skel-skeleton{opacity:0;filter:blur(var(--reveal-blur))}
-.t-skel.is-revealed .t-skel-content{opacity:1;filter:blur(0)}
-.t-skel.is-resetting .t-skel-skeleton,
-.t-skel.is-resetting .t-skel-content{transition:none!important}
+.t-skel[data-revealed] .t-skel-skeleton{opacity:0;filter:blur(var(--reveal-blur))}
+.t-skel[data-revealed] .t-skel-content{opacity:1;filter:blur(0)}
+.t-skel[data-resetting] .t-skel-skeleton,
+.t-skel[data-resetting] .t-skel-content{transition:none!important}
+/* Dark on light: this frame's own background is the near-white ink colour, so
+   a light placeholder would pulse invisibly against it. */
 .t-skel-skeleton>*{
   position:absolute;
   inset:0;
-  background:rgba(243,241,236,.16);
+  background:rgba(71,16,25,.07);
 }
 .t-skel-skeleton.is-pulsing>*{
   animation:t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
@@ -271,28 +291,74 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   var observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (!entry.isIntersecting) return;
-      entry.target.classList.add("is-shown");
+      entry.target.setAttribute("data-shown", "");
       observer.unobserve(entry.target);
     });
   }, { rootMargin: "0px 0px -15% 0px" });
+
+  // Second, independent path to the same state. The observer is the nice one
+  // (it fires exactly at the threshold), but it is one mechanism, and when it
+  // doesn't fire the page is left holding invisible copy. A rect test on
+  // scroll costs nothing and fails differently.
+  function sweep() {
+    document.querySelectorAll(".t-stagger[data-armed]:not([data-shown])")
+      .forEach(function (block) {
+        var box = block.getBoundingClientRect();
+        // Looser than the observer's threshold on purpose: this is the
+        // fallback, and a block that is on screen at all should be readable.
+        // No lower bound either — a block scrolled past (deep link, restored
+        // scroll position, a jump the observer slept through) is one the
+        // reader can scroll back to, and it must not still be blank.
+        if (box.top < (window.innerHeight || 0)) {
+          block.setAttribute("data-shown", "");
+        }
+      });
+    // The photo hides behind its placeholder on the same terms, so it gets the
+    // same second path: if the image is already settled, hand it over here
+    // rather than waiting on the frame loop to notice.
+    document.querySelectorAll(".t-skel[data-armed]:not([data-revealed])")
+      .forEach(function (skel) {
+        var slot = skel.querySelector("image-slot");
+        var img = slot && slot.shadowRoot
+          ? slot.shadowRoot.querySelector("img")
+          : skel.querySelector("img");
+        if (img && img.complete && (img.naturalWidth || !img.getAttribute("src"))) {
+          skel.setAttribute("data-revealed", "");
+          skel.setAttribute("data-state", "loaded");
+        }
+      });
+  }
+  window.addEventListener("scroll", sweep, { passive: true });
+  window.addEventListener("resize", sweep);
+  window.addEventListener("load", sweep);
 
   function stagger() {
     var blocks = document.querySelectorAll(".t-stagger:not([data-wired])");
     blocks.forEach(function (block) {
       block.setAttribute("data-wired", "");
+      // Arm only now: until this line runs the copy is plain visible text, so
+      // nothing on this page depends on the rest of the script succeeding.
+      block.setAttribute("data-armed", "");
       observer.observe(block);
+      // And once armed, the copy's visibility rides on the observer firing.
+      // If it hasn't within REVEAL_TIMEOUT, show the block anyway — a missed
+      // animation is a far smaller failure than text nobody can read.
+      setTimeout(function () { block.setAttribute("data-shown", ""); }, REVEAL_TIMEOUT);
     });
+    if (blocks.length) sweep();
   }
 
   function skeleton() {
     var skel = document.querySelector(".t-skel:not([data-wired])");
     if (!skel) return;
     skel.setAttribute("data-wired", "");
+    skel.setAttribute("data-armed", "");
+    sweep();
     var done = false;
     function reveal() {
       if (done) return;
       done = true;
-      skel.classList.add("is-revealed");
+      skel.setAttribute("data-revealed", "");
       skel.setAttribute("data-state", "loaded");
     }
     // <image-slot> keeps its <img> in an open shadow root, and load doesn't

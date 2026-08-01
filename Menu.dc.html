@@ -170,16 +170,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     opacity var(--reveal-dur) var(--reveal-ease),
     filter  var(--reveal-dur) var(--reveal-ease);
 }
-.t-skel.is-revealed .t-skel-skeleton{
+/* State lives in data-* rather than classes: the runtime rewrites className
+   from its template on every render, so a class set from outside is either
+   wiped or baked in permanently. Attributes it doesn't own survive. */
+.t-skel[data-revealed] .t-skel-skeleton{
   opacity:0;
   filter:blur(var(--reveal-blur));
 }
-.t-skel.is-revealed .t-skel-content{
+.t-skel[data-revealed] .t-skel-content{
   opacity:1;
   filter:blur(0);
 }
-.t-skel.is-resetting .t-skel-skeleton,
-.t-skel.is-resetting .t-skel-content{
+.t-skel[data-resetting] .t-skel-skeleton,
+.t-skel[data-resetting] .t-skel-content{
   transition:none!important;
 }
 .t-skel-skeleton>*{
@@ -1131,7 +1134,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     function reveal() {
       if (done) return;
       done = true;
-      skel.classList.add("is-revealed");
+      skel.setAttribute("data-revealed", "");
       skel.setAttribute("data-state", "loaded");
     }
 
