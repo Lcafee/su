@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#471019">
+<title>منوی ال کافه</title>
+<meta name="description" content="منوی کامل ال کافه؛ قهوه، نوشیدنی سرد و گرم، دسر و ساندویچ.">
 <script>
 // The runtime pulls React and Babel from unpkg. That's a hard dependency on
 // reaching a foreign CDN — the page renders blank wherever it's blocked, and
@@ -23,11 +25,17 @@ window.__resources = {
 <x-dc>
 <helmet data-dc-atomics="">
 <link rel="stylesheet" href="assets/fonts/vazirmatn.css">
+<link rel="stylesheet" href="assets/fonts/sahel.css">
 <script src="./image-slot.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --font:'Vazirmatn',system-ui,sans-serif;
+  /* Sahel ships Bold only, so --display is for headings set at 700 and
+     nothing else. Category titles use it; item names stay on --font, both
+     because 80 of them in bold would flatten the hierarchy and because 600
+     has no Sahel face to resolve to. */
+  --display:'Sahel','Vazirmatn',system-ui,sans-serif;
   --bg:#471019;
   --ink:#F3F1EC;
   --ink-soft:rgba(243,241,236,.72);
@@ -76,7 +84,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 #menu{padding-top:clamp(20px,5vw,40px)}
 .cat{padding:0 var(--gutter);max-width:720px;margin:0 auto}
 .cat-head{display:grid;grid-template-columns:1fr;gap:8px;margin:clamp(34px,8vw,60px) 0 clamp(20px,5vw,32px);padding:clamp(16px,4vw,24px);border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,var(--fill-hi),var(--fill));box-shadow:0 14px 30px rgba(13,1,4,.14),inset 0 1px 0 var(--fill-hi);text-align:right}
-.cat-head h2{margin:0;font:700 clamp(20px,5.4vw,28px)/1.4 var(--font);color:var(--ink);scroll-margin-top:110px}
+.cat-head h2{margin:0;font:700 clamp(20px,5.4vw,28px)/1.4 var(--display);color:var(--ink);scroll-margin-top:110px}
 .cat-head p{margin:0;font:400 clamp(12px,3.2vw,14px)/1.9 var(--font);color:var(--ink-dim)}
 
 @media (min-width:640px){
