@@ -1,0 +1,12 @@
+/* Sahel — self-hosted, SIL Open Font License 1.1.
+   Display face, headings only. Bold is the only weight we ship, so never ask
+   for another one: the browser would synthesise it and the shapes would go
+   soft against the maroon. Body copy stays Vazirmatn. */
+
+@font-face {
+  font-family: 'Sahel';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(Sahel-Bold.woff2) format('woff2');
+}

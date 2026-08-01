@@ -1,0 +1,10 @@
+# Local tooling and generated working state, not part of the site.
+.claude/
+graphify-out/
+.thumbnail
+
+# .image-slots.state.json is deliberately NOT ignored: image-slot.js fetches it
+# on every page load, so its absence is a 404 on the live site.
+
+# Unused source photo, 3.5 MB, referenced by no page.
+uploads/IMG_7751.jpeg

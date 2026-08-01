@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#471019">
+<script>
+// The runtime pulls React and Babel from unpkg. That's a hard dependency on
+// reaching a foreign CDN — the page renders blank wherever it's blocked, and
+// offline. __resources is the runtime's own override hook: it swaps the CDN
+// src for a local one (and drops the SRI hash, which no longer applies).
+// Keep the keys byte-identical to the URLs in support.js — they're matched
+// as plain strings, so a version bump there needs the same bump here.
+window.__resources = {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "assets/vendor/react.production.min.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "assets/vendor/react-dom.production.min.js",
+  "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "assets/vendor/babel.min.js"
+};
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+<link rel="stylesheet" href="assets/fonts/vazirmatn.css">
+<link rel="stylesheet" href="assets/fonts/sahel.css">
+<script src="./image-slot.js"></script>
+<style>
+:root{
+  --font:'Vazirmatn',system-ui,sans-serif;
+  --display:'Sahel','Vazirmatn',system-ui,sans-serif;
+  --bg:#471019;
+  --ink:#F3F1EC;
+  --ink-strong:rgba(243,241,236,.82);
+  --ink-soft:rgba(243,241,236,.72);
+  --line:rgba(243,241,236,.35);
+  --gutter:clamp(20px,6vw,80px);
+  /* Vertical rhythm. --flow separates blocks inside a thought,
+     --air separates the thoughts themselves. Two values, no ad-hoc numbers. */
+  --flow:clamp(64px,10vw,104px);
+  --air:clamp(104px,17vw,180px);
+  --tile:clamp(200px,46vw,346px);
+
+  /* transitions.dev — texts reveal (18) */
+  --stagger-dur:500ms;
+  --stagger-distance:12px;
+  --stagger-stagger:40ms;
+  --stagger-blur:3px;
+  --stagger-ease:cubic-bezier(0.22, 1, 0.36, 1);
+  /* transitions.dev — skeleton loader and reveal (14) */
+  --pulse-dur:1000ms;
+  --pulse-count:infinite;
+  --pulse-min:0.5;
+  --reveal-dur:400ms;
+  --reveal-blur:2px;
+  --reveal-ease:ease-in-out;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{overflow-x:hidden}
+html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
+a{color:var(--ink)}
+a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
+.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:3px;text-decoration:none}
+.skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
+
+/* The L field. One continuous fixed plane for the whole document, so a panel
+   edge slices the marks mid-glyph instead of restarting the pattern. */
+.field{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-color:var(--bg);
+  background-image:url('assets/l-cafe-pattern-inverted-tight.svg');
+  background-repeat:repeat;
+  background-size:var(--tile) calc(var(--tile) * 0.983)}
+
+/* The signature. Absent during the hero, then it takes the wordmark's place
+   at dead centre as that fades — the two never share the screen. */
+.mark{position:fixed;top:-25vh;left:50%;z-index:1;pointer-events:none;
+  height:150vh;width:auto;opacity:0;will-change:transform,opacity}
+.mark path{fill:#E6E5E1}
+
+.page{position:relative;z-index:2}
+
+.hero{margin:0;width:100%;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
+.hero img{width:clamp(190px,22vw,420px);height:auto}
+
+.h2{margin:0 0 clamp(18px,3.2vw,26px);font-family:var(--display);font-weight:700;
+  font-size:clamp(30px,6.4vw,52px);line-height:1.3;letter-spacing:-.005em;color:var(--ink)}
+.eyebrow{margin:0 0 14px;font:400 12px/1.7 var(--font);letter-spacing:.14em;color:var(--ink-soft)}
+.body{margin:0;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
+
+/* Right-anchored blocks bracket the page: about opens it, contact closes it. */
+.about{padding:clamp(80px,15vw,150px) var(--gutter) 0;max-width:1180px;margin:0 auto}
+.about .inner{max-width:52ch;text-align:right}
+
+/* The photo is the page's single light moment. Inset on the start side — the
+   right, in RTL — so a strip of the field survives at the reading origin and
+   the photo's edge cuts the marks mid-glyph. */
+.photo{height:min(88vh,60vw + 75px);background:var(--ink);overflow:hidden;
+  margin-block:var(--air);margin-inline-start:clamp(0px,8vw,140px)}
+
+/* The menu is the page's one action, so it earns the page's one centred block.
+   It closes tighter into contact than the photo does into either neighbour:
+   two quiet text blocks belong together, the photo needs room to be an object. */
+.menu{padding:0 var(--gutter);margin:0 auto var(--flow);max-width:1180px;
+  display:flex;flex-direction:column;align-items:center;text-align:center}
+.menu .inner{max-width:46ch}
+.cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(26px,4vw,34px);
+  padding:0 30px;background:var(--ink);color:var(--bg);
+  font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
+
+.contact{padding:0 var(--gutter) clamp(96px,17vw,170px);max-width:1180px;margin:0 auto}
+.contact .inner{text-align:right;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.contact .body{margin-bottom:clamp(10px,2vw,16px)}
+.contact a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);
+  text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line)}
+
+/* transitions.dev — texts reveal (18). Each copy block's lines rise out of a
+   blur when the block reaches the viewport. Exit is decoupled from the
+   entrance so a block leaving never replays the stagger backwards. */
+.t-stagger-line{
+  display:block;
+  opacity:0;
+  transform:translateY(var(--stagger-distance));
+  filter:blur(var(--stagger-blur));
+  transition:
+    opacity   var(--stagger-dur) var(--stagger-ease),
+    transform var(--stagger-dur) var(--stagger-ease),
+    filter    var(--stagger-dur) var(--stagger-ease);
+  will-change:transform,opacity,filter;
+}
+.t-stagger-line--2{transition-delay:var(--stagger-stagger)}
+.t-stagger-line--3{transition-delay:calc(var(--stagger-stagger) * 2)}
+.t-stagger.is-shown .t-stagger-line{
+  opacity:1;
+  transform:translateY(0);
+  filter:blur(0);
+}
+.t-stagger.is-hiding .t-stagger-line{
+  opacity:0;
+  transform:translateY(0);
+  filter:blur(0);
+  transition:
+    opacity 200ms ease,
+    transform 0s linear,
+    filter 0s linear;
+  transition-delay:0s;
+}
+
+/* transitions.dev — skeleton loader and reveal (14). The photo is the page's
+   one image; it now pulses in place and cross-blurs into the real frame
+   instead of snapping in when the file lands. */
+.t-skel{position:relative}
+.t-skel-skeleton,
+.t-skel-content{
+  position:absolute;
+  inset:0;
+}
+.t-skel-content>image-slot{display:block;width:100%;height:100%}
+.t-skel-skeleton{
+  z-index:1;
+  opacity:1;
+  filter:blur(0);
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease),
+    filter  var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel-content{
+  z-index:2;
+  opacity:0;
+  filter:blur(var(--reveal-blur));
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease),
+    filter  var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel.is-revealed .t-skel-skeleton{opacity:0;filter:blur(var(--reveal-blur))}
+.t-skel.is-revealed .t-skel-content{opacity:1;filter:blur(0)}
+.t-skel.is-resetting .t-skel-skeleton,
+.t-skel.is-resetting .t-skel-content{transition:none!important}
+.t-skel-skeleton>*{
+  position:absolute;
+  inset:0;
+  background:rgba(243,241,236,.16);
+}
+.t-skel-skeleton.is-pulsing>*{
+  animation:t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+}
+@keyframes t-skel-pulse{
+  0%,100%{opacity:1}
+  50%    {opacity:var(--pulse-min)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .mark{transform:translate3d(-50%,0,0) !important}
+  .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
+  .t-skel-skeleton,.t-skel-content{transition:none!important}
+  .t-skel-skeleton.is-pulsing>*{animation:none!important}
+}
+@media (max-width:640px){
+  /* The width-derived height collapses to ~300px on a phone, too thin to read
+     as the page's one image. Drive it off the viewport here instead. */
+  .photo{margin-inline-start:0;height:62vh}
+  .mark{height:112vh;top:-6vh}
+}
+</style>
+</helmet>
+<div dir="rtl">
+
+<div class="field" aria-hidden="true"></div>
+<svg class="mark" viewBox="9.455400 14.402475 41.399475 55.502550" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" style="opacity:{{ markOpacity }};transform:{{ markTransform }}">
+<path d="M 24.578125 15.261719 C 24.578125 24.546875 24.488281 23.8125 24.414062 33.097656 C 24.34375 41.796875 24.257812 51.75 24.152344 62.957031 C 24.132812 65.070312 24.085938 67.1875 24.089844 69.304688 C 24.867188 69.21875 25.640625 69.132812 26.417969 69.046875 C 26.386719 64.195312 25.316406 58.125 22.746094 53.96875 C 21.121094 51.339844 18.703125 48.667969 15.625 47.792969 C 13.488281 47.1875 10.808594 47.789062 9.714844 49.894531 C 9.074219 51.125 9.695312 52.183594 10.753906 52.894531 C 12.335938 53.957031 14.390625 54.386719 16.222656 54.753906 C 18.941406 55.296875 21.707031 55.605469 24.464844 55.84375 C 30.777344 56.390625 37.125 56.535156 43.457031 56.558594 C 47.253906 56.574219 45.484375 56.546875 49.28125 56.429688 C 49.75 56.414062 50.597656 56.292969 50.804688 55.773438 C 50.988281 55.308594 50.644531 54.988281 50.152344 55.003906 C 41.828125 55.265625 39.03125 55.222656 30.710938 54.785156 C 25.644531 54.519531 20.375 54.265625 15.460938 52.898438 C 14.289062 52.574219 12.605469 52.132812 11.945312 51.085938 C 11.5 50.382812 12.121094 49.179688 12.980469 49 C 13.894531 48.808594 15.210938 49.476562 16.050781 50.007812 C 17.550781 50.960938 18.792969 52.308594 19.824219 53.742188 C 22.789062 57.855469 24.058594 64.285156 24.089844 69.304688 C 24.097656 70.34375 26.421875 69.886719 26.417969 69.046875 C 26.402344 63.179688 26.53125 56.054688 26.582031 50.191406 C 26.679688 39.292969 26.773438 39.667969 26.84375 28.773438 C 26.875 24.183594 26.90625 19.59375 26.90625 15.003906 C 26.90625 13.964844 24.578125 14.417969 24.578125 15.261719"></path>
+</svg>
+
+<div class="page">
+
+<a class="skip" href="#about">رفتن به محتوای اصلی</a>
+
+<h1 class="hero">
+<img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه" style="opacity:{{ logoOpacity }}">
+</h1>
+
+<main id="about">
+<section class="about">
+<div class="inner t-stagger">
+<p class="eyebrow t-stagger-line t-stagger-line--1">اصفهان — چهارباغ بالا</p>
+<h2 class="h2 t-stagger-line t-stagger-line--2">درباره ما</h2>
+<p class="body t-stagger-line t-stagger-line--3">در ال کافه، احترام، سلامت و کیفیت اساس هر تجربه است. از انتخاب مواد اولیه تا شیوه میزبانی، همه‌چیز با دقت انجام می‌شود تا فضایی امن، گرم و آرام در میان روزهای پرمشغله شما بسازیم.</p>
+</div>
+</section>
+
+<div class="photo t-skel" data-state="loading">
+<div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span></span></div>
+<div class="t-skel-content">
+<image-slot id="landing-about-photo" shape="rect" placeholder="تصویر فول‌ساید فضای کافه" src="assets/cafe-interior.webp"></image-slot>
+</div>
+</div>
+
+<section class="menu" aria-label="منو">
+<div class="inner t-stagger">
+<h2 class="h2 t-stagger-line t-stagger-line--1">منو</h2>
+<p class="body t-stagger-line t-stagger-line--2">انتخاب‌هایی سالم و باکیفیت، با دقت آماده شده‌اند تا برای هر لحظه از روز، طعمی شایسته شما بسازند.</p>
+<a class="cta" href="Menu.dc.html">مشاهده منو</a>
+</div>
+</section>
+
+<section class="contact" aria-label="تماس">
+<div class="inner t-stagger">
+<h2 class="h2 t-stagger-line t-stagger-line--1">سراغ ما بیایید</h2>
+<p class="body t-stagger-line t-stagger-line--2">خیابان چهارباغ بالا، نبش کوچه یحیی خان، مجتمع متروپل</p>
+<a href="tel:+989130005768"><bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi></a>
+<a href="https://www.instagram.com/lcafe.esf/" target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام ال کافه"><bdi>@lcafe.esf</bdi></a>
+</div>
+</section>
+</main>
+
+</div>
+</div>
+</x-dc>
+<script>
+// transitions.dev — texts reveal (18) + skeleton loader and reveal (14).
+// Outside the dc render cycle for the same reason the menu's rail script is:
+// binding scroll/load state through the template would re-render the image
+// slot on every change.
+(function () {
+  var REVEAL_TIMEOUT = 6000;
+
+  // One observer for the life of the page. Wiring is tracked per element,
+  // not with a global "done" flag: the runtime mounts its own copies of this
+  // markup over the template's, and a flag set against the template nodes
+  // would leave the mounted ones — the visible ones — unwired forever.
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-shown");
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -15% 0px" });
+
+  function stagger() {
+    var blocks = document.querySelectorAll(".t-stagger:not([data-wired])");
+    blocks.forEach(function (block) {
+      block.setAttribute("data-wired", "");
+      observer.observe(block);
+    });
+  }
+
+  function skeleton() {
+    var skel = document.querySelector(".t-skel:not([data-wired])");
+    if (!skel) return;
+    skel.setAttribute("data-wired", "");
+    var done = false;
+    function reveal() {
+      if (done) return;
+      done = true;
+      skel.classList.add("is-revealed");
+      skel.setAttribute("data-state", "loaded");
+    }
+    // <image-slot> keeps its <img> in an open shadow root, and load doesn't
+    // cross that boundary — so watch the image itself. Re-query and re-test
+    // every tick rather than trusting a single load listener: the element
+    // swaps its <img> as it settles, so a listener bound to the first one can
+    // be left holding a node that never fires again.
+    var tries = 0;
+    (function watch() {
+      var slot = skel.querySelector("image-slot");
+      var img = slot && slot.shadowRoot
+        ? slot.shadowRoot.querySelector("img")
+        : skel.querySelector("img");
+      if (img && img.complete && (img.naturalWidth || !img.getAttribute("src"))) {
+        return reveal();
+      }
+      if (++tries < 400) requestAnimationFrame(watch);
+    })();
+    // A stalled or broken load still has to hand the slot back — image-slot
+    // draws its own placeholder there, and the skeleton would hide it.
+    setTimeout(reveal, REVEAL_TIMEOUT);
+  }
+
+  // Coalesced to one pass per frame: the runtime's mount is a burst of
+  // mutations, and each pass is a pair of :not([data-wired]) queries.
+  var queued = false;
+  function wire() {
+    queued = false;
+    stagger();
+    skeleton();
+  }
+  wire();
+  new MutationObserver(function () {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(wire);
+  }).observe(document.documentElement, { childList: true, subtree: true });
+})();
+</script>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { progress: 0, drift: 0 };
+
+  // Peak opacity of the giant mark. Low on purpose: its presence comes from
+  // scale, not from value, so it never fights the copy for attention.
+  static PEAK = 0.13;
+
+  componentDidMount() {
+    this._still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this._end = (window.innerHeight || 800) * 0.5;
+
+    this._onScroll = () => {
+      const t = Math.min(1, Math.max(0, window.scrollY / this._end));
+      // smoothstep: eases in and out instead of a straight ramp
+      const eased = t * t * (3 - 2 * t);
+      // Hold dead centre until the wordmark is fully gone, then drift up
+      // slower than the copy. Drifting during the handoff would stop it
+      // reading as "arriving here".
+      const drift = this._still ? 0 : Math.max(0, window.scrollY - this._end) * 0.35;
+      if (eased !== this.state.progress || drift !== this.state.drift) {
+        this.setState({ progress: eased, drift });
+      }
+    };
+
+    // Finish the fade exactly where the copy arrives, measured from the real
+    // layout rather than a guessed fraction of the viewport.
+    this._measure = () => {
+      const copy = document.getElementById('about');
+      const vh = window.innerHeight || 800;
+      const top = copy ? copy.getBoundingClientRect().top + window.scrollY : vh;
+      this._end = Math.max(1, top - vh * 0.5);
+      this._onScroll();
+    };
+
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    window.addEventListener('resize', this._measure);
+
+    // The helmet stylesheet is injected by the runtime, so at mount the hero
+    // may still have no height — measuring here alone pins the end of the
+    // handoff at 1px and the whole thing finishes in the first few pixels.
+    // Watch the hero instead: this fires when layout actually settles, and
+    // again on font swap or a viewport change.
+    const hero = document.querySelector('.hero');
+    if (hero && window.ResizeObserver) {
+      this._ro = new ResizeObserver(this._measure);
+      this._ro.observe(hero);
+    }
+    window.addEventListener('load', this._measure);
+    this._measure();
+
+    // Same class of bug, different victim: <image-slot> bakes its crop as a
+    // percentage of the frame, measured once when the image loads. That can
+    // land before the helmet stylesheet has sized the container, freezing a
+    // percentage computed against the wrong width — which stretches the photo
+    // instead of cropping it. The component never recomputes on its own, so
+    // re-run its framing whenever the slot's box actually changes.
+    // <image-slot> sizes its <img> with percentages of the frame, computed
+    // once and never revised. Any later change to the frame's ASPECT RATIO —
+    // a breakpoint, a phone rotation — then stretches the photo instead of
+    // re-cropping it. Re-running its private framing method is timing-
+    // dependent and proved unreliable; letting the browser do the cropping is
+    // not. One rule, no measurement, correct at every size.
+    // Scoped to exclude reframe mode so the tool's own crop UI still works.
+    this._pinSlot = () => {
+      const slot = document.querySelector('.photo image-slot');
+      if (!slot || !slot.shadowRoot || slot.shadowRoot.querySelector('#fit-pin')) return;
+      const css = ':host(:not([data-reframe])) .frame img{' +
+                  'width:100%!important;height:100%!important;' +
+                  'left:50%!important;top:50%!important;object-fit:cover!important}';
+      const style = document.createElement('style');
+      style.id = 'fit-pin';
+      style.textContent = css;
+      slot.shadowRoot.appendChild(style);
+    };
+    // The element may not have upgraded yet at mount, so try again once it has.
+    this._pinSlot();
+    if (window.customElements && customElements.whenDefined) {
+      customElements.whenDefined('image-slot').then(() => {
+        this._pinSlot();
+        requestAnimationFrame(this._pinSlot);
+      }).catch(() => {});
+    }
+    window.addEventListener('load', this._pinSlot);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._measure);
+    window.removeEventListener('load', this._measure);
+    if (this._ro) this._ro.disconnect();
+    if (this._pinSlot) window.removeEventListener('load', this._pinSlot);
+  }
+
+  renderVals() {
+    const p = this.state.progress;
+    // Both sides of the handoff ride the same curve, so they cross once
+    // instead of both sitting half-visible.
+    const scale = this._still ? 1 : 0.94 + p * 0.06;
+    return {
+      logoOpacity: 1 - p,
+      markOpacity: p * Component.PEAK,
+      markTransform: 'translate3d(-50%,' + (-this.state.drift) + 'px,0) scale(' + scale + ')'
+    };
+  }
+}
+</script>
+</body>
+</html>
