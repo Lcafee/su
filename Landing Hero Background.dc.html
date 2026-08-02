@@ -6,6 +6,53 @@
 <meta name="theme-color" content="#471019">
 <title>ال کافه — چهارباغ بالا، اصفهان</title>
 <meta name="description" content="ال کافه، کافه‌ای در چهارباغ بالای اصفهان. احترام، سلامت و کیفیت، اساس هر تجربه.">
+<link rel="canonical" href="https://lcafee.github.io/su/">
+
+<!-- Link preview. The page is shared by hand — Instagram bio, a WhatsApp
+     message to a friend already sitting down — so this card IS the first
+     impression far more often than a search result is. og:image points at the
+     JPEG, not the WebP beside it: Telegram and WhatsApp decode JPEG
+     everywhere, WebP only sometimes, and a card that falls back to no image
+     is worse than a slightly larger file nobody downloads twice. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ال کافه">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:title" content="ال کافه — چهارباغ بالا، اصفهان">
+<meta property="og:description" content="کافه‌ای در چهارباغ بالای اصفهان. احترام، سلامت و کیفیت، اساس هر تجربه.">
+<meta property="og:url" content="https://lcafee.github.io/su/">
+<meta property="og:image" content="https://lcafee.github.io/su/assets/cafe-interior.jpg">
+<meta property="og:image:width" content="1800">
+<meta property="og:image:height" content="1013">
+<meta property="og:image:alt" content="فضای داخلی ال کافه">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Only facts confirmed by the owner and already visible on the page. No
+     rating, no priceRange, no cuisine: every one of those is a claim Google
+     would republish, and none has been confirmed.
+     openingHours: the owner confirmed 7-23 applies every day. Stated in the
+     compact "Mo-Su 07:00-23:00" form the spec defines, so Google can publish
+     it against any weekday a searcher happens to ask about. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CafeOrCoffeeShop",
+  "name": "ال کافه",
+  "alternateName": "L Cafe",
+  "url": "https://lcafee.github.io/su/",
+  "image": "https://lcafee.github.io/su/assets/cafe-interior.jpg",
+  "telephone": "+989130005768",
+  "openingHours": "Mo-Su 07:00-23:00",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "خیابان چهارباغ بالا، نبش کوچه یحیی خان، مجتمع متروپل",
+    "addressLocality": "اصفهان",
+    "addressCountry": "IR"
+  },
+  "hasMap": "https://maps.app.goo.gl/UcyaTAH42vChA7RA9",
+  "hasMenu": "https://lcafee.github.io/su/menu.html",
+  "sameAs": ["https://www.instagram.com/lcafe.esf/"]
+}
+</script>
 <script>
 // The runtime pulls React and Babel from unpkg. That's a hard dependency on
 // reaching a foreign CDN — the page renders blank wherever it's blocked, and
@@ -55,14 +102,16 @@ window.__resources = {
   --pulse-min:0.5;
   --reveal-dur:400ms;
   --reveal-blur:2px;
-  --reveal-ease:ease-in-out;
+  /* Matches --stagger-ease above rather than the browser default, so the photo
+     resolving and the copy rising share one curve. */
+  --reveal-ease:cubic-bezier(0.22, 1, 0.36, 1);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{overflow-x:hidden}
 html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
 a{color:var(--ink)}
 a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
-.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:3px;text-decoration:none}
+.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
 .skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
 
 /* The L field. One continuous fixed plane for the whole document, so a panel
@@ -266,7 +315,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 <div class="inner t-stagger">
 <h2 class="h2 t-stagger-line t-stagger-line--1">منتظرتونیم</h2>
 <p class="body t-stagger-line t-stagger-line--2">خیابان چهارباغ بالا، نبش کوچه یحیی خان، مجتمع متروپل</p>
+<p class="body t-stagger-line t-stagger-line--3">ساعت ۷ تا ۲۳</p>
 <a href="tel:+989130005768"><bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi></a>
+<a href="https://maps.app.goo.gl/UcyaTAH42vChA7RA9" target="_blank" rel="noopener noreferrer">مسیر روی نقشه</a>
 <a href="https://www.instagram.com/lcafe.esf/" target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام ال کافه"><bdi>@lcafe.esf</bdi></a>
 </div>
 </section>

@@ -6,6 +6,22 @@
 <meta name="theme-color" content="#471019">
 <title>منوی ال کافه</title>
 <meta name="description" content="منوی کامل ال کافه؛ قهوه، نوشیدنی سرد و گرم، دسر و ساندویچ.">
+<link rel="canonical" href="https://lcafee.github.io/su/menu.html">
+
+<!-- Link preview only. The LocalBusiness record lives once, on the landing
+     page: repeating it here would describe the cafe to Google twice and read
+     as two separate places. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ال کافه">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:title" content="منوی ال کافه">
+<meta property="og:description" content="قهوه، نوشیدنی سرد و گرم، دسر و ساندویچ.">
+<meta property="og:url" content="https://lcafee.github.io/su/menu.html">
+<meta property="og:image" content="https://lcafee.github.io/su/assets/cafe-interior.jpg">
+<meta property="og:image:width" content="1800">
+<meta property="og:image:height" content="1013">
+<meta property="og:image:alt" content="فضای داخلی ال کافه">
+<meta name="twitter:card" content="summary_large_image">
 <script>
 // The runtime pulls React and Babel from unpkg. That's a hard dependency on
 // reaching a foreign CDN — the page renders blank wherever it's blocked, and
@@ -64,14 +80,19 @@ window.__resources = {
   --pulse-min:0.5;
   --reveal-dur:400ms;
   --reveal-blur:2px;
-  --reveal-ease:ease-in-out;
+  /* The same authored curve the rail pill and the photo lift already use. It
+     was ease-in-out — the one generic browser easing left in a system that
+     otherwise moves on one exponential ease-out. */
+  --reveal-ease:cubic-bezier(0.22, 1, 0.36, 1);
 }
 html{scroll-behavior:smooth;overflow-x:hidden}
 html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
 a{color:var(--ink)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
+/* 2px, matching the landing and the system's tightest radius. It was 4px here
+   and 2px there — one role, two values, across two pages of the same site. */
+a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 
-.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:3px;text-decoration:none}
+.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
 .skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
 
 .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px var(--gutter);background:rgba(71,16,25,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
@@ -95,9 +116,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 
 .item{display:flex;flex-direction:column;gap:10px;text-align:right;min-width:0}
 .item-photo{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--fill)}
-.item h3{margin:0;min-height:3em;font:600 clamp(14px,3.8vw,17px)/1.5 var(--font);color:var(--ink)}
-.item p{margin:0;min-height:3.7em;font:400 clamp(12px,3.1vw,13px)/1.85 var(--font);color:var(--ink-dim)}
-.item strong{margin-top:auto;padding-top:2px;font:500 clamp(12.5px,3.4vw,14px)/1.6 var(--font);color:var(--ink)}
+/* No min-height on the name or the description. It used to be there to keep
+   the prices in a row level with each other, but it never was what did that:
+   the grid already stretches both tiles to the taller one, and margin-top:auto
+   on the price pins it to the bottom of whichever height it lands in. The
+   reservations only bought dead space under short names like «زون ۲» — 1371px
+   of it down the page, which is 1.7 screens of scrolling on a phone. */
+.item h3{margin:0;font:600 clamp(14px,3.8vw,17px)/1.5 var(--font);color:var(--ink)}
+/* 1.62, not 1.85. This column is 22 characters wide — the narrowest measure on
+   the page — and leading tightens as the measure narrows. The looser value had
+   it backwards, giving the shortest lines the most air. */
+.item p{margin:0;font:400 clamp(12px,3.1vw,13px)/1.62 var(--font);color:var(--ink-dim)}
+/* The price is what a seated reader is scanning for, and at 12.76px/500 it sat
+   0.76px away from the ingredient list — inside the same 2.3px band as every
+   other role in the tile. Sized and weighted to sit with the item name instead. */
+.item strong{margin-top:auto;padding-top:2px;font:600 clamp(13.5px,3.7vw,16px)/1.6 var(--font);color:var(--ink)}
 
 .opts{list-style:none;margin:auto 0 0;padding:2px 0 0;display:flex;flex-direction:column;gap:6px}
 .opts li{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--fill)}
@@ -302,7 +335,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-06" shape="rounded" radius="14" placeholder="عکس ال کوچیا"></image-slot></div>
 <h3>ال کوچیا</h3>
 <p>[توضیح]</p>
-<strong>[قیمت]</strong>
+<strong>۱۰۰</strong>
 </article>
 
 </div>
@@ -614,9 +647,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <h3>چای سیاه</h3>
 <p>[توضیح]</p>
 <ul class="opts">
-<li><span>زعفران</span><b>[قیمت]</b></li>
-<li><span>هل</span><b>[قیمت]</b></li>
-<li><span>دارچین</span><b>[قیمت]</b></li>
+<li><span>زعفران</span><b>۱۰۰</b></li>
+<li><span>هل</span><b>۱۰۰</b></li>
+<li><span>دارچین</span><b>۱۰۰</b></li>
 </ul>
 </article>
 
@@ -771,8 +804,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <h3>ماچا لاته</h3>
 <p>شیر، ماچا</p>
 <ul class="opts">
-<li><span>پسته</span><b>[قیمت]</b></li>
-<li><span>زعفران</span><b>[قیمت]</b></li>
+<li><span>پسته</span><b>۱۰۰</b></li>
+<li><span>زعفران</span><b>۱۰۰</b></li>
 </ul>
 </article>
 
@@ -781,8 +814,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <h3>آیس ماچا لاته</h3>
 <p>شیر، ماچا، یخ</p>
 <ul class="opts">
-<li><span>پسته</span><b>[قیمت]</b></li>
-<li><span>زعفران</span><b>[قیمت]</b></li>
+<li><span>پسته</span><b>۱۰۰</b></li>
+<li><span>زعفران</span><b>۱۰۰</b></li>
 </ul>
 </article>
 
@@ -791,8 +824,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <h3>آیس اسپیرولینا لاته</h3>
 <p>[توضیح]</p>
 <ul class="opts">
-<li><span>پسته</span><b>[قیمت]</b></li>
-<li><span>زعفران</span><b>[قیمت]</b></li>
+<li><span>پسته</span><b>۱۰۰</b></li>
+<li><span>زعفران</span><b>۱۰۰</b></li>
 </ul>
 </article>
 
@@ -894,7 +927,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-05" data-src="assets/menu/opt/menu-dessert-05.webp" shape="rounded" radius="14" placeholder="عکس چیزکیک سن سباستین"></image-slot></div>
 <h3>چیزکیک سن سباستین</h3>
 <p>پنیر، خامه</p>
-<strong>[قیمت]</strong>
+<strong>۱۰۰</strong>
 </article>
 
 <article class="item">
@@ -936,7 +969,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-11" shape="rounded" radius="14" placeholder="عکس کروسان"></image-slot></div>
 <h3>کروسان</h3>
 <p>[توضیح]</p>
-<strong>[قیمت]</strong>
+<strong>۱۰۰</strong>
 </article>
 
 </div>
@@ -1004,7 +1037,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-08" shape="rounded" radius="14" placeholder="عکس سالاد مخصوص ال کافه"></image-slot></div>
 <h3>سالاد مخصوص ال کافه</h3>
 <p>کاهو فرانسوی، مرغ طعم دار گریل شده، میکس سبزیجات، پنیر پارمسان</p>
-<strong>[قیمت]</strong>
+<strong>۱۰۰</strong>
 </article>
 
 </div>
