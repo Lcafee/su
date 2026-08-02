@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-02T00:00:00Z",
+  "title": "Design System: L Cafe",
+  "extensions": {
+    "colorMeta": {
+      "burnt-pomegranate": {
+        "role": "primary",
+        "displayName": "انار سوخته / Burnt Pomegranate",
+        "canonical": "#471019",
+        "tonalRamp": [
+          "oklch(14% 0.055 15)",
+          "oklch(21% 0.075 15)",
+          "oklch(28% 0.090 15)",
+          "oklch(40% 0.105 15)",
+          "oklch(52% 0.115 15)",
+          "oklch(66% 0.090 15)",
+          "oklch(80% 0.055 15)",
+          "oklch(94% 0.020 15)"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream",
+        "canonical": "#F3F1EC",
+        "tonalRamp": [
+          "oklch(16% 0.004 85)",
+          "oklch(28% 0.005 85)",
+          "oklch(40% 0.006 85)",
+          "oklch(52% 0.007 85)",
+          "oklch(65% 0.008 85)",
+          "oklch(78% 0.009 85)",
+          "oklch(88% 0.008 85)",
+          "oklch(96% 0.006 85)"
+        ]
+      },
+      "cream-strong": { "role": "neutral", "displayName": "Cream Strong", "canonical": "rgba(243,241,236,.82)" },
+      "cream-soft": { "role": "neutral", "displayName": "Cream Soft", "canonical": "rgba(243,241,236,.72)" },
+      "cream-dim": { "role": "neutral", "displayName": "Cream Dim", "canonical": "rgba(243,241,236,.62)" },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(243,241,236,.15)" },
+      "underline": { "role": "neutral", "displayName": "Underline", "canonical": "rgba(243,241,236,.35)" },
+      "fill": { "role": "neutral", "displayName": "Fill", "canonical": "rgba(243,241,236,.06)" },
+      "fill-hi": { "role": "neutral", "displayName": "Fill High", "canonical": "rgba(243,241,236,.1)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing section headings only. Sahel Bold, one per section." },
+      "headline": { "displayName": "Headline", "purpose": "Menu category titles inside the category card." },
+      "title": { "displayName": "Title", "purpose": "Menu item names. Vazirmatn 600, deliberately not the display face." },
+      "body": { "displayName": "Body", "purpose": "Landing paragraphs. Line-height 2.1, max 52ch, a Persian reading concession." },
+      "caption": { "displayName": "Caption", "purpose": "Item ingredient lists and category intros." },
+      "label": { "displayName": "Label", "purpose": "The fixed category rail." }
+    },
+    "shadows": [
+      {
+        "name": "card-lift",
+        "value": "0 14px 30px rgba(13,1,4,.14), inset 0 1px 0 rgba(243,241,236,.1)",
+        "purpose": "The menu category card, and nothing else. Lifts it off the pattern field so the tiling does not read through the heading. The drop is maroon-tinted, never neutral black."
+      }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default easing for reveals and the rail pill." },
+      { "name": "ease-overshoot", "value": "cubic-bezier(0.34, 3.85, 0.64, 1)", "purpose": "Return leg of the photo hover lift only." },
+      { "name": "stagger-duration", "value": "500ms", "purpose": "Copy line reveal." },
+      { "name": "stagger-step", "value": "40ms", "purpose": "Delay between successive lines in one block. Three steps exist." },
+      { "name": "stagger-distance", "value": "12px", "purpose": "Rise distance for a revealing line." },
+      { "name": "stagger-blur", "value": "3px", "purpose": "Blur a line resolves out of." },
+      { "name": "tabs-duration", "value": "250ms", "purpose": "Rail pill translateY and height tween." },
+      { "name": "avatar-lift", "value": "-4px", "purpose": "Menu photo hover lift, pointer-fine devices only." },
+      { "name": "reveal-duration", "value": "400ms", "purpose": "Skeleton to image handoff." }
+    ],
+    "breakpoints": [
+      { "name": "sole", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The landing's single action. The only inverted surface in the system.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">مشاهده منو</a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; min-height: 44px; padding: 0 30px; background: #F3F1EC; color: #471019; font: 500 14px/1 Vazirmatn, system-ui, sans-serif; text-decoration: none; border-radius: 2px; transition: opacity .2s ease; } .ds-btn-primary:hover { opacity: .88; } .ds-btn-primary:focus-visible { outline: 2px solid #F3F1EC; outline-offset: 3px; }"
+    },
+    {
+      "name": "Category Card",
+      "kind": "card",
+      "refersTo": "card-category",
+      "description": "Heading block that opens each menu category. Carries the system's only shadow.",
+      "html": "<div class=\"ds-card-category\" dir=\"rtl\"><h2>روتین</h2><p>توضیح کوتاه دسته.</p></div>",
+      "css": ".ds-card-category { display: grid; gap: 8px; padding: 24px; border: 1px solid rgba(243,241,236,.15); border-radius: 20px; background: linear-gradient(135deg, rgba(243,241,236,.1), rgba(243,241,236,.06)); box-shadow: 0 14px 30px rgba(13,1,4,.14), inset 0 1px 0 rgba(243,241,236,.1); text-align: right; } .ds-card-category h2 { margin: 0; font: 700 28px/1.4 Sahel, Vazirmatn, system-ui, sans-serif; color: #F3F1EC; } .ds-card-category p { margin: 0; font: 400 14px/1.9 Vazirmatn, system-ui, sans-serif; color: rgba(243,241,236,.62); }"
+    },
+    {
+      "name": "Option Chip",
+      "kind": "chip",
+      "refersTo": "chip-option",
+      "description": "Per-item size or blend option with its price. Informational only — never interactive, never a filter.",
+      "html": "<ul class=\"ds-opts\" dir=\"rtl\"><li><span>۶۰/۴۰</span><b>۲۱۵</b></li><li><span>۱۰۰</span><b>۲۲۵</b></li></ul>",
+      "css": ".ds-opts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; } .ds-opts li { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 5px 9px; border: 1px solid rgba(243,241,236,.15); border-radius: 999px; background: rgba(243,241,236,.06); } .ds-opts span { font: 400 11.5px/1.4 Vazirmatn, system-ui, sans-serif; color: rgba(243,241,236,.72); } .ds-opts b { font: 500 11.5px/1.4 Vazirmatn, system-ui, sans-serif; color: #F3F1EC; white-space: nowrap; }"
+    },
+    {
+      "name": "Menu Item Tile",
+      "kind": "custom",
+      "refersTo": "card-category",
+      "description": "One of eighty. Square photo, name, ingredients, bare numeral price pinned to the bottom.",
+      "html": "<article class=\"ds-item\" dir=\"rtl\"><div class=\"ds-item-photo\"></div><h3>زون ۲</h3><p>۳۰ گرم پروتئین وی، ماچا، کره بادام زمینی، شیر نارگیل، موز</p><strong>۶۱۰</strong></article>",
+      "css": ".ds-item { display: flex; flex-direction: column; gap: 10px; text-align: right; min-width: 0; max-width: 200px; } .ds-item-photo { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: rgba(243,241,236,.06); } .ds-item h3 { margin: 0; font: 600 17px/1.5 Vazirmatn, system-ui, sans-serif; color: #F3F1EC; } .ds-item p { margin: 0; font: 400 13px/1.85 Vazirmatn, system-ui, sans-serif; color: rgba(243,241,236,.62); } .ds-item strong { margin-top: auto; font: 500 14px/1.6 Vazirmatn, system-ui, sans-serif; color: #F3F1EC; }"
+    },
+    {
+      "name": "Category Rail",
+      "kind": "nav",
+      "refersTo": "link-underlined",
+      "description": "Fixed right-flush navigation. Active entry goes to full opacity while a translucent pill tweens behind it.",
+      "html": "<nav class=\"ds-rail\" dir=\"rtl\"><a class=\"on\" href=\"#\"><i></i><span>روتین</span></a><a href=\"#\"><i></i><span>قهوه گرم</span></a><a href=\"#\"><i></i><span>دسر</span></a></nav>",
+      "css": ".ds-rail { display: flex; flex-direction: column; width: 80px; padding: 6px 0; background: rgba(71,16,25,.92); backdrop-filter: blur(10px); border: 1px solid rgba(243,241,236,.15); border-right: 0; border-radius: 14px 0 0 14px; } .ds-rail a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 4px 5px; font: 500 11px/1.35 Vazirmatn, system-ui, sans-serif; color: #F3F1EC; text-decoration: none; text-align: center; } .ds-rail i { width: 5px; height: 5px; border-radius: 50%; background: #F3F1EC; opacity: 0; transition: opacity .2s ease; } .ds-rail span { opacity: .5; transition: opacity .2s ease; } .ds-rail a.on i, .ds-rail a.on span { opacity: 1; }"
+    },
+    {
+      "name": "Underlined Link",
+      "kind": "custom",
+      "refersTo": "link-underlined",
+      "description": "The only secondary action in the system. There is no ghost button.",
+      "html": "<a class=\"ds-link\" href=\"#\" dir=\"rtl\">مسیر روی نقشه</a>",
+      "css": ".ds-link { display: inline-flex; align-items: center; min-height: 44px; color: #F3F1EC; font: 400 14px/1.6 Vazirmatn, system-ui, sans-serif; text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgba(243,241,236,.35); } .ds-link:hover { text-decoration-color: #F3F1EC; } .ds-link:focus-visible { outline: 2px solid #F3F1EC; outline-offset: 3px; border-radius: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "سالن متروپل — The Metropole Room",
+    "overview": "The site is not a page about a room; it is the room. One continuous maroon plane runs behind everything, the way a wall does, and every section is an aperture cut into it rather than a card floating above it. Light is scarce and deliberate: the cream is not a background, it is illumination, and it is spent on text, on one photograph, and on the single button that leads to the menu. Nothing else in the system is allowed to glow.\n\nThe density is unhurried on the landing and businesslike on the menu, and that difference is intentional rather than a drift. A visitor in the landing is being received; a visitor in the menu is choosing, on a phone, at a table, and the system tightens its gutters, shrinks its rhythm and doubles its columns to meet them there. The two pages share every token and disagree only about pace.\n\nThe identity carries in repetition, not ornament. The «ال» mark tiles across the whole document as a fixed field, so a section edge slices the marks mid-glyph instead of politely restarting the pattern — the seam is the point. There is no second accent colour, no gradient that introduces a new hue, and no illustration. When something must feel special, it gets space and silence, not decoration.",
+    "keyCharacteristics": [
+      "Two hues only: burnt pomegranate and cream. Every other value is cream at a reduced opacity.",
+      "One continuous fixed pattern field beneath the entire document.",
+      "Flat by default; depth comes from tonal fills and blur, not from shadows.",
+      "RTL-native, right-anchored text, with centre reserved for the one action.",
+      "Motion never gates content: copy is readable before any script runs."
+    ],
+    "rules": [
+      { "name": "The Two-Hue Rule", "body": "There are exactly two colours in this system. Anything that looks like a third — a border, a chip, a hover state, a gradient stop — must resolve to cream at some opacity over burnt pomegranate. A new hue is a change to the brand, not a styling choice.", "section": "colors" },
+      { "name": "The One Light Rule", "body": "Full-strength cream is illumination and is rationed. On the landing it lands on the headings, the single photograph, and the one button. If a screen has cream everywhere, the hierarchy has already failed.", "section": "colors" },
+      { "name": "The Sahel-Bold-Only Rule", "body": "Sahel ships a single weight (700). Never request another — the browser will synthesise it and the shapes go soft against the maroon. If a heading needs to be lighter, it needs to be Vazirmatn, not a lighter Sahel.", "section": "typography" },
+      { "name": "The Eighty-Names Rule", "body": "Menu item names stay on Vazirmatn 600. Eighty item names in Sahel Bold would flatten the hierarchy the category titles depend on, and 600 has no Sahel face to resolve to anyway.", "section": "typography" },
+      { "name": "The Bare Numeral Rule", "body": "Prices are Persian numerals with no unit, no thousands separator, and no currency word. ۶۱۰, never ۶۱۰ تومان. Typography must not reintroduce the unit as a superscript, a caption, or a legend.", "section": "typography" },
+      { "name": "The Two-Value Rhythm Rule", "body": "Vertical space comes from --flow or --air and nothing else. There is no third value and no ad-hoc margin. If a gap feels wrong, one of the two variables is wrong — fix it there.", "section": "layout" },
+      { "name": "The Continuous Field Rule", "body": "The pattern is one position:fixed plane for the whole document, never a per-section background. A panel edge must slice the marks mid-glyph. Restarting the tile at a section boundary breaks the illusion that the page is a single wall.", "section": "layout" },
+      { "name": "The Blur-Not-Shadow Rule", "body": "Floating chrome — the sticky bar (blur 8px) and the category rail (blur 10px) — separates from content by blurring what is behind it and carrying a hairline border. Do not add a drop shadow to either; the blur plus the hairline is the whole vocabulary.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do express every non-cream, non-maroon value as cream at an opacity.",
+      "Do take vertical space from --flow or --air and nothing else.",
+      "Do keep the pattern field fixed and continuous across the whole document.",
+      "Do give every interactive target a 44px minimum height — this is a menu read one-handed at a table.",
+      "Do default content to visible and let scripts un-hide it. Every animation in this project arms itself only after JS confirms it is running, and carries a timeout and a scroll-based fallback.",
+      "Do keep prices as bare Persian numerals."
+    ],
+    "donts": [
+      "Don't introduce a third hue, including through a gradient stop or a subtle tint.",
+      "Don't ask for a Sahel weight other than 700.",
+      "Don't set menu item names in the display face.",
+      "Don't add drop shadows to floating chrome; blur plus hairline is the vocabulary.",
+      "Don't raise the giant mark's peak opacity above 0.13.",
+      "Don't let a transition be the reason text cannot be read — the reveal animations must never be the only path to visible copy.",
+      "Don't restart the pattern tile at a section boundary."
+    ]
+  }
+}
