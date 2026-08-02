@@ -1120,16 +1120,27 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   var REVEAL_TIMEOUT = 6000;
 
   function dress(skel) {
-    if (skel.querySelector(".t-skel-skeleton")) return;
-    var content = document.createElement("div");
-    content.className = "t-skel-content";
-    while (skel.firstChild) content.appendChild(skel.firstChild);
-    var skeleton = document.createElement("div");
-    skeleton.className = "t-skel-skeleton is-pulsing";
-    skeleton.setAttribute("aria-hidden", "true");
-    skeleton.appendChild(document.createElement("span"));
-    skel.appendChild(skeleton);
-    skel.appendChild(content);
+    // Two separate questions, and conflating them is what left every photo
+    // loaded but invisible: "are the layers built?" is about markup, which the
+    // runtime happily copies into its rendered nodes, while "is anyone
+    // watching this node?" is about a closure, which it cannot copy. Testing
+    // only the first made a cloned tile look finished while nothing was left
+    // to hand it its image.
+    if (skel.hasAttribute("data-dressed")) return;
+    skel.setAttribute("data-dressed", "");
+
+    var content = skel.querySelector(".t-skel-content");
+    if (!content) {
+      content = document.createElement("div");
+      content.className = "t-skel-content";
+      while (skel.firstChild) content.appendChild(skel.firstChild);
+      var skeleton = document.createElement("div");
+      skeleton.className = "t-skel-skeleton is-pulsing";
+      skeleton.setAttribute("aria-hidden", "true");
+      skeleton.appendChild(document.createElement("span"));
+      skel.appendChild(skeleton);
+      skel.appendChild(content);
+    }
 
     var done = false;
     function reveal() {
@@ -1200,11 +1211,28 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   // first category never pays for the last one.
   var MARGIN = "200% 0px";
 
+  // A request that lands while the reader sits still has no scroll to ride in
+  // on, so a short pump follows each one: sweep a few times, then stop. It
+  // ends on its own and never runs when nothing is in flight.
+  var pumpTicks = 0;
+  var pumpTimer = null;
+  function pump() {
+    if (pumpTimer !== null) { pumpTicks = 24; return; }
+    pumpTicks = 24;
+    pumpTimer = setInterval(function () {
+      sweep();
+      if (--pumpTicks > 0) return;
+      clearInterval(pumpTimer);
+      pumpTimer = null;
+    }, 400);
+  }
+
   function request(slot) {
     var src = slot.getAttribute("data-src");
     if (!src) return;
     slot.removeAttribute("data-src");
     slot.setAttribute("src", src);
+    pump();
   }
 
   var observer = new IntersectionObserver(function (entries) {
@@ -1228,6 +1256,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
       // and requests all sixty photos at once, which is the thing being fixed.
       if (!box.height && !box.width) return;
       if (box.top < reach && box.bottom > -reach) request(slot);
+    });
+    // And hand over any tile whose image has already settled. The frame loop
+    // that normally does this is per-tile and can be lost — a node the runtime
+    // re-rendered carries the markup but not the watcher — so this scroll pass
+    // is the one thing that sees every tile on the page, every time.
+    document.querySelectorAll(".t-skel:not([data-revealed])").forEach(function (skel) {
+      var slot = skel.querySelector("image-slot");
+      if (!slot || slot.hasAttribute("data-src")) return;
+      var img = slot.shadowRoot
+        ? slot.shadowRoot.querySelector("img")
+        : skel.querySelector("img");
+      if (img && img.complete && (img.naturalWidth || !img.getAttribute("src"))) {
+        skel.setAttribute("data-revealed", "");
+        skel.setAttribute("data-state", "loaded");
+      }
     });
   }
   window.addEventListener("scroll", sweep, { passive: true });
