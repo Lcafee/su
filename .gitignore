@@ -8,3 +8,6 @@ graphify-out/
 
 # Unused source photo, 3.5 MB, referenced by no page.
 uploads/IMG_7751.jpeg
+
+# Python bytecode from build.py / menu_render.py
+__pycache__/

@@ -12,7 +12,13 @@ Run after any edit to a .dc.html file:  py build.py
 import io
 import os
 
+import menu_render
+
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Pages whose content comes from menu.json rather than from the .dc.html body.
+# The .dc.html still owns how a tile looks; menu.json owns what it says.
+RENDERED = {"Menu.dc.html": menu_render.apply}
 
 # source .dc.html -> published name
 PAGES = {
@@ -28,6 +34,9 @@ def main():
         path = os.path.join(HERE, src)
         with io.open(path, encoding="utf-8") as fh:
             html = fh.read()
+
+        if src in RENDERED:
+            html = RENDERED[src](html)
 
         # Rewrite every cross-page link to its published counterpart. Done for
         # all pages, not just the other one, so adding a third page needs only
