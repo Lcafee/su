@@ -25,27 +25,9 @@
 <meta property="og:image:height" content="1013">
 <meta property="og:image:alt" content="فضای داخلی ال کافه">
 <meta name="twitter:card" content="summary_large_image">
-<script>
-// The runtime pulls React and Babel from unpkg. That's a hard dependency on
-// reaching a foreign CDN — the page renders blank wherever it's blocked, and
-// offline. __resources is the runtime's own override hook: it swaps the CDN
-// src for a local one (and drops the SRI hash, which no longer applies).
-// Keep the keys byte-identical to the URLs in support.js — they're matched
-// as plain strings, so a version bump there needs the same bump here.
-window.__resources = {
-  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "assets/vendor/react.production.min.js",
-  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "assets/vendor/react-dom.production.min.js",
-  "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "assets/vendor/babel.min.js"
-};
-</script>
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet data-dc-atomics="">
 <link rel="stylesheet" href="assets/fonts/vazirmatn.css">
 <link rel="stylesheet" href="assets/fonts/sahel.css">
-<script src="./image-slot.js"></script>
+<script defer src="./image-slot.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box}
 :root{
@@ -87,6 +69,11 @@ window.__resources = {
      was ease-in-out — the one generic browser easing left in a system that
      otherwise moves on one exponential ease-out. */
   --reveal-ease:cubic-bezier(0.22, 1, 0.36, 1);
+  /* transitions.dev — page side-by-side (08) */
+  --page-slide-dur:250ms;
+  --page-slide-distance:8px;
+  --page-blur:3px;
+  --page-slide-ease:cubic-bezier(0.22, 1, 0.36, 1);
 }
 html{scroll-behavior:smooth;overflow-x:hidden}
 html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
@@ -264,14 +251,47 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     will-change:transform;
   }
 }
+/* transitions.dev — page side-by-side (08), adapted for real navigation. The
+   preset slides two <section>s inside one document; these are two documents,
+   so the same four tokens drive a cross-document view transition instead.
+   Both pages sit on the same maroon, so what reads is the copy crossing over
+   a background that never moves.
+
+   Direction is RTL-correct: the page you are leaving withdraws to the right,
+   the page you are going to arrives from the left, which is forward here.
+
+   This is also why the runtime had to go first. A view transition snapshots
+   the incoming document at its first paint, and under the runtime that was a
+   blank rectangle - it would have cross-faded into nothing.
+
+   No fallback to write: a browser without view transitions performs exactly
+   the navigation it performs today. */
+@view-transition{navigation:auto}
+::view-transition-group(root){
+  animation-duration:var(--page-slide-dur);
+  animation-timing-function:var(--page-slide-ease);
+}
+::view-transition-old(root){animation-name:t-page-out}
+::view-transition-new(root){animation-name:t-page-in}
+@keyframes t-page-out{
+  to{opacity:0;transform:translateX(var(--page-slide-distance));filter:blur(var(--page-blur))}
+}
+@keyframes t-page-in{
+  from{opacity:0;transform:translateX(calc(var(--page-slide-distance) * -1));filter:blur(var(--page-blur))}
+}
+
 @media (prefers-reduced-motion:reduce){
+  /* The whole feature off, not just its animations - a zeroed view transition
+     still holds the old page on screen while the new one loads. */
+  @view-transition{navigation:none}
   html{scroll-behavior:auto}
   *{transition:none!important;animation:none!important}
   .t-avatar{transform:none!important}
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 </style>
-</helmet>
+</head>
+<body>
 <div dir="rtl">
 
 <a class="skip" href="#menu">رفتن به منو</a>
@@ -1072,7 +1092,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 </footer>
 
 </div>
-</x-dc>
 <script>
 // Highlights the rail link for whichever category is currently in view.
 // Runs outside the dc-runtime render cycle on purpose: binding this through
