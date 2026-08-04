@@ -163,6 +163,16 @@ change to the brand, not a styling choice.
 On the landing it lands on the headings, the single photograph, and the one
 button. If a screen has cream everywhere, the hierarchy has already failed.
 
+**The Dimming Rule.** Text is dimmed by picking one of the four cream values
+above, never by putting `opacity` on the element. The two are visually
+identical and audit completely differently: with an opacity the `color`
+property still reads as full cream, so every contrast check — automated or by
+eye against the token list — passes while the pixels do not. The rail's
+category labels were dimmed with a raw `opacity:.5` and composited to 4.33:1,
+under the 4.5:1 floor, for as long as that rule went unwritten. Below `.62`
+nothing in this system clears AA against burnt pomegranate; `.52` is the exact
+threshold, and Cream Dim is the value to reach for.
+
 ## Typography
 
 **Display Font:** Sahel (falling back to Vazirmatn, then system-ui)

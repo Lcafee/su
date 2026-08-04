@@ -167,7 +167,11 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
 
 .contact{padding:0 var(--gutter) clamp(96px,17vw,170px);max-width:1180px;margin:0 auto}
-.contact .inner{text-align:right;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+/* 8px, not 4px. Each of these three links is a correct 44px tall, but the tap
+   areas were 4px apart while the text inside them is ~16px — so a tap aimed
+   between two lines had no dead space to land in and resolved to whichever
+   box owned that pixel. The gap is the target, not the height. */
+.contact .inner{text-align:right;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .contact .body{margin-bottom:clamp(10px,2vw,16px)}
 .contact a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);
   text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line)}
