@@ -11,3 +11,6 @@ uploads/IMG_7751.jpeg
 
 # Python bytecode from build.py / menu_render.py
 __pycache__/
+
+# Upload archive, rebuilt by package.py from files already tracked here.
+lcafe-site.zip

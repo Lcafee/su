@@ -1,0 +1,36 @@
+# ال کافه — static site. Apache/LiteSpeed shared hosting.
+
+ErrorDocument 404 /404.html
+
+DirectoryIndex index.html
+
+# The site ships no directory listings.
+Options -Indexes
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Fonts, images and the vendored React build are content-addressed by name
+  # and never change in place, so they can be cached hard.
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  # The pages themselves are what a redeploy changes; keep them short.
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# image-slot.js fetches this on every page load; without an explicit type some
+# hosts serve dotfiles as octet-stream.
+<Files ".image-slots.state.json">
+  ForceType application/json
+</Files>
