@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="fa">
+<!-- dir on <html>, not only on the wrapper below - see the note in
+     Landing Hero Background.dc.html. -->
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +11,13 @@
 <link rel="canonical" href="https://lcafe-esf.ir/menu.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
+
+<!-- Both faces, ahead of the stylesheet that would otherwise discover them —
+     see the note in Landing Hero Background.dc.html. This page needs them more
+     than the landing does: it is the one people open from the QR code at the
+     table, on a phone, on cafe wifi, and it is eighty items of text. -->
+<link rel="preload" href="assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
 
 <!-- Link preview only. The LocalBusiness record lives once, on the landing
      page: repeating it here would describe the cafe to Google twice and read
@@ -44,6 +53,7 @@ window.__resources = {
 <helmet data-dc-atomics="">
 <link rel="stylesheet" href="assets/fonts/vazirmatn.css">
 <link rel="stylesheet" href="assets/fonts/sahel.css">
+<script src="./photo-tryout.js"></script>
 <script src="./image-slot.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box}
@@ -349,7 +359,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <article class="item">
 <div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-01" data-src="assets/menu/opt/menu-routine-01.webp" shape="rounded" radius="14" placeholder="عکس زون ۲"></image-slot></div>
 <h3>زون ۲</h3>
-<p>ترکیب شیر نارگیل، موز، کره بادام‌زمینی، پودر وی و ماچا؛ غلیظ و انرژی‌بخش، با طعم غالب موز و کره بادام‌زمینی.</p>
+<p>شیکی غلیظ و پروتئینی با شیر نارگیل، موز، کره بادام‌زمینی، پودر وی و ماچا؛ کرمی، سیرکننده و با طعم غالب موز و بادام‌زمینی.</p>
 <strong>۶۱۰</strong>
 </article>
 
@@ -417,7 +427,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <article class="item">
 <div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-03" data-src="assets/menu/opt/menu-hot-coffee-03.webp" shape="rounded" radius="14" placeholder="عکس لاته"></image-slot></div>
 <h3>لاته</h3>
-<p>ترکیب هماهنگ اسپرسو و شیر گرم با بافتی نرم و ابریشمی؛ نوشیدنی‌ای آرام، متعادل و دل‌نشین برای یک مکث گرم.</p>
+<p>اسپرسو و شیر گرم با میکروفومی نرم و ابریشمی؛ متعادل، لطیف و مناسب کسانی که قهوه را با حضور بیشتر شیر می‌پسندند.</p>
 <ul class="opts">
 <li><span>۶۰/۴۰</span><b>۳۱۰</b></li>
 <li><span>۱۰۰</span><b>۳۳۰</b></li>

@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="fa">
+<!-- dir on <html>, not only on the wrapper below. The wrapper turns its own
+     subtree RTL, which covers everything visible today and hides the fact that
+     the DOCUMENT's base direction is still LTR - so anything outside it (and
+     any markup added at body level later) lays out left-to-right, and the page
+     hands assistive tech no direction at all. -->
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,6 +19,28 @@
      screen - and a QR menu is exactly the kind of page people save there. -->
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
+
+<!-- The faces are discovered two hops in: the page, then the stylesheet the
+     <helmet> below carries. That is a whole round trip of unstyled text on a
+     phone before the swap. Preload only the two that set copy above the fold —
+     the Latin subset exists for the Instagram handle at the bottom of the page
+     and does not earn a connection this early.
+     crossorigin is not optional even though these are same-origin: fonts fetch
+     in CORS mode, and a preload without it is a second, separate download
+     instead of the warm cache hit the whole hint is for. -->
+<link rel="preload" href="assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
+<!-- The page's one photo, and its largest paint. Nothing here can discover it:
+     it is the src of an <image-slot>, which is a custom element whose <img>
+     does not exist until the deferred image-slot.js has run AND fetched its
+     sidecar. Measured against the live site the HTML was complete at 61ms and
+     the photo did not start until 370ms, three hops later — on cafe wifi every
+     one of those hops is a full round trip.
+     This hands the URL to the parser instead. image-slot still owns the crop
+     and still sets the same src; by then the bytes are already in flight, and
+     the request it makes is the same URL, so it joins this one. -->
+<link rel="preload" href="assets/cafe-interior.webp" as="image" fetchpriority="high">
 
 <!-- Link preview. The page is shared by hand — Instagram bio, a WhatsApp
      message to a friend already sitting down — so this card IS the first
@@ -80,6 +107,7 @@ window.__resources = {
 <helmet data-dc-atomics="">
 <link rel="stylesheet" href="assets/fonts/vazirmatn.css">
 <link rel="stylesheet" href="assets/fonts/sahel.css">
+<script src="./photo-tryout.js"></script>
 <script src="./image-slot.js"></script>
 <style>
 :root{

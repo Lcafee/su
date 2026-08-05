@@ -21,9 +21,19 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "lcafe-site.zip")
 
-# Files at the root that the host serves. .htaccess carries the 404 page,
-# compression and cache policy; .image-slots.state.json is fetched by
+# Files at the root that the host serves. .htaccess carries the redirects, the
+# 404 page, compression and cache policy; .image-slots.state.json is fetched by
 # image-slot.js on every page load, so its absence is a console error.
+#
+# support.js is NOT here. It is the design-canvas runtime loader, and build.py
+# strips its <script> from both published pages - so shipping it put 69 KB on
+# the host that no page has ever requested. It is still needed locally, where
+# the canvas tool opens the .dc.html sources directly.
+#
+# photo-tryout.js IS here, even though it is a staging tool that refuses to run
+# on this host. Both pages carry its <script> tag - there is one set of generated
+# pages, serving GitHub Pages and the host alike - so the choice is between 8 KB
+# that returns immediately on its hostname check and a 404 on every page load.
 ROOT_FILES = (
     ".htaccess",
     ".image-slots.state.json",
@@ -33,15 +43,20 @@ ROOT_FILES = (
     "robots.txt",
     "sitemap.xml",
     "image-slot.js",
-    "support.js",
+    "photo-tryout.js",
 )
 
 # Directories copied whole, by extension. assets/menu itself is excluded: the
 # originals there are ten times the pixels a tile shows and only assets/menu/opt
 # is ever requested.
+#
+# assets/vendor is excluded for the same reason as support.js: it is React,
+# ReactDOM and Babel for the canvas runtime, reached only through the
+# window.__resources override that build.py strips. 3.2 MB - 3 of it Babel -
+# that no published page has ever asked for. It stays in the repo, where the
+# tool opening a .dc.html still needs it.
 TREES = (
     ("assets/fonts", (".css", ".woff2")),
-    ("assets/vendor", (".js",)),
     ("assets/menu/opt", (".webp",)),
     ("uploads", (".svg",)),
 )
