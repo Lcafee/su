@@ -25,6 +25,23 @@ Options -Indexes
   ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
+# image-slot.js is the exception to the month above, and the reason the rule
+# reads "content-addressed by name": this one keeps its name and changes in
+# place. A month of caching therefore pins every returning visitor to whichever
+# copy they happened to fetch first - a fix to this file would not reach them
+# until the cache aged out. Revalidating costs a 304 and no body.
+# ExpiresByType (not ExpiresDefault) because a by-type rule outranks a default
+# one, so it takes a by-type rule in this narrower context to override the one
+# above it.
+<FilesMatch "^image-slot\.js$">
+  <IfModule mod_expires.c>
+    ExpiresByType application/javascript "access plus 0 seconds"
+  </IfModule>
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache"
+  </IfModule>
+</FilesMatch>
+
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
 </IfModule>
