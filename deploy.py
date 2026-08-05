@@ -158,7 +158,7 @@ def connect(conf):
     return ftp
 
 
-def ensure_dirs(ftp, root, names):
+def ensure_dirs(ftp, names):
     """Create every parent directory of the upload set, shallowest first."""
     wanted = set()
     for name in names:
@@ -167,9 +167,48 @@ def ensure_dirs(ftp, root, names):
             wanted.add("/".join(parts[:i]))
     for path in sorted(wanted, key=lambda p: p.count("/")):
         try:
-            ftp.mkd("%s/%s" % (root, path))
+            ftp.mkd(path)
         except ftplib.error_perm:
             pass  # already there, which is the common case
+
+
+def enter_target(ftp, directory):
+    """Move to the directory the site is served from and prove it is the one.
+
+    The document root is not guessable. cPanel serves the primary domain from
+    public_html on some accounts and from ~/<domain> on others, and an FTP
+    account scoped to a directory is chrooted into it, so its own path is "/"
+    once logged in - the absolute path from the control panel is then exactly
+    the wrong thing to send.
+
+    So: go where the config says, ask the server where that actually is, and
+    refuse unless the site is already there. Uploading into the wrong directory
+    fails silently - every transfer succeeds, the deploy reports 87 files sent,
+    and the live site is untouched.
+    """
+    if directory not in ("", ".", "/"):
+        try:
+            ftp.cwd(directory)
+        except ftplib.error_perm as e:
+            fail("cannot enter %s on the host: %s\n"
+                 "        If the FTP account is already scoped to the site, set "
+                 "directory = . in .deploy.ini" % (directory, e))
+    here = ftp.pwd()
+
+    try:
+        listing = set(ftp.nlst())
+    except ftplib.error_perm:
+        listing = set()  # empty directory on some servers
+
+    landmarks = {"index.html", "menu.html", "404.html"}
+    if not (landmarks & listing):
+        fail("%s does not look like the site: none of %s are in it.\n"
+             "        Contents: %s\n"
+             "        Fix directory in .deploy.ini, or pass --new if this really "
+             "is a first upload into an empty directory."
+             % (here, ", ".join(sorted(landmarks)),
+                ", ".join(sorted(listing)[:8]) or "(empty)"))
+    return here
 
 
 def main():
@@ -178,6 +217,8 @@ def main():
                     help="upload every file, ignoring the change record")
     ap.add_argument("--dry-run", action="store_true",
                     help="show what would be uploaded and stop")
+    ap.add_argument("--new", action="store_true",
+                    help="allow uploading into a directory the site is not in yet")
     args = ap.parse_args()
 
     guard_untracked()
@@ -207,15 +248,24 @@ def main():
     # Read last, so --dry-run answers "what would go up" before any credentials
     # exist - which is the run you want available while still setting this up.
     conf = load_config()
-    root = conf["directory"].rstrip("/")
     ftp = connect(conf)
-    print("deploy: connected to %s, uploading to %s/" % (conf["host"], root))
     sent = 0
     try:
-        ensure_dirs(ftp, root, changed)
+        directory = conf["directory"].rstrip("/") or "."
+        if args.new:
+            if directory not in ("", ".", "/"):
+                ftp.cwd(directory)
+            here = ftp.pwd()
+        else:
+            here = enter_target(ftp, directory)
+        print("deploy: connected to %s, uploading into %s" % (conf["host"], here))
+
+        # Paths are relative from here on: the working directory is already the
+        # site root, and a chrooted FTP account cannot name its own absolute one.
+        ensure_dirs(ftp, changed)
         for name in changed:
             path = os.path.join(HERE, name.replace("/", os.sep))
-            remote = "%s/%s" % (root, name)
+            remote = name
             with open(path, "rb") as fh:
                 ftp.storbinary("STOR " + remote, fh)
 
