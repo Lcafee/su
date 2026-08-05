@@ -29,6 +29,7 @@ import hashlib
 import io
 import json
 import os
+import socket
 import ssl
 import subprocess
 import sys
@@ -150,9 +151,43 @@ def connect(conf):
         print("deploy: certificate verification OFF (verify = no)")
         context = ssl._create_unverified_context()
 
+    # Every failure below is one a correct setup still hits on the way in, and
+    # each has a different fix. Left to propagate they arrive as a Python
+    # traceback whose last line names an SSL internal - which says nothing about
+    # what to change, in a script whose whole job is to be run by someone who
+    # should not have to read ftplib to use it.
     ftp = ftplib.FTP_TLS(context=context, timeout=30)
-    ftp.connect(conf["host"], conf["port"])
-    ftp.login(conf["user"], conf["password"])
+    try:
+        ftp.connect(conf["host"], conf["port"])
+    except socket.gaierror:
+        fail("cannot find the server %s\n"
+             "        Check the host line in .deploy.ini. cPanel shows the right "
+             "value under FTP Accounts -> Configure FTP Client." % conf["host"])
+    except (socket.timeout, TimeoutError):
+        fail("%s did not answer on port %d within 30s.\n"
+             "        The host may block FTP from outside its network, or a "
+             "firewall here may be closing it." % (conf["host"], conf["port"]))
+    except OSError as e:
+        fail("cannot reach %s on port %d: %s" % (conf["host"], conf["port"], e))
+
+    try:
+        ftp.login(conf["user"], conf["password"])
+    except ssl.SSLCertVerificationError as e:
+        # Shared hosting usually presents the server's own certificate, or a
+        # self-signed one, rather than one issued for the customer's domain.
+        # The connection is encrypted either way; verification is what fails.
+        fail("the host's TLS certificate did not verify: %s\n"
+             "        This is normal on shared hosting. Set verify = no in "
+             ".deploy.ini to accept it.\n"
+             "        The password stays encrypted in transit; what is given up "
+             "is proof that the server is the right one." % e.verify_message)
+    except ftplib.error_perm as e:
+        fail("the host rejected the login: %s\n"
+             "        The username usually has to include the domain, as in "
+             "name@lcafe-esf.ir, not just name." % e)
+    except OSError as e:
+        fail("the connection dropped during login: %s" % e)
+
     ftp.prot_p()  # encrypt the data channel too, not just the login
     ftp.set_pasv(True)
     return ftp
