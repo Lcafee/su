@@ -1,0 +1,24 @@
+# Copy this file to .deploy.ini and fill it in. .deploy.ini is gitignored and
+# deploy.py refuses to run if git is tracking it anyway.
+#
+# These are the cPanel FTP details from the host's control panel. Prefer an FTP
+# account scoped to public_html over the main cPanel login: if it ever leaks,
+# it loses a website rather than the whole account.
+
+[host]
+host = ftp.lcafe-esf.ir
+user = REPLACE_ME
+password = REPLACE_ME
+
+# Where the site lives on the host. The default suits cPanel's primary domain.
+directory = public_html
+
+# 21 is the standard FTP control port; the connection is upgraded to TLS on it.
+port = 21
+
+# Whether to check the host's TLS certificate. Leave this on. Turn it off only
+# if connecting fails with a certificate error, which on shared hosting usually
+# means the certificate is issued for the server's hostname and not for this
+# domain. With it off the password is still encrypted in transit; what is lost
+# is the proof that the far end is really this host.
+verify = yes

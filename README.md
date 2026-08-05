@@ -25,7 +25,29 @@ py build.py
 ```
 
 Then commit and push. GitHub Pages serves this repository's root, so the
-generated `index.html` / `menu.html` go live directly.
+generated `index.html` / `menu.html` go live there directly.
+
+## Deploying to the host
+
+`lcafe-esf.ir` is ParsPack shared hosting, and GitHub Pages is the older of the
+two. Publishing there is a separate step:
+
+```
+py build.py
+py deploy.py
+```
+
+`deploy.py` uploads over FTPS, sends only the files whose contents changed, and
+never deletes anything on the host. It refuses to run against a stale build.
+`py deploy.py --dry-run` lists what would go up and needs no credentials.
+
+Credentials go in `.deploy.ini` — copy `.deploy.ini.example` and fill it in.
+That file is gitignored, and `deploy.py` aborts if git is tracking it anyway.
+Never commit it, and never paste it into an issue or a chat.
+
+`py package.py` builds `lcafe-site.zip` instead, for uploading by hand through
+cPanel's file manager. Both take their file list from `package.collect()`, so
+the two paths always ship the same set.
 
 ## Dependencies
 

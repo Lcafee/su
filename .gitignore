@@ -14,3 +14,12 @@ __pycache__/
 
 # Upload archive, rebuilt by package.py from files already tracked here.
 lcafe-site.zip
+
+# Host credentials. .deploy.ini.example is the tracked template; the real file
+# holds the FTP password and must never be committed. deploy.py checks this on
+# every run rather than trusting the line above.
+.deploy.ini
+
+# Which file contents deploy.py last put on the host. Local bookkeeping, and
+# per-machine: another clone has not uploaded anything yet.
+.deploy-state.json
