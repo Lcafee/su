@@ -71,6 +71,14 @@ def build_main(dc_html, data):
     if not sections:
         raise SystemExit("menu_render: no <section class=\"cat\"> found in Menu.dc.html")
 
+    # Whatever <main> opens with before the first category belongs to the page,
+    # not to menu.json, so it survives the render. Without this the rebuilt
+    # <main> is categories and nothing else, and the sr-only <h1> that names the
+    # page is dropped on every build - silently, because its .sr-only rule lives
+    # in the <style> and still ships, so the page looks untouched while the
+    # document loses its only h1 and starts its outline at h2.
+    prelude = body[:body.index(sections[0])].strip()
+
     # --- lift the templates out of the real markup -------------------------
     articles = ARTICLE.findall(body)
     priced = next(a for a in articles if "<strong>" in a)
@@ -133,7 +141,7 @@ def build_main(dc_html, data):
         out.append(head_tpl.format(id=c["id"], title=c["title"], intro=c["intro"],
                                    items="\n\n".join(items)))
 
-    return "\n\n" + "\n\n".join(out) + "\n\n"
+    return "\n\n" + "\n\n".join([prelude] + out if prelude else out) + "\n\n"
 
 
 def apply(dc_html):

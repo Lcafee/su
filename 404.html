@@ -3,7 +3,11 @@
      runtime: an error page that needs React to render is an error page that
      disappears exactly when something is already wrong. Plain HTML, the two
      self-hosted faces, and one link out. -->
-<html lang="fa">
+<!-- This page carries no RTL wrapper of its own, so dir here is not a
+     formality: without it the whole page renders left-to-right. Centred text
+     hides that for a line of pure Persian, but any digit, Latin word or ASCII
+     punctuation in it lands on the wrong side. -->
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,6 +16,16 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
+
+<!-- The faces are discovered two hops in (page, then the CSS below), which on
+     a phone is a round trip of blank text before the swap. Preload only the
+     two that set copy above the fold: the Latin subset renders one string far
+     down the page and does not earn a connection this early. crossorigin is
+     not optional even same-origin - fonts fetch in CORS mode, and a preload
+     without it is a second, separate download rather than a warm cache hit. -->
+<link rel="preload" href="assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
 <link rel="stylesheet" href="assets/fonts/vazirmatn.css">
 <link rel="stylesheet" href="assets/fonts/sahel.css">
 <style>
