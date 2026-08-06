@@ -35,8 +35,8 @@ Options -Indexes
 
 <IfModule mod_expires.c>
   ExpiresActive On
-  # Fonts, images and the vendored React build are content-addressed by name
-  # and never change in place, so they can be cached hard.
+  # Fonts and images are content-addressed by name and never change in place,
+  # so they can be cached hard.
   ExpiresByType font/woff2 "access plus 1 year"
   ExpiresByType image/webp "access plus 1 year"
   ExpiresByType image/svg+xml "access plus 1 year"

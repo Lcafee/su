@@ -31,15 +31,16 @@
 <link rel="preload" href="assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
 
-<!-- The page's one photo, and its largest paint. Nothing here can discover it:
-     it is the src of an <image-slot>, which is a custom element whose <img>
+<!-- CANVAS ONLY — build.py removes this comment and the link under it.
+     In this file the photo is an <image-slot>, a custom element whose <img>
      does not exist until the deferred image-slot.js has run AND fetched its
-     sidecar. Measured against the live site the HTML was complete at 61ms and
-     the photo did not start until 370ms, three hops later — on cafe wifi every
-     one of those hops is a full round trip.
-     This hands the URL to the parser instead. image-slot still owns the crop
-     and still sets the same src; by then the bytes are already in flight, and
-     the request it makes is the same URL, so it joins this one. -->
+     sidecar. Nothing in the markup can discover the URL: measured against the
+     live site the HTML was complete at 61ms and the photo did not start until
+     370ms, three hops later. This hint hands the URL to the parser instead.
+     The published page does not need it. There the photo is a real <picture>,
+     which the preload scanner finds at parse time on its own — and it gets to
+     drop the fetchpriority="high" with it, which was putting 277KB of a photo
+     1.45 viewports down the page in front of the two fonts that are not. -->
 <link rel="preload" href="assets/cafe-interior.webp" as="image" fetchpriority="high">
 
 <!-- Link preview. The page is shared by hand — Instagram bio, a WhatsApp
@@ -263,6 +264,12 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   inset:0;
 }
 .t-skel-content>image-slot{display:block;width:100%;height:100%}
+/* The published page carries a <picture> here instead of the element above —
+   build.py swaps it. Cover-cropping is the browser's job in both cases; doing
+   it in CSS is what lets the frame change aspect at the breakpoint without
+   anything having to re-measure. */
+.t-skel-content>picture{display:block;width:100%;height:100%}
+.t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover}
 .t-skel-skeleton{
   z-index:1;
   opacity:1;
@@ -342,8 +349,13 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 @media (max-width:640px){
-  /* The width-derived height collapses to ~300px on a phone, too thin to read
-     as the page's one image. Drive it off the viewport here instead. */
+  /* Two changes, two reasons - the second one went unwritten for a while and
+     read as an accident, so: the width-derived height collapses to ~300px on a
+     phone, too thin to read as the page's one image, so drive it off the
+     viewport instead. And the start-side inset is dropped on purpose. At 375px
+     that clamp is a 30px margin, which reads as a mistake rather than as the
+     strip of pattern field it is on a wide screen. Full-bleed is the decision
+     on the phone. DESIGN.md records it; do not "restore consistency" here. */
   .photo{margin-inline-start:0;height:62vh}
   .mark{height:112vh;top:-6vh}
 }
@@ -379,7 +391,12 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 <div class="photo t-skel" data-state="loading">
 <div class="t-skel-skeleton is-pulsing" aria-hidden="true"><span></span></div>
 <div class="t-skel-content">
-<image-slot id="landing-about-photo" shape="rect" placeholder="تصویر فول‌ساید فضای کافه" src="assets/cafe-interior.webp"></image-slot>
+<!-- data-alt is the photo's accessible name and it is content, so it lives
+     here in the source with the rest of the copy. It does not reach the canvas
+     preview — image-slot hard-codes alt="" in its shadow root and cannot be
+     told otherwise — build.py puts it on the published <img>. Describing what
+     is in the frame, not interpreting it: the room, the seating, the mural. -->
+<image-slot id="landing-about-photo" shape="rect" placeholder="تصویر فول‌ساید فضای کافه" src="assets/cafe-interior.webp" data-alt="سالن ال کافه؛ میزهای سفید با صندلی‌های چوبی، مبل‌های زرشکی و دیوارکوبی از منظره‌ای کوهستانی"></image-slot>
 </div>
 </div>
 
@@ -591,6 +608,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   if (hero && window.ResizeObserver) new ResizeObserver(measure).observe(hero);
   measure();
 
+  // CANVAS ONLY. Returns on its first line in the published page, which has no
+  // <image-slot> left in it — the .t-skel-content>picture rule in the
+  // stylesheet does this job there, in CSS, with nothing to arm.
   // <image-slot> sizes its <img> with percentages of the frame, computed once
   // and never revised. Any later change to the frame's ASPECT RATIO - a
   // breakpoint, a phone rotation - then stretches the photo instead of

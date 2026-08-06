@@ -82,7 +82,7 @@ def build_main(dc_html, data):
     # --- lift the templates out of the real markup -------------------------
     articles = ARTICLE.findall(body)
     priced = next(a for a in articles if "<strong>" in a)
-    opted = next(a for a in articles if '<ul class="opts">' in a)
+    opted = next(a for a in articles if '<dl class="opts">' in a)
 
     grid_cats = [c for c in cats if c["layout"] == "grid"]
     _, first_priced = _find(grid_cats, lambda i: "price" in i)
@@ -91,10 +91,11 @@ def build_main(dc_html, data):
     tpl_priced = _item_template(priced, first_priced, "priced item")
     tpl_opted = _item_template(opted, first_opted, "option item")
 
-    # the <li> shape is shared by option chips and the add-on list
-    row = re.search(r'<li><span>.*?</span><b>.*?</b></li>', body, re.S).group(0)
-    tpl_row = re.sub(r'<span>.*?</span>', '<span>{label}</span>', row, flags=re.S)
-    tpl_row = re.sub(r'<b>.*?</b>', '<b>{price}</b>', tpl_row, flags=re.S)
+    # the row shape is shared by option chips and the add-on list: both are a
+    # label and the price of that label, which is why both are description lists
+    row = re.search(r'<div><dt>.*?</dt><dd>.*?</dd></div>', body, re.S).group(0)
+    tpl_row = re.sub(r'<dt>.*?</dt>', '<dt>{label}</dt>', row, flags=re.S)
+    tpl_row = re.sub(r'<dd>.*?</dd>', '<dd>{price}</dd>', tpl_row, flags=re.S)
 
     # a whole <section> minus its items, so the head markup stays the tool's
     head_tpl = SECTION.search(body).group(0)
@@ -108,7 +109,7 @@ def build_main(dc_html, data):
                         .replace("%s</h2>" % src_title, "{title}</h2>")
                         .replace("<p>%s</p>" % src_intro, "<p>{intro}</p>", 1))
 
-    addons_sec = next((s for s in sections if '<ul class="addons">' in s), None)
+    addons_sec = next((s for s in sections if '<dl class="addons">' in s), None)
 
     # --- render ------------------------------------------------------------
     out = []
@@ -118,7 +119,7 @@ def build_main(dc_html, data):
                              for i in c["items"])
             sec = addons_sec
             aid = re.search(r'aria-labelledby="([^"]+)"', sec).group(1)
-            sec = re.sub(r'(<ul class="addons">).*?(</ul>)',
+            sec = re.sub(r'(<dl class="addons">).*?(</dl>)',
                          lambda m: m.group(1) + "\n" + rows + "\n" + m.group(2), sec, flags=re.S)
             out.append(sec)
             continue
@@ -130,7 +131,7 @@ def build_main(dc_html, data):
                 t = tpl_opted
                 rows = "\n".join(tpl_row.format(label=o["label"], price=o["price"])
                                  for o in it["options"])
-                t = re.sub(r'(<ul class="opts">).*?(</ul>)',
+                t = re.sub(r'(<dl class="opts">).*?(</dl>)',
                            lambda m: m.group(1) + "\n" + rows + "\n" + m.group(2), t, flags=re.S)
                 items.append(t.format(slotId=it["slotId"], caption=it["caption"],
                                       photo=photo, name=it["name"], desc=it["desc"]))
@@ -141,7 +142,7 @@ def build_main(dc_html, data):
         out.append(head_tpl.format(id=c["id"], title=c["title"], intro=c["intro"],
                                    items="\n\n".join(items)))
 
-    return "\n\n" + "\n\n".join([prelude] + out if prelude else out) + "\n\n"
+    return "\n\n" + "\n\n".join(([prelude] if prelude else []) + out) + "\n\n"
 
 
 def apply(dc_html):

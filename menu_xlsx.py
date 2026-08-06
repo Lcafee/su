@@ -95,8 +95,8 @@ def _codes(item):
     return [item["code"]] if "code" in item else []
 
 
-def _sheet(wb, title, columns, first=False):
-    ws = wb.active if first else wb.create_sheet()
+def _sheet(wb, title, columns):
+    ws = wb.create_sheet()
     ws.title = title
     ws.sheet_view.rightToLeft = True
     for n, (head, width, _, _, _) in enumerate(columns, 1):

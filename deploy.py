@@ -14,7 +14,7 @@ and a cPanel FTP account is usually the cPanel account - the same credential
 that owns everything else on the host.
 
 Only changed files are sent, compared by SHA-256 against .deploy-state.json.
-The first run therefore uploads all 87; later ones usually upload one. Nothing
+The first run therefore uploads all 84; later ones usually upload one. Nothing
 is ever deleted from the host: a sync that prunes is a sync that can empty
 public_html on a bad day, and the served set only ever grows.
 

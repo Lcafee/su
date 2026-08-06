@@ -35,14 +35,19 @@ typography:
     fontSize: "clamp(15px, 4vw, 17px)"
     fontWeight: 400
     lineHeight: 2.1
+  price:
+    fontFamily: "Vazirmatn, system-ui, sans-serif"
+    fontSize: "clamp(16px, 4.3vw, 19px)"
+    fontWeight: 700
+    lineHeight: 1.45
   caption:
     fontFamily: "Vazirmatn, system-ui, sans-serif"
     fontSize: "clamp(12px, 3.1vw, 13px)"
     fontWeight: 400
-    lineHeight: 1.85
+    lineHeight: 1.62
   label:
     fontFamily: "Vazirmatn, system-ui, sans-serif"
-    fontSize: "clamp(9.5px, 2.6vw, 11px)"
+    fontSize: "11px"
     fontWeight: 500
     lineHeight: 1.35
 rounded:
@@ -75,6 +80,17 @@ components:
     textColor: "{colors.cream-soft}"
     rounded: "{rounded.pill}"
     padding: "5px 9px"
+  chip-option-price:
+    textColor: "{colors.cream}"
+  tile-photo:
+    backgroundColor: "{colors.fill}"
+    rounded: "{rounded.tile}"
+  tile-photo-empty:
+    backgroundColor: "{colors.fill-hi}"
+    rounded: "{rounded.tile}"
+  disclosure:
+    textColor: "{colors.cream-soft}"
+    height: "44px"
   link-underlined:
     textColor: "{colors.cream}"
     height: "44px"
@@ -125,7 +141,10 @@ subsequent value is the same cream turned down.
 - **انار سوخته / Burnt Pomegranate** (`#471019`): the room itself. Page
   background on both pages, the `theme-color` of the browser chrome, and the
   base of the tiled pattern field. It is never used as a foreground except
-  inside the primary button, where the relationship inverts.
+  inside the primary button, where the relationship inverts. The menu also
+  carries it as bare channels (`71,16,25`) so the translucent chrome — the
+  sticky bar at `.95`, the rail at `.92` — can compose it through `rgba()`
+  instead of spelling the number out again. Same colour, one definition.
 
 ### Neutral
 
@@ -173,6 +192,11 @@ under the 4.5:1 floor, for as long as that rule went unwritten. Below `.62`
 nothing in this system clears AA against burnt pomegranate; `.52` is the exact
 threshold, and Cream Dim is the value to reach for.
 
+The rail now dims with Cream Dim as a `color`, and the cost of the old form is
+on record: a contrast probe run over that rule reported 13.72:1 while the
+screen was showing 5.96:1. The dot beside each label keeps its `opacity`, and
+should — a dot appearing is not text being dimmed.
+
 ## Typography
 
 **Display Font:** Sahel (falling back to Vazirmatn, then system-ui)
@@ -193,13 +217,23 @@ never invisible while a face is in flight.
   titles inside the category card.
 - **Title** (Vazirmatn 600, `clamp(14px, 3.8vw, 17px)`, lh 1.5): menu item
   names. Deliberately *not* Sahel.
+- **Price** (Vazirmatn 700, `clamp(16px, 4.3vw, 19px)`, lh 1.45): the bare
+  numeral at the foot of a menu tile, and the largest thing in that tile. The
+  option chip's number is the same role one step down
+  (`clamp(13.5px, 3.6vw, 15px)`), because two of them share a 141px row.
 - **Body** (Vazirmatn 400, `clamp(15px, 4vw, 17px)`, lh 2.1, max 52ch):
   landing paragraphs. The tall leading is a Persian reading concession, not a
   style flourish.
-- **Caption** (Vazirmatn 400, `clamp(12px, 3.1vw, 13px)`, lh 1.85): item
-  ingredient lists and category intros.
-- **Label** (Vazirmatn 500, `clamp(9.5px, 2.6vw, 11px)`, lh 1.35): the
-  category rail.
+- **Caption** (Vazirmatn 400, `clamp(12px, 3.1vw, 13px)`, lh 1.62): item
+  ingredient lists. Leading tightens as the measure narrows and this is the
+  narrowest column on the site — 22 characters. Category intros are the same
+  role at a slightly wider setting (`clamp(12px, 3.2vw, 14px)`, lh 1.9),
+  because they run the full width of the card.
+- **Label** (Vazirmatn 500, `11px` flat, lh 1.35): the category rail. Not a
+  clamp: the old one hit its 11px ceiling by 423px wide and spent the entire
+  phone range below it, bottoming out at 9.76px on a 375px screen. Persian
+  carries more stroke detail per em than Latin does, and this is the one
+  control on the page.
 
 ### Named Rules
 
@@ -217,6 +251,20 @@ thousands separator, and no currency word. `۶۱۰`, never `۶۱۰ تومان`. 
 product decision recorded in PRODUCT.md; typography must not reintroduce the
 unit as a superscript, a caption, or a legend.
 
+**The Price Leads Rule.** Inside a menu tile the price outranks the item name —
+a full step larger and a weight heavier. It was the other way round for a
+while, and the measurement is the argument: 13.88px/600 for the price against
+14.25px/600 for the name is a 0.37px difference at identical weight, which is
+no difference at all. A tile has one job, and the reader's eye must land on the
+number without being asked to search. Vazirmatn is a variable face, so the
+extra weight costs no additional file.
+
+**The One Number Shape Rule.** Every price on the page is set the same way,
+whether it stands alone at the foot of a tile or sits inside an option chip.
+Eighty items showing a bare numeral at one weight and nine showing it at
+another meant the eye had to work out which pattern each tile was using before
+it could read anything.
+
 ## Layout
 
 Right-anchored throughout, with `dir="rtl"` at the wrapper and the reading
@@ -227,9 +275,18 @@ isolation is what makes it read as the action.
 The landing runs a single 1180px column with a page gutter of
 `clamp(20px, 6vw, 80px)` and a **two-value vertical rhythm**: `--flow`
 (`clamp(64px, 10vw, 104px)`) separates blocks inside one thought, `--air`
-(`clamp(104px, 17vw, 180px)`) separates the thoughts themselves. The one photo
-is inset from the start side by `clamp(0px, 8vw, 140px)` so a strip of the
-pattern field survives at the reading origin.
+(`clamp(104px, 17vw, 180px)`) separates the thoughts themselves. Above 640px
+the one photo is inset from the start side by `clamp(0px, 8vw, 140px)` so a
+strip of the pattern field survives at the reading origin.
+
+On a phone that inset is deliberately dropped and the photo goes full-bleed.
+The strip is worth having on a wide screen, where the photo is an object with
+room around it; at 375px the same rule leaves a 30px margin that reads as a
+mistake rather than as a decision, and the photo stops being the page's one
+light moment. Full width is the decision on the device this site is actually
+read on — the inset is the desktop's version of the idea, not the canonical
+one. Anything that "restores consistency" here by re-applying the inset below
+640px is undoing this on purpose.
 
 The menu narrows to a 720px column with a tighter gutter
 (`clamp(16px, 5vw, 64px)`) and a fixed two-column grid — `repeat(2, minmax(0, 1fr))`
@@ -238,9 +295,22 @@ items into an unscrollable ribbon. Column gap `clamp(12px, 3.5vw, 22px)`, row
 gap `clamp(28px, 7vw, 44px)`. A fixed category rail occupies
 `clamp(54px, 14vw, 80px)` at the right edge.
 
+The rail's own column is budgeted, not assumed. Fourteen entries at the 44px
+minimum plus 1px gaps and 4px of vertical padding come to 642px; a 375×667
+phone offers 650. That is deliberate and it is tight — the gaps and the padding
+are the adjustable part, the 44px is not. On anything shorter the rail scrolls,
+and it says so rather than hiding it: whichever edge still has entries behind
+it fades out.
+
+In document order the rail comes **after** `<main>`, not before it. Its
+position is fixed, so nothing moves on screen, but fourteen jump links no
+longer stand between the keyboard and the first word of content.
+
 Sole breakpoint: **640px**. Above it the category card becomes a two-column
-grid and the landing photo returns to its width-derived height. Everything
-else scales continuously through `clamp()`.
+grid, and the landing photo both returns to its width-derived height and takes
+back its start-side inset — below it the height comes from the viewport
+(`62vh`) and the photo is full-bleed. Everything else scales continuously
+through `clamp()`.
 
 ### Named Rules
 
@@ -312,10 +382,38 @@ graphic device.
 
 ### Chips
 
-- **Style:** pill (999px), `fill` background, hairline border, cream-soft
-  label with a cream value, `5px 9px` padding.
+- **Style:** pill (999px), `fill` background, hairline border, `5px 9px`
+  padding. The label is cream-soft Vazirmatn 400 at a flat 12px; the value is
+  cream Vazirmatn 700 at `clamp(13.5px, 3.6vw, 15px)` — the price role, one
+  step down to fit two of them in a 141px row.
+- The label sits at 12px flat rather than on a clamp for the same reason the
+  rail label does: the old `clamp(10.5px, 2.8vw, 11.5px)` bottomed out at
+  10.51px on a 375px phone, which made the smallest type on the page the type
+  carrying a price.
 - Used only for per-item options (sizes, blends) inside a menu tile. Chips are
   informational here — never interactive, never a filter.
+- **Markup:** the chip row is a description list, not a bullet list. Each row
+  is a label and the price *of that label*, and only `dt`/`dd` carries that
+  pairing; read aloud, the previous `span` beside a `b` was four loose numbers
+  in a row with nothing saying which belonged to which. The add-on list uses
+  the same row shape for the same reason.
+
+### Disclosure
+
+- **Character:** a plain underlined word, never a button-shaped thing. It is
+  the only interactive control inside a tile and it must not compete with the
+  price.
+- **Style:** cream-soft, Vazirmatn 500 `clamp(11.5px, 3vw, 12.5px)`, underlined
+  at the `underline` value with a 4px offset. No border, no background.
+- **Target:** the visible box is one line tall (~16px); the 44px touch target
+  comes from an absolutely positioned overlay inset `-14px -10px`. Giving it
+  real height would have traded three lines of clamped description for a
+  control the same size, which is not a saving.
+- **Behavior:** present only where the description actually overflows its two
+  lines — that is a rendered question, not a content one, so it is measured
+  per element and re-measured on resize and once the real face has loaded. On a
+  375px phone every description overflows; at 1280px only eleven of eighty-nine
+  do, and the other seventy-eight lose both the control and their tab stop.
 
 ### Cards
 
@@ -328,13 +426,48 @@ graphic device.
 
 ### Navigation
 
-- **Sticky bar:** full width, `rgba(71,16,25,.95)` over `blur(8px)`, hairline
-  bottom border, back link at Vazirmatn 500 13px, 34px logo.
+- **Sticky bar:** full width, burnt pomegranate at `.95` over `blur(8px)`,
+  hairline bottom border, back link at Vazirmatn 500 13px, 34px logo. Between
+  them it carries the name of the category the reader is currently inside, at
+  cream-soft Vazirmatn 500 13px, truncating with an ellipsis. That label is
+  `aria-hidden`: the rail already announces the same state through
+  `aria-current`, and repeating it on every scroll is noise, not orientation.
+  The bar occupies its height on all twenty-two screens of this page, so it has
+  to earn them.
 - **Category rail:** fixed, vertically centred, right-flush. Each entry is a
-  dot plus a label at 50% opacity; the active entry goes to full opacity and a
-  translucent pill tweens behind it over 250ms.
+  dot plus a label in Cream Dim; the active entry goes to full cream and a
+  translucent pill tweens behind it over 250ms. Entries are 44px tall with 1px
+  between them — the pill supplies the separation a larger gap used to.
+- **Overflow:** on a screen too short for fourteen entries the rail scrolls
+  with its scrollbar hidden, and marks the fact by fading whichever edge still
+  has entries behind it. A hidden scrollbar with no fade is how an entire menu
+  category stops existing for anyone on a small phone.
 - **Mobile:** identical. The rail is designed for the phone first — it is
   narrower than a thumb and sits where a thumb already rests.
+
+### Photo tiles
+
+- **Shape:** square (`aspect-ratio: 1`), 14px radius, `fill` background,
+  contents clipped.
+- **Waiting:** the tile holds a tonal wash (`linear-gradient(135deg, fill-hi,
+  fill)`) that pulses at 1s between full and `0.5` opacity. The photograph
+  fades in over it, unblurring from 2px across 400ms on the system's
+  exponential ease.
+- **Arrival is an event, not a poll.** The reveal is driven by the image's own
+  `load`, caught in the capture phase by one listener on the document. `error`
+  is bound the same way on purpose: a tile whose photo 404s has to stop pulsing
+  too, or the page keeps promising a picture that is never coming.
+- **Empty:** an item with no photograph yet gets an opaque tonal panel with an
+  inset hairline, and **no pulse**. A skeleton that never resolves is a lie
+  about the network. It is not a placeholder photograph either — one identical
+  stand-in repeated twenty-six times tells the reader the site is unfinished,
+  where an empty surface tells them this item simply has no picture yet.
+- **Delivery:** two widths (300 and 600), chosen by the browser through
+  `srcset` against a `sizes` of `(min-width: 880px) 285px, 38vw` — measured
+  against the real tile, which is 141 CSS px on a 375px phone and a fixed 285px
+  once the column stops growing. Intrinsic `width`/`height` are always present
+  so a waiting tile never shifts, and everything past the first row is
+  natively lazy.
 
 ### Signature Component: the mark handoff
 
@@ -358,6 +491,15 @@ it compete with the copy and destroys the effect.
   animation in this project arms itself only after JS confirms it is running,
   and carries a timeout and a scroll-based fallback.
 - **Do** keep prices as bare Persian numerals.
+- **Do** let the price outrank the item name inside a tile, and set every price
+  the same way whether it stands alone or sits in a chip.
+- **Do** pair a label with its value using `dt`/`dd` whenever the two are only
+  related by position on screen.
+- **Do** clamp long copy visually and leave the full text in the document, so a
+  screen reader reads all of it whether or not anyone opens the disclosure.
+- **Do** buy space for a fixed control out of its gaps and padding before its
+  touch target. 44px is the floor, not the variable.
+- **Do** make a hidden scrollbar admit what it is hiding.
 
 ### Don't:
 
@@ -371,3 +513,12 @@ it compete with the copy and destroys the effect.
 - **Don't** let a transition be the reason text cannot be read — the reveal
   animations must never be the only path to visible copy.
 - **Don't** restart the pattern tile at a section boundary.
+- **Don't** ship a stand-in photograph. An item without a picture gets the
+  empty tile; the gap stays a gap until there is a real one.
+- **Don't** pulse a surface that has nothing arriving.
+- **Don't** give a fixed jump control a place in tab order ahead of the
+  content it jumps within.
+- **Don't** park `will-change` on a resting rule. Set it while a thing is
+  actually moving and take it off again.
+- **Don't** use an overshoot or bounce curve. Motion here settles; it never
+  springs.

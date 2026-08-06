@@ -65,6 +65,10 @@ window.__resources = {
      has no Sahel face to resolve to. */
   --display:'Sahel','Vazirmatn',system-ui,sans-serif;
   --bg:#471019;
+  /* The same maroon as bare channels, because rgba() cannot take a hex and
+     three rules below were spelling 71,16,25 out by hand — a brand colour
+     change meant finding four places instead of one. */
+  --bg-rgb:71,16,25;
   --ink:#F3F1EC;
   --ink-soft:rgba(243,241,236,.72);
   --ink-dim:rgba(243,241,236,.62);
@@ -78,14 +82,18 @@ window.__resources = {
   /* transitions.dev — tabs sliding (16) */
   --tabs-dur:250ms;
   --tabs-ease:cubic-bezier(0.22, 1, 0.36, 1);
-  --tabs-pill-bg:rgba(243,241,236,.1);
+  --tabs-pill-bg:var(--fill-hi);
   /* transitions.dev — avatar group hover (11) */
   --avatar-lift:-4px;
   --avatar-dur:320ms;
   --avatar-scale:1.05;
   --avatar-falloff:0.45;
   --avatar-ease-in:cubic-bezier(0.22, 1, 0.36, 1);
-  --avatar-ease-out:cubic-bezier(0.34, 3.85, 0.64, 1);
+  /* Was an overshoot curve, which is the one thing this system's motion never
+     does anywhere else. A photo settling back into a grid is not a spring; it
+     is a thing coming to rest. Same exponential family as the lift, pulled a
+     little harder so the return still reads as a different gesture. */
+  --avatar-ease-out:cubic-bezier(0.16, 1, 0.3, 1);
   /* transitions.dev — skeleton loader and reveal (14) */
   --pulse-dur:1000ms;
   --pulse-count:infinite;
@@ -112,10 +120,18 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 .skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
 .skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
 
-.bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px var(--gutter);background:rgba(71,16,25,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px var(--gutter);background:rgba(var(--bg-rgb),.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .bar-back{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;font:500 13px var(--font);text-decoration:none}
 .bar-back span[aria-hidden]{font-size:16px;line-height:1}
 .bar img{height:34px;width:auto;display:block}
+/* The sticky bar held a logo and a back link and nothing else, while occupying
+   its height on every one of the twenty-two screens this page is long. Now it
+   carries the category the reader is currently inside, which is the one piece
+   of orientation the page could not otherwise give: the rail marks the active
+   entry, but the rail is a 54px column of 11px labels. Hidden from assistive
+   tech on purpose — the rail already announces the same state through
+   aria-current, and saying it twice on every scroll is noise, not help. */
+.bar-cat{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:500 13px/1.4 var(--font);color:var(--ink-soft)}
 
 .sr-only{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
@@ -140,35 +156,106 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
    reservations only bought dead space under short names like «زون ۲» — 1371px
    of it down the page, which is 1.7 screens of scrolling on a phone. */
 .item h3{margin:0;font:600 clamp(14px,3.8vw,17px)/1.5 var(--font);color:var(--ink)}
+/* The description is two lines by default and opens on request. Measured, the
+   median item description is 89 characters in a column 22 characters wide —
+   about five lines — which put the ingredient list at three and a half times
+   the area of the price. On a page whose stated job is «find the price fast»,
+   the longest text in the tile was the least urgent thing in it. */
+.item p{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+}
+.item p[data-open]{-webkit-line-clamp:none;line-clamp:none;overflow:visible}
 /* 1.62, not 1.85. This column is 22 characters wide — the narrowest measure on
    the page — and leading tightens as the measure narrows. The looser value had
    it backwards, giving the shortest lines the most air. */
 .item p{margin:0;font:400 clamp(12px,3.1vw,13px)/1.62 var(--font);color:var(--ink-dim)}
-/* The price is what a seated reader is scanning for, and at 12.76px/500 it sat
-   0.76px away from the ingredient list — inside the same 2.3px band as every
-   other role in the tile. Sized and weighted to sit with the item name instead. */
-.item strong{margin-top:auto;padding-top:2px;font:600 clamp(13.5px,3.7vw,16px)/1.6 var(--font);color:var(--ink)}
+/* The price is what a seated reader is scanning for, so it is now the largest
+   thing in the tile rather than the second smallest. It used to be 13.88px/600
+   against a 14.25px/600 name — a 0.37px difference at identical weight, which
+   is no difference at all: the eye had nothing to land on first. Vazirmatn is
+   a variable face, so 700 here costs no extra file. */
+.item strong{margin-top:auto;padding-top:2px;font:700 clamp(16px,4.3vw,19px)/1.45 var(--font);color:var(--ink)}
 
-.opts{list-style:none;margin:auto 0 0;padding:2px 0 0;display:flex;flex-direction:column;gap:6px}
-.opts li{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--fill)}
-.opts span{font:400 clamp(10.5px,2.8vw,11.5px)/1.4 var(--font);color:var(--ink-soft)}
-.opts b{font:500 clamp(10.5px,2.8vw,11.5px)/1.4 var(--font);color:var(--ink);white-space:nowrap}
+/* The disclosure for the clamped description. Its visible box is one line tall
+   so the tile does not grow, and the touch target is an absolutely positioned
+   overlay rather than real height — 44px of hit area for 17px of layout, which
+   is what lets the clamp actually shorten the page instead of trading five
+   lines of text for a button the same size. JS hides it on any description
+   short enough to fit, so those tiles get neither the control nor a tab stop. */
+.item .more{
+  position:relative;
+  align-self:flex-start;
+  margin:0;
+  padding:0;
+  border:0;
+  background:none;
+  color:var(--ink-soft);
+  font:500 clamp(11.5px,3vw,12.5px)/1.4 var(--font);
+  text-decoration:underline;
+  text-underline-offset:4px;
+  text-decoration-color:var(--underline);
+  cursor:pointer;
+}
+/* -14px, measured: the visible box is 16px tall, so this is exactly the 44px
+   the rest of the page commits to. -13 gave 42 and looked identical. */
+.item .more::after{content:"";position:absolute;inset:-14px -10px}
+.item .more:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 
-.addons{list-style:none;margin:0;padding:0}
-.addons li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:10px 4px;border-bottom:1px solid var(--line)}
-.addons li:last-child{border-bottom:0}
-.addons span{font:500 clamp(13px,3.5vw,15px)/1.6 var(--font);color:var(--ink)}
-.addons b{font:500 clamp(12.5px,3.4vw,14px)/1.6 var(--font);color:var(--ink-soft);white-space:nowrap}
+/* Description lists, not bullet lists. Every row here is a label and the price
+   of that label, and a list item holding a span beside a bold left the pairing
+   to the eye alone — read aloud it was four loose numbers in a row with nothing
+   saying which belonged to which. dt/dd is the one structure that carries the
+   association without adding a word of visible copy. */
+.opts{margin:auto 0 0;padding:2px 0 0;display:flex;flex-direction:column;gap:6px}
+.opts>div{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--fill)}
+/* Flat 12px, not clamp(10.5px,2.8vw,11.5px). Measured, the clamp bottomed out
+   at 10.51px on a 375px phone: the smallest type on the page, carrying a price,
+   in a script that packs more stroke detail into an em than Latin does. This is
+   the same correction the rail label above already carries a note about. */
+.opts dt{margin:0;font:400 12px/1.4 var(--font);color:var(--ink-soft)}
+/* The number in a chip is the same kind of thing as the bare number at the
+   bottom of every other tile, so it is set the same way — 700, a step down in
+   size only because two of them share a 141px row. Before this, eighty items
+   showed a price at one weight and nine showed it at another, and the eye had
+   to work out which pattern each tile was using. */
+.opts dd{margin:0;font:700 clamp(13.5px,3.6vw,15px)/1.4 var(--font);color:var(--ink);white-space:nowrap}
 
-.rule{height:clamp(52px,13vw,80px);margin:clamp(40px,9vw,72px) 0 0;background-color:#471019;background-image:url('assets/l-cafe-pattern-inverted-tight.svg');background-repeat:repeat;background-position:center;background-size:clamp(110px,24vw,160px) calc(clamp(110px,24vw,160px) * 0.983);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.addons{margin:0;padding:0}
+.addons>div{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.addons>div:last-child{border-bottom:0}
+.addons dt{margin:0;font:500 clamp(13px,3.5vw,15px)/1.6 var(--font);color:var(--ink)}
+.addons dd{margin:0;font:500 clamp(12.5px,3.4vw,14px)/1.6 var(--font);color:var(--ink-soft);white-space:nowrap}
+
+.rule{height:clamp(52px,13vw,80px);margin:clamp(40px,9vw,72px) 0 0;background-color:var(--bg);background-image:url('assets/l-cafe-pattern-inverted-tight.svg');background-repeat:repeat;background-position:center;background-size:clamp(110px,24vw,160px) calc(clamp(110px,24vw,160px) * 0.983);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 
 .foot{padding:clamp(56px,12vw,96px) var(--gutter) clamp(48px,10vw,80px);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;border-top:1px solid var(--line);margin-top:clamp(48px,10vw,80px)}
 .foot img{height:44px;width:auto;margin-bottom:8px}
 .foot a{display:inline-flex;align-items:center;min-height:44px;font:400 clamp(13px,3.4vw,14px)/1.6 var(--font);text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--underline)}
 .foot .foot-back{font-weight:500}
 
-.rail{position:fixed;top:50%;right:0;transform:translateY(-50%);z-index:15;width:var(--rail);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:3px;padding:6px 0;background:rgba(71,16,25,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-right:0;border-radius:14px 0 0 14px}
+/* gap 1 and padding 4, not 3 and 6. Fourteen entries at the 44px minimum need
+   667px of column; a 375×667 phone offers 650, so «افزودنی» fell off the end —
+   and with the scrollbar deliberately hidden, nothing on screen said so. The
+   44px target is a commitment and the entries keep it, so the thirty pixels
+   came out of the gaps and the padding: 642 of column, which clears that phone
+   with room and clears every taller one outright. The active pill supplies the
+   separation the gap used to. */
+.rail{position:fixed;top:50%;right:0;transform:translateY(-50%);z-index:15;width:var(--rail);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:1px;padding:4px 0;background:rgba(var(--bg-rgb),.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-right:0;border-radius:14px 0 0 14px}
 .rail::-webkit-scrollbar{display:none}
+/* Shorter screens still overflow, so the rail admits it: whichever edge has
+   entries behind it fades out. JS sets the attributes; there is no CSS way to
+   ask an element whether it is scrolled. */
+.rail{--fade-top:#000 0;--fade-bottom:#000 100%}
+.rail[data-more-above]{--fade-top:transparent 0,#000 18px}
+.rail[data-more-below]{--fade-bottom:#000 calc(100% - 18px),transparent 100%}
+.rail[data-more-above],.rail[data-more-below]{
+  -webkit-mask-image:linear-gradient(to bottom,var(--fade-top),var(--fade-bottom));
+  mask-image:linear-gradient(to bottom,var(--fade-top),var(--fade-bottom));
+}
 .rail a{flex:0 0 auto}
 /* Flat 11px, not clamp(9.5px,2.6vw,11px). The clamp only ever bought a
    smaller label — it hit its 11px ceiling by 423px wide and spent the whole
@@ -177,14 +264,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
    control on the page, so it holds the ceiling everywhere instead. */
 .rail a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:4px 5px;font:500 11px/1.35 var(--font);color:var(--ink);text-decoration:none;text-align:center}
 .rail i{width:5px;height:5px;border-radius:50%;background:var(--ink);flex:0 0 auto;opacity:0;transition:opacity .2s ease}
-/* .62, not .5 — and it is the same .62 as --ink-dim, not a coincidence. At .5
-   the label composites to 4.33:1 against the rail's own background, under the
-   4.5:1 floor for text this size, and the loss is invisible to a colour audit
-   because `color` is still pure --ink: it all happens in the opacity. This was
-   the one place in the system dimming with a raw number instead of the value
-   the dim role already has. */
-.rail span{opacity:.62;transition:opacity .2s ease}
-.rail a.on i,.rail a.on span{opacity:1}
+/* --ink-dim, not opacity:.62. The two land on the same pixels and audit
+   completely differently: with the opacity, `color` still reads as pure --ink,
+   so a contrast probe over this rule reports 13.72:1 while the screen is
+   showing 5.96:1. That is not hypothetical — it is what a probe reported here.
+   The dot keeps its opacity, because a dot appearing is not text being dimmed. */
+.rail span{color:var(--ink-dim);transition:color .2s ease}
+.rail a.on i{opacity:1}
+.rail a.on span{color:var(--ink)}
 
 /* transitions.dev — tabs sliding (16), vertical variant.
    The rail is a column, so the pill tweens translateY + height
@@ -208,51 +295,57 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   pointer-events:none;
 }
 
-/* transitions.dev — skeleton loader and reveal (14) */
-.t-skel-skeleton,
-.t-skel-content{
+/* transitions.dev — skeleton loader and reveal (14), rebuilt around the <img>
+   the build now publishes.
+   The previous version assembled two layers per tile from JavaScript and then
+   polled a shadow root on a frame loop to find out whether the picture had
+   arrived. Measured mid-page, seventy-seven of those loops were still running
+   at once — one per tile below the fold — because a tile whose source was
+   still deferred returned early, before it could spend any of its four-hundred
+   try budget, and so looped for the life of the page. A load event answers the
+   same question once, and the browser fires it whether the image succeeded,
+   failed or came from cache. */
+.item-photo::before{
+  content:"";
   position:absolute;
   inset:0;
-}
-.t-skel-content>image-slot{display:block;width:100%;height:100%}
-.t-skel-skeleton{
   z-index:1;
-  opacity:1;
-  filter:blur(0);
-  transition:
-    opacity var(--reveal-dur) var(--reveal-ease),
-    filter  var(--reveal-dur) var(--reveal-ease);
+  background:linear-gradient(135deg,var(--fill-hi),var(--fill));
+  animation:t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+  transition:opacity var(--reveal-dur) var(--reveal-ease);
 }
-.t-skel-content{
-  z-index:2;
-  opacity:0;
-  filter:blur(var(--reveal-blur));
-  transition:
-    opacity var(--reveal-dur) var(--reveal-ease),
-    filter  var(--reveal-dur) var(--reveal-ease);
-}
-/* State lives in data-* rather than classes: the runtime rewrites className
-   from its template on every render, so a class set from outside is either
-   wiped or baked in permanently. Attributes it doesn't own survive. */
-.t-skel[data-revealed] .t-skel-skeleton{
-  opacity:0;
-  filter:blur(var(--reveal-blur));
-}
-.t-skel[data-revealed] .t-skel-content{
-  opacity:1;
-  filter:blur(0);
-}
-.t-skel[data-resetting] .t-skel-skeleton,
-.t-skel[data-resetting] .t-skel-content{
-  transition:none!important;
-}
-.t-skel-skeleton>*{
+.item-photo img{
   position:absolute;
   inset:0;
-  background:linear-gradient(135deg,var(--fill-hi),var(--fill));
+  z-index:2;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  opacity:0;
+  filter:blur(var(--reveal-blur));
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease),
+    filter  var(--reveal-dur) var(--reveal-ease);
 }
-.t-skel-skeleton.is-pulsing>*{
-  animation:t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+/* State lives in data-* rather than classes: the canvas runtime rewrites
+   className from its template on every render, so a class set from outside is
+   either wiped or baked in permanently. Attributes it doesn't own survive. */
+.item-photo[data-ready]::before{animation:none;opacity:0}
+.item-photo[data-ready] img{opacity:1;filter:blur(0)}
+
+/* An item with no photograph yet. It does not pulse, because nothing is on its
+   way — a skeleton that never resolves is a lie about the network. The layer is
+   opaque (the tonal wash over the page's own maroon) so it covers the pulse
+   above without waiting for script, and what is left is the tile at rest: the
+   same surface every other tile starts from, holding its place until there is a
+   real picture to put in it. */
+.item-photo-empty{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  background:linear-gradient(135deg,var(--fill-hi),var(--fill)),var(--bg);
+  box-shadow:inset 0 0 0 1px var(--line);
 }
 @keyframes t-skel-pulse{
   0%,100%{opacity:1}
@@ -275,8 +368,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
       translateY(var(--shift, 0px))
       scale(var(--scale-active, 1));
     transition:transform var(--avatar-dur) var(--avatar-ease-in);
-    will-change:transform;
   }
+  /* will-change is a warning that something is about to move, not a property
+     an element wears. Left on the resting rule it promoted all eighty-nine
+     photos to their own compositor layer for the whole life of the page — for
+     a lift that only ever touches the row under the cursor. JS adds this while
+     a row is actually in motion and takes it off again. */
+  .t-avatar[data-lifting]{will-change:transform}
 }
 /* transitions.dev — page side-by-side (08), adapted for real navigation. The
    preset slides two <section>s inside one document; these are two documents,
@@ -314,13 +412,874 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   html{scroll-behavior:auto}
   *{transition:none!important;animation:none!important}
   .t-avatar{transform:none!important}
-  .t-skel-skeleton.is-pulsing>*{animation:none!important}
+  /* The pulse goes, but the tile keeps its tonal surface and the photo still
+     swaps in — reduced motion removes the movement, not the state change. */
+  .item-photo::before{animation:none!important}
 }
 </style>
 </helmet>
 <div dir="rtl">
 
 <a class="skip" href="#menu">رفتن به منو</a>
+
+
+<header class="bar">
+<a class="bar-back" href="Landing Hero Background.dc.html"><span aria-hidden="true">→</span>بازگشت</a>
+<span class="bar-cat" aria-hidden="true"></span>
+<img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
+</header>
+
+<main id="menu">
+
+<h1 class="sr-only">منوی ال کافه</h1>
+
+<section class="cat" aria-labelledby="cat-routine">
+<div class="cat-head">
+<h2 id="cat-routine">روتین</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-routine-01" data-src="assets/menu/opt/menu-routine-01.webp" shape="rounded" radius="14" placeholder="عکس زون ۲"></image-slot></div>
+<h3>زون ۲</h3>
+<p>شیکی غلیظ و پروتئینی با شیر نارگیل، موز، کره بادام‌زمینی، پودر وی و ماچا؛ کرمی، سیرکننده و با طعم غالب موز و بادام‌زمینی.</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۶۱۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-routine-02" data-src="assets/menu/opt/menu-routine-02.webp" shape="rounded" radius="14" placeholder="عکس زون ۳"></image-slot></div>
+<h3>زون ۳</h3>
+<p>۳۰ گرم پروتئین وی، کره بادام زمینی، شیر بادام، موز، پودر چغندر</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۵۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-routine-03" data-src="assets/menu/opt/menu-routine-03.webp" shape="rounded" radius="14" placeholder="عکس ماراتن"></image-slot></div>
+<h3>ماراتن</h3>
+<p>۳۰ گرم پروتئین وی، کره بادام زمینی، اسپیرولینا، شیر نارگیل، موز</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۶۹۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-routine-04" data-src="assets/menu/opt/menu-routine-04.webp" shape="rounded" radius="14" placeholder="عکس کوکی رژیمی"></image-slot></div>
+<h3>کوکی رژیمی</h3>
+<p>جو پرک، شیره انگور، کره بادام زمینی، بدون شکر و آرد</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-routine-05" shape="rounded" radius="14" placeholder="عکس ماسگرانولا"></image-slot></div>
+<h3>ماسگرانولا</h3>
+<p>ماست پروتئینی، گرانولا، موز، سس بری</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-routine-06" shape="rounded" radius="14" placeholder="عکس ال کوچیا"></image-slot></div>
+<h3>ال کوچیا</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۱۰۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-hot-coffee">
+<div class="cat-head">
+<h2 id="cat-hot-coffee">گرم بر پایه قهوه</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-01" data-src="assets/menu/opt/menu-hot-coffee-01.webp" shape="rounded" radius="14" placeholder="عکس اسپرسو پریمیوم ۶۰"></image-slot></div>
+<h3>اسپرسو پریمیوم ۶۰</h3>
+<p>بلِندی قدرتمند از عربیکا و روبوستا با بادی سنگین، تلخی برجسته و پس‌مزه‌ای عمیق و شکلاتی؛ انتخابی جسورانه و ماندگار.</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۱۵</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-02" data-src="assets/menu/opt/menu-hot-coffee-02.webp" shape="rounded" radius="14" placeholder="عکس V60"></image-slot></div>
+<h3>V60</h3>
+<p>قهوه تک خاستگاه تخصصی، ویلارزیتا از ارتفاعات کلمبیا، فراوری طبیعی</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۵۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-03" data-src="assets/menu/opt/menu-hot-coffee-03.webp" shape="rounded" radius="14" placeholder="عکس لاته"></image-slot></div>
+<h3>لاته</h3>
+<p>اسپرسو و شیر گرم با میکروفومی نرم و ابریشمی؛ متعادل، لطیف و مناسب کسانی که قهوه را با حضور بیشتر شیر می‌پسندند.</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۳۱۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۳۳۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-04" data-src="assets/menu/opt/menu-hot-coffee-04.webp" shape="rounded" radius="14" placeholder="عکس کاپوچینو"></image-slot></div>
+<h3>کاپوچینو</h3>
+<p>اسپرسو، شیر با فوم زیاد</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۲۹۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۳۱۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-05" data-src="assets/menu/opt/menu-hot-coffee-05.webp" shape="rounded" radius="14" placeholder="عکس آمریکانو"></image-slot></div>
+<h3>آمریکانو</h3>
+<p>اسپرسو، آب</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۲۲۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۲۳۵</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-06" data-src="assets/menu/opt/menu-hot-coffee-06.webp" shape="rounded" radius="14" placeholder="عکس کورتادو"></image-slot></div>
+<h3>کورتادو</h3>
+<p>اسپرسو غلیظ، شیر میکروفوم</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۲۹۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۳۱۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-07" data-src="assets/menu/opt/menu-hot-coffee-07.webp" shape="rounded" radius="14" placeholder="عکس فلت وایت"></image-slot></div>
+<h3>فلت وایت</h3>
+<p>ریسترتو، شیر میکروفوم</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۲۹۵</dd></div>
+<div><dt>۱۰۰</dt><dd>۳۱۵</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-08" data-src="assets/menu/opt/menu-hot-coffee-08.webp" shape="rounded" radius="14" placeholder="عکس موکا"></image-slot></div>
+<h3>موکا</h3>
+<p>شکلات آب شده، شیر فوم داده شده، اسپرسو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۳۵۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۳۷۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-09" data-src="assets/menu/opt/menu-hot-coffee-09.webp" shape="rounded" radius="14" placeholder="عکس قهوه ترک"></image-slot></div>
+<h3>قهوه ترک</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۳۵</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-10" data-src="assets/menu/opt/menu-hot-coffee-10.webp" shape="rounded" radius="14" placeholder="عکس پرشین کافی"></image-slot></div>
+<h3>پرشین کافی</h3>
+<p>قهوه، شیر، زعفران، هل</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۹۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-11" shape="rounded" radius="14" placeholder="عکس اسپنیش لاته پسته"></image-slot></div>
+<h3>اسپنیش لاته پسته</h3>
+<p>اسپرسو، شیر، سس پسته</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۲۵</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-12" shape="rounded" radius="14" placeholder="عکس اسپنیش لاته زعفران"></image-slot></div>
+<h3>اسپنیش لاته زعفران</h3>
+<p>اسپرسو، شیر، سس زعفران</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۹۵</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-13" data-src="assets/menu/opt/menu-hot-coffee-13.webp" shape="rounded" radius="14" placeholder="عکس گلدن لاته"></image-slot></div>
+<h3>گلدن لاته</h3>
+<p>ماسالا، زردچوبه، اسپرسو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۲۵</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-coffee-14" data-src="assets/menu/opt/menu-hot-coffee-14.webp" shape="rounded" radius="14" placeholder="عکس لاته تیرامیسو"></image-slot></div>
+<h3>لاته تیرامیسو</h3>
+<p>شیر قهوه، سیروپ وانیل، تاپینگ خامه طعم دار</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۰۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-cold-coffee">
+<div class="cat-head">
+<h2 id="cat-cold-coffee">سرد بر پایه قهوه</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-coffee-01" data-src="assets/menu/opt/menu-cold-coffee-01.webp" shape="rounded" radius="14" placeholder="عکس آیس آمریکانو"></image-slot></div>
+<h3>آیس آمریکانو</h3>
+<p>اسپرسو، آب، یخ</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۲۴۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۲۵۵</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-coffee-02" data-src="assets/menu/opt/menu-cold-coffee-02.webp" shape="rounded" radius="14" placeholder="عکس آیس لاته"></image-slot></div>
+<h3>آیس لاته</h3>
+<p>اسپرسو، شیر، یخ</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>۶۰/۴۰</dt><dd>۳۳۰</dd></div>
+<div><dt>۱۰۰</dt><dd>۳۵۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-coffee-03" shape="rounded" radius="14" placeholder="عکس کلدبرو"></image-slot></div>
+<h3>کلدبرو</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-coffee-04" data-src="assets/menu/opt/menu-cold-coffee-04.webp" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش لاته پسته"></image-slot></div>
+<h3>آیس اسپنیش لاته پسته</h3>
+<p>اسپرسو، شیر، یخ، سس پسته</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۴۵</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-coffee-05" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش لاته زعفران"></image-slot></div>
+<h3>آیس اسپنیش لاته زعفران</h3>
+<p>اسپرسو، شیر، یخ، سس زعفران</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۱۵</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-frappe">
+<div class="cat-head">
+<h2 id="cat-frappe">فراپه و میلک شیک</h2>
+<p>برفی، غلیظ و لذت‌بخش؛ یک دسر سرد برای مکث‌های طولانی‌تر.</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-frappe-01" shape="rounded" radius="14" placeholder="عکس میلک شیک چاکلت دبی"></image-slot></div>
+<h3>میلک شیک چاکلت دبی</h3>
+<p>جلاتوی مخصوص ال کافه، چاکلت دبی</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-frappe-02" shape="rounded" radius="14" placeholder="عکس میلک شیک لوتوس"></image-slot></div>
+<h3>میلک شیک لوتوس</h3>
+<p>جلاتوی مخصوص ال کافه، کرم لوتوس، بیسکوییت لوتوس</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-frappe-03" shape="rounded" radius="14" data-src="assets/menu/opt/fr-01.webp" placeholder="عکس کارامل نمکی"></image-slot></div>
+<h3>کارامل نمکی</h3>
+<p>نوشیدنی‌ای کرمی و یخی با ترکیب کارامل شیرین‌وشور و پایه قهوه</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۷۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-frappe-04" shape="rounded" radius="14" data-src="assets/menu/opt/fr-02.webp" placeholder="عکس ارده"></image-slot></div>
+<h3>ارده</h3>
+<p>با شخصیتی متناقض میان یخ و آتش، ترکیبی از بافت یخی و طعم گرم و عمیق ارده است</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۷۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-cloudy">
+<div class="cat-head">
+<h2 id="cat-cloudy">کلودی</h2>
+<p>ابری، کرمی و آرام؛ با لایه‌هایی که آهسته خودشان را نشان می‌دهند.</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cloudy-01" shape="rounded" radius="14" data-src="assets/menu/opt/cl-01.webp" placeholder="عکس پسته"></image-slot></div>
+<h3>پسته</h3>
+<p>کلودی پسته با بافتی نرم و کرمی</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۳۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cloudy-02" shape="rounded" radius="14" data-src="assets/menu/opt/cl-02.webp" placeholder="عکس زعفران"></image-slot></div>
+<h3>زعفران</h3>
+<p>کلودی زعفران با لایه‌ای نرم و کرمی از زعفران</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۳۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cloudy-03" shape="rounded" radius="14" data-src="assets/menu/opt/cl-03.webp" placeholder="عکس کوکی"></image-slot></div>
+<h3>کوکی</h3>
+<p>انتخابی نرم، شیرین و کرمی، با طعم کوکی در مرکز و اسپرسویی ملایم در پس‌زمینه</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۳۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-hot-drinks">
+<div class="cat-head">
+<h2 id="cat-hot-drinks">نوشیدنی گرم</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-01" data-src="assets/menu/opt/menu-hot-drinks-01.webp" shape="rounded" radius="14" placeholder="عکس اپل پارادایس"></image-slot></div>
+<h3>اپل پارادایس</h3>
+<p>سیب، به، دارچین</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-02" data-src="assets/menu/opt/menu-hot-drinks-02.webp" shape="rounded" radius="14" placeholder="عکس رویال جاسمین"></image-slot></div>
+<h3>رویال جاسمین</h3>
+<p>چای سبز، گل یاس</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-03" data-src="assets/menu/opt/menu-hot-drinks-03.webp" shape="rounded" radius="14" placeholder="عکس پینک رز"></image-slot></div>
+<h3>پینک رز</h3>
+<p>بابونه، گل‌محمدی، لاوندر</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-04" data-src="assets/menu/opt/menu-hot-drinks-04.webp" shape="rounded" radius="14" placeholder="عکس پیچ بلک تی"></image-slot></div>
+<h3>پیچ بلک تی</h3>
+<p>چای سیاه، هلو، زردآلو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-05" data-src="assets/menu/opt/menu-hot-drinks-05.webp" shape="rounded" radius="14" placeholder="عکس کاسکارا و میکس بری"></image-slot></div>
+<h3>کاسکارا و میکس بری</h3>
+<p>پوسته دانه میوه قهوه، میکس انواع بری‌های ترش</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۸۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-06" data-src="assets/menu/opt/menu-hot-drinks-06.webp" shape="rounded" radius="14" placeholder="عکس چای سیاه"></image-slot></div>
+<h3>چای سیاه</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>زعفران</dt><dd>۱۰۰</dd></div>
+<div><dt>هل</dt><dd>۱۰۰</dd></div>
+<div><dt>دارچین</dt><dd>۱۰۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-07" data-src="assets/menu/opt/menu-hot-drinks-07.webp" shape="rounded" radius="14" placeholder="عکس چای کرک"></image-slot></div>
+<h3>چای کرک</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۷۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-08" data-src="assets/menu/opt/menu-hot-drinks-08.webp" shape="rounded" radius="14" placeholder="عکس ماسالا"></image-slot></div>
+<h3>ماسالا</h3>
+<p>هل، زنجبیل، میخک، کافی‌میت، دارچین</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۷۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-hot-drinks-09" data-src="assets/menu/opt/menu-hot-drinks-09.webp" shape="rounded" radius="14" placeholder="عکس هات چاکلت"></image-slot></div>
+<h3>هات چاکلت</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۴۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-cold-drinks">
+<div class="cat-head">
+<h2 id="cat-cold-drinks">نوشیدنی سرد</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-drinks-01" shape="rounded" radius="14" placeholder="عکس لیموناد"></image-slot></div>
+<h3>لیموناد</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۸۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-drinks-02" shape="rounded" radius="14" placeholder="عکس موهیتو"></image-slot></div>
+<h3>موهیتو</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۸۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-drinks-03" shape="rounded" radius="14" placeholder="عکس جینجر لایم"></image-slot></div>
+<h3>جینجر لایم</h3>
+<p>زنجبیل، لیمو ترش</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۶۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-drinks-04" shape="rounded" radius="14" placeholder="عکس هات شات"></image-slot></div>
+<h3>هات شات</h3>
+<p>عصاره زنجبیل و لیمو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۶۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-drinks-05" shape="rounded" radius="14" placeholder="عکس رد هات شات"></image-slot></div>
+<h3>رد هات شات</h3>
+<p>عصاره زنجبیل، چای ترش، توت فرنگی</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۶۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-cold-drinks-06" data-src="assets/menu/opt/menu-cold-drinks-06.webp" shape="rounded" radius="14" placeholder="عکس ال سامر"></image-slot></div>
+<h3>ال سامر</h3>
+<p>اسموتی گازدار بر پایه توت فرنگی و آناناس</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۵۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-herbal-tea">
+<div class="cat-head">
+<h2 id="cat-herbal-tea">هربال‌تی</h2>
+<p>شفاف، خوش‌عطر و روشن؛ برای مکث‌هایی که باید سبک بمانند.</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-herbal-tea-01" shape="rounded" radius="14" data-src="assets/menu/opt/it-02.webp" placeholder="عکس پیچ بلک"></image-slot></div>
+<h3>پیچ بلک</h3>
+<p>ترکیب چای سرد سیاه و هلو با بافتی خنک و طعمی آشنا</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-herbal-tea-02" shape="rounded" radius="14" data-src="assets/menu/opt/it-01.webp" placeholder="عکس اپل پارادایس"></image-slot></div>
+<h3>اپل پارادایس</h3>
+<p>چای سرد شفاف با حس سیب تازه</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۵۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-refresher">
+<div class="cat-head">
+<h2 id="cat-refresher">رفرشر</h2>
+<p>میوه‌ای، گازدار و سرزنده؛ برای لحظه‌هایی که انرژی تازه می‌خواهند.</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-refresher-01" shape="rounded" radius="14" data-src="assets/menu/opt/rf-02.webp" placeholder="عکس انبه شاهتوت"></image-slot></div>
+<h3>انبه شاهتوت</h3>
+<p>ترکیب انبه و شاهتوت با سودا</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-refresher-02" shape="rounded" radius="14" data-src="assets/menu/opt/rf-01.webp" placeholder="عکس توت فرنگی گیلاس"></image-slot></div>
+<h3>توت فرنگی گیلاس</h3>
+<p>ترکیب توت‌فرنگی و گیلاس با سودا</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-refresher-03" shape="rounded" radius="14" data-src="assets/menu/opt/rf-03.webp" placeholder="عکس جینجر بیزل"></image-slot></div>
+<h3>جینجر بیزل</h3>
+<p>ترکیب زنجبیل و ریحان ایتالیایی با سودا</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۲۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-matcha">
+<div class="cat-head">
+<h2 id="cat-matcha">ماچا لاورز</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-matcha-01" shape="rounded" radius="14" placeholder="عکس ماچا لاته"></image-slot></div>
+<h3>ماچا لاته</h3>
+<p>شیر، ماچا</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>پسته</dt><dd>۱۰۰</dd></div>
+<div><dt>زعفران</dt><dd>۱۰۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-matcha-02" data-src="assets/menu/opt/menu-matcha-02.webp" shape="rounded" radius="14" placeholder="عکس آیس ماچا لاته"></image-slot></div>
+<h3>آیس ماچا لاته</h3>
+<p>شیر، ماچا، یخ</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>پسته</dt><dd>۱۰۰</dd></div>
+<div><dt>زعفران</dt><dd>۱۰۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-matcha-03" data-src="assets/menu/opt/menu-matcha-03.webp" shape="rounded" radius="14" placeholder="عکس آیس اسپیرولینا لاته"></image-slot></div>
+<h3>آیس اسپیرولینا لاته</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<dl class="opts">
+<div><dt>پسته</dt><dd>۱۰۰</dd></div>
+<div><dt>زعفران</dt><dd>۱۰۰</dd></div>
+</dl>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-matcha-04" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش ردبری ماچا"></image-slot></div>
+<h3>آیس اسپنیش ردبری ماچا</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-matcha-05" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش ردبری اسپیرولینا"></image-slot></div>
+<h3>آیس اسپنیش ردبری اسپیرولینا</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۷۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-icecream">
+<div class="cat-head">
+<h2 id="cat-icecream">بستنی</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-icecream-01" data-src="assets/menu/opt/menu-icecream-01.webp" shape="rounded" radius="14" placeholder="عکس بیبی ژلاتو"></image-slot></div>
+<h3>بیبی ژلاتو</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۱۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-icecream-02" data-src="assets/menu/opt/menu-icecream-02.webp" shape="rounded" radius="14" placeholder="عکس ژلاتو"></image-slot></div>
+<h3>ژلاتو</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-icecream-03" data-src="assets/menu/opt/menu-icecream-03.webp" shape="rounded" radius="14" placeholder="عکس ژلاتو مخصوص ال کافه"></image-slot></div>
+<h3>ژلاتو مخصوص ال کافه</h3>
+<p>ژلاتو، سالاد میوه، بیسکوئیت لوتوس، سس شکلات</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-icecream-04" data-src="assets/menu/opt/menu-icecream-04.webp" shape="rounded" radius="14" placeholder="عکس آفوگاتو"></image-slot></div>
+<h3>آفوگاتو</h3>
+<p>بستنی، اسپرسو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۳۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-dessert">
+<div class="cat-head">
+<h2 id="cat-dessert">کیک و دسر</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-01" data-src="assets/menu/opt/menu-dessert-01.webp" shape="rounded" radius="14" placeholder="عکس کیک آلبالو"></image-slot></div>
+<h3>کیک آلبالو</h3>
+<p>آلبالو، کرم پنیر، پرک بادام</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-02" data-src="assets/menu/opt/menu-dessert-02.webp" shape="rounded" radius="14" placeholder="عکس کرامبل سیب"></image-slot></div>
+<h3>کرامبل سیب</h3>
+<p>گردو، سیب، شکر قهوه‌ای</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۴۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-03" shape="rounded" radius="14" placeholder="عکس کیک هویج"></image-slot></div>
+<h3>کیک هویج</h3>
+<p>گردو، هویج، جوز هندی، دارچین، شکر قهوه‌ای</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-04" data-src="assets/menu/opt/menu-dessert-04.webp" shape="rounded" radius="14" placeholder="عکس کیک لمون پاپی سید"></image-slot></div>
+<h3>کیک لمون پاپی سید</h3>
+<p>کرم پنیر، زست لیمو، خشخاش</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۲۷۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-05" data-src="assets/menu/opt/menu-dessert-05.webp" shape="rounded" radius="14" placeholder="عکس چیزکیک سن سباستین"></image-slot></div>
+<h3>چیزکیک سن سباستین</h3>
+<p>پنیر، خامه</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۱۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-06" data-src="assets/menu/opt/menu-dessert-06.webp" shape="rounded" radius="14" placeholder="عکس تارت پسته و بری"></image-slot></div>
+<h3>تارت پسته و بری</h3>
+<p>خمیر پسته، سس بری، خمیر تارت</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۹۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-07" data-src="assets/menu/opt/menu-dessert-07.webp" shape="rounded" radius="14" placeholder="عکس کیک فرزیه"></image-slot></div>
+<h3>کیک فرزیه</h3>
+<p>کرم پنیر، سس بری، غلاف وانیل، کیک</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۸۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-08" data-src="assets/menu/opt/menu-dessert-08.webp" shape="rounded" radius="14" placeholder="عکس دارک چاکلت"></image-slot></div>
+<h3>دارک چاکلت</h3>
+<p>کارامل، اسپرسو، دارک چاکلت، کیک شکلاتی</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-09" data-src="assets/menu/opt/menu-dessert-09.webp" shape="rounded" radius="14" placeholder="عکس بلک فارست"></image-slot></div>
+<h3>بلک فارست</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۴۲۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-10" data-src="assets/menu/opt/menu-dessert-10.webp" shape="rounded" radius="14" placeholder="عکس تیرامیسو"></image-slot></div>
+<h3>تیرامیسو</h3>
+<p>اسپرسو، کرم پنیر، بیسکوییت لیدی فینگر</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۳۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-dessert-11" shape="rounded" radius="14" placeholder="عکس کروسان"></image-slot></div>
+<h3>کروسان</h3>
+<p>[توضیح]</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۱۰۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-food">
+<div class="cat-head">
+<h2 id="cat-food">ساندویچ و سالاد</h2>
+<p>[توضیح دسته]</p>
+</div>
+<div class="grid">
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-01" data-src="assets/menu/opt/menu-food-01.webp" shape="rounded" radius="14" placeholder="عکس املت مخصوص ال کافه"></image-slot></div>
+<h3>املت مخصوص ال کافه</h3>
+<p>تخم مرغ همزده، پنیر، ریحان ایتالیایی، گوجه طعم دار شده</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۵۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-02" data-src="assets/menu/opt/menu-food-02.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ املت بیکن و پنیر بلوچیز"></image-slot></div>
+<h3>ساندویچ املت بیکن و پنیر بلوچیز</h3>
+<p>نان چاباتا، تخم مرغ همزده، پنیر بلوچیز، اسفناج، بیکن</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۷۶۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-03" data-src="assets/menu/opt/menu-food-03.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ تخم‌مرغ و دیپ پنیر و سبزیجات"></image-slot></div>
+<h3>ساندویچ تخم‌مرغ و دیپ پنیر و سبزیجات</h3>
+<p>نان چاباتا، تخم مرغ آب پز، گوجه طعم دار شده، سبزیجات معطر</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۳۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-04" shape="rounded" radius="14" placeholder="عکس لقمه صبحانه"></image-slot></div>
+<h3>لقمه صبحانه</h3>
+<p>کروسان، پنیر طعم دار شده، گوجه خشک، روکولا</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۳۷۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-05" data-src="assets/menu/opt/menu-food-05.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ مرغ و دیپ پستو"></image-slot></div>
+<h3>ساندویچ مرغ و دیپ پستو</h3>
+<p>نان چاباتا، مرغ مزه دار گریل شده، دیپ پستو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۵۸۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-06" data-src="assets/menu/opt/menu-food-06.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ مرغ و دیپ حمص"></image-slot></div>
+<h3>ساندویچ مرغ و دیپ حمص</h3>
+<p>نان چاباتا، مرغ مزه دار گریل شده، دیپ حمص</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۵۸۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-07" data-src="assets/menu/opt/menu-food-07.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ بوقلمون و دیپ پستو"></image-slot></div>
+<h3>ساندویچ بوقلمون و دیپ پستو</h3>
+<p>نان چاباتا، بوقلمون پروسس شده، دیپ پستو</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۶۰۰</strong>
+</article>
+
+<article class="item">
+<div class="item-photo t-avatar"><image-slot id="menu-food-08" shape="rounded" radius="14" placeholder="عکس سالاد مخصوص ال کافه"></image-slot></div>
+<h3>سالاد مخصوص ال کافه</h3>
+<p>کاهو فرانسوی، مرغ طعم دار گریل شده، میکس سبزیجات، پنیر پارمسان</p>
+<button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
+<strong>۱۰۰</strong>
+</article>
+
+</div>
+</section>
+
+<div class="rule" aria-hidden="true"></div>
+
+<section class="cat" aria-labelledby="cat-addons">
+<div class="cat-head">
+<h2 id="cat-addons">افزودنی</h2>
+<p>[توضیح دسته]</p>
+</div>
+<dl class="addons">
+<div><dt>سیروپ</dt><dd>۷۵</dd></div>
+<div><dt>شیر غیرلبنی</dt><dd>۱۳۰</dd></div>
+<div><dt>شیر بدون لاکتوز</dt><dd>۱۰۰</dd></div>
+<div><dt>خامه تاپینگ</dt><dd>۸۰</dd></div>
+</dl>
+</section>
+
+</main>
 
 <nav class="rail" aria-label="دسته‌های منو">
 <span class="t-tabs-pill" aria-hidden="true"></span>
@@ -339,783 +1298,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 <a href="#cat-food"><i aria-hidden="true"></i><span>ساندویچ</span></a>
 <a href="#cat-addons"><i aria-hidden="true"></i><span>افزودنی</span></a>
 </nav>
-
-<header class="bar">
-<a class="bar-back" href="Landing Hero Background.dc.html"><span aria-hidden="true">→</span>بازگشت</a>
-<img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
-</header>
-
-<main id="menu">
-
-<h1 class="sr-only">منوی ال کافه</h1>
-
-<section class="cat" aria-labelledby="cat-routine">
-<div class="cat-head">
-<h2 id="cat-routine">روتین</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-01" data-src="assets/menu/opt/menu-routine-01.webp" shape="rounded" radius="14" placeholder="عکس زون ۲"></image-slot></div>
-<h3>زون ۲</h3>
-<p>شیکی غلیظ و پروتئینی با شیر نارگیل، موز، کره بادام‌زمینی، پودر وی و ماچا؛ کرمی، سیرکننده و با طعم غالب موز و بادام‌زمینی.</p>
-<strong>۶۱۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-02" data-src="assets/menu/opt/menu-routine-02.webp" shape="rounded" radius="14" placeholder="عکس زون ۳"></image-slot></div>
-<h3>زون ۳</h3>
-<p>۳۰ گرم پروتئین وی، کره بادام زمینی، شیر بادام، موز، پودر چغندر</p>
-<strong>۵۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-03" data-src="assets/menu/opt/menu-routine-03.webp" shape="rounded" radius="14" placeholder="عکس ماراتن"></image-slot></div>
-<h3>ماراتن</h3>
-<p>۳۰ گرم پروتئین وی، کره بادام زمینی، اسپیرولینا، شیر نارگیل، موز</p>
-<strong>۶۹۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-04" data-src="assets/menu/opt/menu-routine-04.webp" shape="rounded" radius="14" placeholder="عکس کوکی رژیمی"></image-slot></div>
-<h3>کوکی رژیمی</h3>
-<p>جو پرک، شیره انگور، کره بادام زمینی، بدون شکر و آرد</p>
-<strong>۲۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-05" shape="rounded" radius="14" placeholder="عکس ماسگرانولا"></image-slot></div>
-<h3>ماسگرانولا</h3>
-<p>ماست پروتئینی، گرانولا، موز، سس بری</p>
-<strong>۴۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-routine-06" shape="rounded" radius="14" placeholder="عکس ال کوچیا"></image-slot></div>
-<h3>ال کوچیا</h3>
-<p>[توضیح]</p>
-<strong>۱۰۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-hot-coffee">
-<div class="cat-head">
-<h2 id="cat-hot-coffee">گرم بر پایه قهوه</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-01" data-src="assets/menu/opt/menu-hot-coffee-01.webp" shape="rounded" radius="14" placeholder="عکس اسپرسو پریمیوم ۶۰"></image-slot></div>
-<h3>اسپرسو پریمیوم ۶۰</h3>
-<p>بلِندی قدرتمند از عربیکا و روبوستا با بادی سنگین، تلخی برجسته و پس‌مزه‌ای عمیق و شکلاتی؛ انتخابی جسورانه و ماندگار.</p>
-<strong>۲۱۵</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-02" data-src="assets/menu/opt/menu-hot-coffee-02.webp" shape="rounded" radius="14" placeholder="عکس V60"></image-slot></div>
-<h3>V60</h3>
-<p>قهوه تک خاستگاه تخصصی، ویلارزیتا از ارتفاعات کلمبیا، فراوری طبیعی</p>
-<strong>۵۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-03" data-src="assets/menu/opt/menu-hot-coffee-03.webp" shape="rounded" radius="14" placeholder="عکس لاته"></image-slot></div>
-<h3>لاته</h3>
-<p>اسپرسو و شیر گرم با میکروفومی نرم و ابریشمی؛ متعادل، لطیف و مناسب کسانی که قهوه را با حضور بیشتر شیر می‌پسندند.</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۳۱۰</b></li>
-<li><span>۱۰۰</span><b>۳۳۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-04" data-src="assets/menu/opt/menu-hot-coffee-04.webp" shape="rounded" radius="14" placeholder="عکس کاپوچینو"></image-slot></div>
-<h3>کاپوچینو</h3>
-<p>اسپرسو، شیر با فوم زیاد</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۲۹۰</b></li>
-<li><span>۱۰۰</span><b>۳۱۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-05" data-src="assets/menu/opt/menu-hot-coffee-05.webp" shape="rounded" radius="14" placeholder="عکس آمریکانو"></image-slot></div>
-<h3>آمریکانو</h3>
-<p>اسپرسو، آب</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۲۲۰</b></li>
-<li><span>۱۰۰</span><b>۲۳۵</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-06" data-src="assets/menu/opt/menu-hot-coffee-06.webp" shape="rounded" radius="14" placeholder="عکس کورتادو"></image-slot></div>
-<h3>کورتادو</h3>
-<p>اسپرسو غلیظ، شیر میکروفوم</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۲۹۰</b></li>
-<li><span>۱۰۰</span><b>۳۱۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-07" data-src="assets/menu/opt/menu-hot-coffee-07.webp" shape="rounded" radius="14" placeholder="عکس فلت وایت"></image-slot></div>
-<h3>فلت وایت</h3>
-<p>ریسترتو، شیر میکروفوم</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۲۹۵</b></li>
-<li><span>۱۰۰</span><b>۳۱۵</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-08" data-src="assets/menu/opt/menu-hot-coffee-08.webp" shape="rounded" radius="14" placeholder="عکس موکا"></image-slot></div>
-<h3>موکا</h3>
-<p>شکلات آب شده، شیر فوم داده شده، اسپرسو</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۳۵۰</b></li>
-<li><span>۱۰۰</span><b>۳۷۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-09" data-src="assets/menu/opt/menu-hot-coffee-09.webp" shape="rounded" radius="14" placeholder="عکس قهوه ترک"></image-slot></div>
-<h3>قهوه ترک</h3>
-<p>[توضیح]</p>
-<strong>۲۳۵</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-10" data-src="assets/menu/opt/menu-hot-coffee-10.webp" shape="rounded" radius="14" placeholder="عکس پرشین کافی"></image-slot></div>
-<h3>پرشین کافی</h3>
-<p>قهوه، شیر، زعفران، هل</p>
-<strong>۳۹۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-11" shape="rounded" radius="14" placeholder="عکس اسپنیش لاته پسته"></image-slot></div>
-<h3>اسپنیش لاته پسته</h3>
-<p>اسپرسو، شیر، سس پسته</p>
-<strong>۴۲۵</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-12" shape="rounded" radius="14" placeholder="عکس اسپنیش لاته زعفران"></image-slot></div>
-<h3>اسپنیش لاته زعفران</h3>
-<p>اسپرسو، شیر، سس زعفران</p>
-<strong>۳۹۵</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-13" data-src="assets/menu/opt/menu-hot-coffee-13.webp" shape="rounded" radius="14" placeholder="عکس گلدن لاته"></image-slot></div>
-<h3>گلدن لاته</h3>
-<p>ماسالا، زردچوبه، اسپرسو</p>
-<strong>۳۲۵</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-coffee-14" data-src="assets/menu/opt/menu-hot-coffee-14.webp" shape="rounded" radius="14" placeholder="عکس لاته تیرامیسو"></image-slot></div>
-<h3>لاته تیرامیسو</h3>
-<p>شیر قهوه، سیروپ وانیل، تاپینگ خامه طعم دار</p>
-<strong>۴۰۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-cold-coffee">
-<div class="cat-head">
-<h2 id="cat-cold-coffee">سرد بر پایه قهوه</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-coffee-01" data-src="assets/menu/opt/menu-cold-coffee-01.webp" shape="rounded" radius="14" placeholder="عکس آیس آمریکانو"></image-slot></div>
-<h3>آیس آمریکانو</h3>
-<p>اسپرسو، آب، یخ</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۲۴۰</b></li>
-<li><span>۱۰۰</span><b>۲۵۵</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-coffee-02" data-src="assets/menu/opt/menu-cold-coffee-02.webp" shape="rounded" radius="14" placeholder="عکس آیس لاته"></image-slot></div>
-<h3>آیس لاته</h3>
-<p>اسپرسو، شیر، یخ</p>
-<ul class="opts">
-<li><span>۶۰/۴۰</span><b>۳۳۰</b></li>
-<li><span>۱۰۰</span><b>۳۵۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-coffee-03" shape="rounded" radius="14" placeholder="عکس کلدبرو"></image-slot></div>
-<h3>کلدبرو</h3>
-<p>[توضیح]</p>
-<strong>۳۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-coffee-04" data-src="assets/menu/opt/menu-cold-coffee-04.webp" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش لاته پسته"></image-slot></div>
-<h3>آیس اسپنیش لاته پسته</h3>
-<p>اسپرسو، شیر، یخ، سس پسته</p>
-<strong>۴۴۵</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-coffee-05" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش لاته زعفران"></image-slot></div>
-<h3>آیس اسپنیش لاته زعفران</h3>
-<p>اسپرسو، شیر، یخ، سس زعفران</p>
-<strong>۴۱۵</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-frappe">
-<div class="cat-head">
-<h2 id="cat-frappe">فراپه و میلک شیک</h2>
-<p>برفی، غلیظ و لذت‌بخش؛ یک دسر سرد برای مکث‌های طولانی‌تر.</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-frappe-01" shape="rounded" radius="14" placeholder="عکس میلک شیک چاکلت دبی"></image-slot></div>
-<h3>میلک شیک چاکلت دبی</h3>
-<p>جلاتوی مخصوص ال کافه، چاکلت دبی</p>
-<strong>۴۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-frappe-02" shape="rounded" radius="14" placeholder="عکس میلک شیک لوتوس"></image-slot></div>
-<h3>میلک شیک لوتوس</h3>
-<p>جلاتوی مخصوص ال کافه، کرم لوتوس، بیسکوییت لوتوس</p>
-<strong>۴۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-frappe-03" shape="rounded" radius="14" data-src="assets/menu/opt/fr-01.webp" placeholder="عکس کارامل نمکی"></image-slot></div>
-<h3>کارامل نمکی</h3>
-<p>نوشیدنی‌ای کرمی و یخی با ترکیب کارامل شیرین‌وشور و پایه قهوه</p>
-<strong>۳۷۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-frappe-04" shape="rounded" radius="14" data-src="assets/menu/opt/fr-02.webp" placeholder="عکس ارده"></image-slot></div>
-<h3>ارده</h3>
-<p>با شخصیتی متناقض میان یخ و آتش، ترکیبی از بافت یخی و طعم گرم و عمیق ارده است</p>
-<strong>۳۷۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-cloudy">
-<div class="cat-head">
-<h2 id="cat-cloudy">کلودی</h2>
-<p>ابری، کرمی و آرام؛ با لایه‌هایی که آهسته خودشان را نشان می‌دهند.</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cloudy-01" shape="rounded" radius="14" data-src="assets/menu/opt/cl-01.webp" placeholder="عکس پسته"></image-slot></div>
-<h3>پسته</h3>
-<p>کلودی پسته با بافتی نرم و کرمی</p>
-<strong>۴۳۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cloudy-02" shape="rounded" radius="14" data-src="assets/menu/opt/cl-02.webp" placeholder="عکس زعفران"></image-slot></div>
-<h3>زعفران</h3>
-<p>کلودی زعفران با لایه‌ای نرم و کرمی از زعفران</p>
-<strong>۴۳۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cloudy-03" shape="rounded" radius="14" data-src="assets/menu/opt/cl-03.webp" placeholder="عکس کوکی"></image-slot></div>
-<h3>کوکی</h3>
-<p>انتخابی نرم، شیرین و کرمی، با طعم کوکی در مرکز و اسپرسویی ملایم در پس‌زمینه</p>
-<strong>۴۳۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-hot-drinks">
-<div class="cat-head">
-<h2 id="cat-hot-drinks">نوشیدنی گرم</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-01" data-src="assets/menu/opt/menu-hot-drinks-01.webp" shape="rounded" radius="14" placeholder="عکس اپل پارادایس"></image-slot></div>
-<h3>اپل پارادایس</h3>
-<p>سیب، به، دارچین</p>
-<strong>۲۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-02" data-src="assets/menu/opt/menu-hot-drinks-02.webp" shape="rounded" radius="14" placeholder="عکس رویال جاسمین"></image-slot></div>
-<h3>رویال جاسمین</h3>
-<p>چای سبز، گل یاس</p>
-<strong>۲۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-03" data-src="assets/menu/opt/menu-hot-drinks-03.webp" shape="rounded" radius="14" placeholder="عکس پینک رز"></image-slot></div>
-<h3>پینک رز</h3>
-<p>بابونه، گل‌محمدی، لاوندر</p>
-<strong>۲۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-04" data-src="assets/menu/opt/menu-hot-drinks-04.webp" shape="rounded" radius="14" placeholder="عکس پیچ بلک تی"></image-slot></div>
-<h3>پیچ بلک تی</h3>
-<p>چای سیاه، هلو، زردآلو</p>
-<strong>۲۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-05" data-src="assets/menu/opt/menu-hot-drinks-05.webp" shape="rounded" radius="14" placeholder="عکس کاسکارا و میکس بری"></image-slot></div>
-<h3>کاسکارا و میکس بری</h3>
-<p>پوسته دانه میوه قهوه، میکس انواع بری‌های ترش</p>
-<strong>۲۸۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-06" data-src="assets/menu/opt/menu-hot-drinks-06.webp" shape="rounded" radius="14" placeholder="عکس چای سیاه"></image-slot></div>
-<h3>چای سیاه</h3>
-<p>[توضیح]</p>
-<ul class="opts">
-<li><span>زعفران</span><b>۱۰۰</b></li>
-<li><span>هل</span><b>۱۰۰</b></li>
-<li><span>دارچین</span><b>۱۰۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-07" data-src="assets/menu/opt/menu-hot-drinks-07.webp" shape="rounded" radius="14" placeholder="عکس چای کرک"></image-slot></div>
-<h3>چای کرک</h3>
-<p>[توضیح]</p>
-<strong>۲۷۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-08" data-src="assets/menu/opt/menu-hot-drinks-08.webp" shape="rounded" radius="14" placeholder="عکس ماسالا"></image-slot></div>
-<h3>ماسالا</h3>
-<p>هل، زنجبیل، میخک، کافی‌میت، دارچین</p>
-<strong>۲۷۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-hot-drinks-09" data-src="assets/menu/opt/menu-hot-drinks-09.webp" shape="rounded" radius="14" placeholder="عکس هات چاکلت"></image-slot></div>
-<h3>هات چاکلت</h3>
-<p>[توضیح]</p>
-<strong>۳۴۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-cold-drinks">
-<div class="cat-head">
-<h2 id="cat-cold-drinks">نوشیدنی سرد</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-drinks-01" shape="rounded" radius="14" placeholder="عکس لیموناد"></image-slot></div>
-<h3>لیموناد</h3>
-<p>[توضیح]</p>
-<strong>۲۸۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-drinks-02" shape="rounded" radius="14" placeholder="عکس موهیتو"></image-slot></div>
-<h3>موهیتو</h3>
-<p>[توضیح]</p>
-<strong>۲۸۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-drinks-03" shape="rounded" radius="14" placeholder="عکس جینجر لایم"></image-slot></div>
-<h3>جینجر لایم</h3>
-<p>زنجبیل، لیمو ترش</p>
-<strong>۲۶۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-drinks-04" shape="rounded" radius="14" placeholder="عکس هات شات"></image-slot></div>
-<h3>هات شات</h3>
-<p>عصاره زنجبیل و لیمو</p>
-<strong>۲۶۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-drinks-05" shape="rounded" radius="14" placeholder="عکس رد هات شات"></image-slot></div>
-<h3>رد هات شات</h3>
-<p>عصاره زنجبیل، چای ترش، توت فرنگی</p>
-<strong>۲۶۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-cold-drinks-06" data-src="assets/menu/opt/menu-cold-drinks-06.webp" shape="rounded" radius="14" placeholder="عکس ال سامر"></image-slot></div>
-<h3>ال سامر</h3>
-<p>اسموتی گازدار بر پایه توت فرنگی و آناناس</p>
-<strong>۳۵۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-herbal-tea">
-<div class="cat-head">
-<h2 id="cat-herbal-tea">هربال‌تی</h2>
-<p>شفاف، خوش‌عطر و روشن؛ برای مکث‌هایی که باید سبک بمانند.</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-herbal-tea-01" shape="rounded" radius="14" data-src="assets/menu/opt/it-02.webp" placeholder="عکس پیچ بلک"></image-slot></div>
-<h3>پیچ بلک</h3>
-<p>ترکیب چای سرد سیاه و هلو با بافتی خنک و طعمی آشنا</p>
-<strong>۳۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-herbal-tea-02" shape="rounded" radius="14" data-src="assets/menu/opt/it-01.webp" placeholder="عکس اپل پارادایس"></image-slot></div>
-<h3>اپل پارادایس</h3>
-<p>چای سرد شفاف با حس سیب تازه</p>
-<strong>۳۵۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-refresher">
-<div class="cat-head">
-<h2 id="cat-refresher">رفرشر</h2>
-<p>میوه‌ای، گازدار و سرزنده؛ برای لحظه‌هایی که انرژی تازه می‌خواهند.</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-refresher-01" shape="rounded" radius="14" data-src="assets/menu/opt/rf-02.webp" placeholder="عکس انبه شاهتوت"></image-slot></div>
-<h3>انبه شاهتوت</h3>
-<p>ترکیب انبه و شاهتوت با سودا</p>
-<strong>۳۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-refresher-02" shape="rounded" radius="14" data-src="assets/menu/opt/rf-01.webp" placeholder="عکس توت فرنگی گیلاس"></image-slot></div>
-<h3>توت فرنگی گیلاس</h3>
-<p>ترکیب توت‌فرنگی و گیلاس با سودا</p>
-<strong>۳۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-refresher-03" shape="rounded" radius="14" data-src="assets/menu/opt/rf-03.webp" placeholder="عکس جینجر بیزل"></image-slot></div>
-<h3>جینجر بیزل</h3>
-<p>ترکیب زنجبیل و ریحان ایتالیایی با سودا</p>
-<strong>۳۲۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-matcha">
-<div class="cat-head">
-<h2 id="cat-matcha">ماچا لاورز</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-matcha-01" shape="rounded" radius="14" placeholder="عکس ماچا لاته"></image-slot></div>
-<h3>ماچا لاته</h3>
-<p>شیر، ماچا</p>
-<ul class="opts">
-<li><span>پسته</span><b>۱۰۰</b></li>
-<li><span>زعفران</span><b>۱۰۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-matcha-02" data-src="assets/menu/opt/menu-matcha-02.webp" shape="rounded" radius="14" placeholder="عکس آیس ماچا لاته"></image-slot></div>
-<h3>آیس ماچا لاته</h3>
-<p>شیر، ماچا، یخ</p>
-<ul class="opts">
-<li><span>پسته</span><b>۱۰۰</b></li>
-<li><span>زعفران</span><b>۱۰۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-matcha-03" data-src="assets/menu/opt/menu-matcha-03.webp" shape="rounded" radius="14" placeholder="عکس آیس اسپیرولینا لاته"></image-slot></div>
-<h3>آیس اسپیرولینا لاته</h3>
-<p>[توضیح]</p>
-<ul class="opts">
-<li><span>پسته</span><b>۱۰۰</b></li>
-<li><span>زعفران</span><b>۱۰۰</b></li>
-</ul>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-matcha-04" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش ردبری ماچا"></image-slot></div>
-<h3>آیس اسپنیش ردبری ماچا</h3>
-<p>[توضیح]</p>
-<strong>۳۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-matcha-05" shape="rounded" radius="14" placeholder="عکس آیس اسپنیش ردبری اسپیرولینا"></image-slot></div>
-<h3>آیس اسپنیش ردبری اسپیرولینا</h3>
-<p>[توضیح]</p>
-<strong>۳۷۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-icecream">
-<div class="cat-head">
-<h2 id="cat-icecream">بستنی</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-icecream-01" data-src="assets/menu/opt/menu-icecream-01.webp" shape="rounded" radius="14" placeholder="عکس بیبی ژلاتو"></image-slot></div>
-<h3>بیبی ژلاتو</h3>
-<p>[توضیح]</p>
-<strong>۱۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-icecream-02" data-src="assets/menu/opt/menu-icecream-02.webp" shape="rounded" radius="14" placeholder="عکس ژلاتو"></image-slot></div>
-<h3>ژلاتو</h3>
-<p>[توضیح]</p>
-<strong>۳۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-icecream-03" data-src="assets/menu/opt/menu-icecream-03.webp" shape="rounded" radius="14" placeholder="عکس ژلاتو مخصوص ال کافه"></image-slot></div>
-<h3>ژلاتو مخصوص ال کافه</h3>
-<p>ژلاتو، سالاد میوه، بیسکوئیت لوتوس، سس شکلات</p>
-<strong>۴۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-icecream-04" data-src="assets/menu/opt/menu-icecream-04.webp" shape="rounded" radius="14" placeholder="عکس آفوگاتو"></image-slot></div>
-<h3>آفوگاتو</h3>
-<p>بستنی، اسپرسو</p>
-<strong>۳۳۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-dessert">
-<div class="cat-head">
-<h2 id="cat-dessert">کیک و دسر</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-01" data-src="assets/menu/opt/menu-dessert-01.webp" shape="rounded" radius="14" placeholder="عکس کیک آلبالو"></image-slot></div>
-<h3>کیک آلبالو</h3>
-<p>آلبالو، کرم پنیر، پرک بادام</p>
-<strong>۳۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-02" data-src="assets/menu/opt/menu-dessert-02.webp" shape="rounded" radius="14" placeholder="عکس کرامبل سیب"></image-slot></div>
-<h3>کرامبل سیب</h3>
-<p>گردو، سیب، شکر قهوه‌ای</p>
-<strong>۳۴۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-03" shape="rounded" radius="14" placeholder="عکس کیک هویج"></image-slot></div>
-<h3>کیک هویج</h3>
-<p>گردو، هویج، جوز هندی، دارچین، شکر قهوه‌ای</p>
-<strong>۳۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-04" data-src="assets/menu/opt/menu-dessert-04.webp" shape="rounded" radius="14" placeholder="عکس کیک لمون پاپی سید"></image-slot></div>
-<h3>کیک لمون پاپی سید</h3>
-<p>کرم پنیر، زست لیمو، خشخاش</p>
-<strong>۲۷۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-05" data-src="assets/menu/opt/menu-dessert-05.webp" shape="rounded" radius="14" placeholder="عکس چیزکیک سن سباستین"></image-slot></div>
-<h3>چیزکیک سن سباستین</h3>
-<p>پنیر، خامه</p>
-<strong>۱۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-06" data-src="assets/menu/opt/menu-dessert-06.webp" shape="rounded" radius="14" placeholder="عکس تارت پسته و بری"></image-slot></div>
-<h3>تارت پسته و بری</h3>
-<p>خمیر پسته، سس بری، خمیر تارت</p>
-<strong>۳۹۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-07" data-src="assets/menu/opt/menu-dessert-07.webp" shape="rounded" radius="14" placeholder="عکس کیک فرزیه"></image-slot></div>
-<h3>کیک فرزیه</h3>
-<p>کرم پنیر، سس بری، غلاف وانیل، کیک</p>
-<strong>۳۸۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-08" data-src="assets/menu/opt/menu-dessert-08.webp" shape="rounded" radius="14" placeholder="عکس دارک چاکلت"></image-slot></div>
-<h3>دارک چاکلت</h3>
-<p>کارامل، اسپرسو، دارک چاکلت، کیک شکلاتی</p>
-<strong>۴۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-09" data-src="assets/menu/opt/menu-dessert-09.webp" shape="rounded" radius="14" placeholder="عکس بلک فارست"></image-slot></div>
-<h3>بلک فارست</h3>
-<p>[توضیح]</p>
-<strong>۴۲۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-10" data-src="assets/menu/opt/menu-dessert-10.webp" shape="rounded" radius="14" placeholder="عکس تیرامیسو"></image-slot></div>
-<h3>تیرامیسو</h3>
-<p>اسپرسو، کرم پنیر، بیسکوییت لیدی فینگر</p>
-<strong>۳۳۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-dessert-11" shape="rounded" radius="14" placeholder="عکس کروسان"></image-slot></div>
-<h3>کروسان</h3>
-<p>[توضیح]</p>
-<strong>۱۰۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-food">
-<div class="cat-head">
-<h2 id="cat-food">ساندویچ و سالاد</h2>
-<p>[توضیح دسته]</p>
-</div>
-<div class="grid">
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-01" data-src="assets/menu/opt/menu-food-01.webp" shape="rounded" radius="14" placeholder="عکس املت مخصوص ال کافه"></image-slot></div>
-<h3>املت مخصوص ال کافه</h3>
-<p>تخم مرغ همزده، پنیر، ریحان ایتالیایی، گوجه طعم دار شده</p>
-<strong>۳۵۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-02" data-src="assets/menu/opt/menu-food-02.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ املت بیکن و پنیر بلوچیز"></image-slot></div>
-<h3>ساندویچ املت بیکن و پنیر بلوچیز</h3>
-<p>نان چاباتا، تخم مرغ همزده، پنیر بلوچیز، اسفناج، بیکن</p>
-<strong>۷۶۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-03" data-src="assets/menu/opt/menu-food-03.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ تخم‌مرغ و دیپ پنیر و سبزیجات"></image-slot></div>
-<h3>ساندویچ تخم‌مرغ و دیپ پنیر و سبزیجات</h3>
-<p>نان چاباتا، تخم مرغ آب پز، گوجه طعم دار شده، سبزیجات معطر</p>
-<strong>۳۳۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-04" shape="rounded" radius="14" placeholder="عکس لقمه صبحانه"></image-slot></div>
-<h3>لقمه صبحانه</h3>
-<p>کروسان، پنیر طعم دار شده، گوجه خشک، روکولا</p>
-<strong>۳۷۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-05" data-src="assets/menu/opt/menu-food-05.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ مرغ و دیپ پستو"></image-slot></div>
-<h3>ساندویچ مرغ و دیپ پستو</h3>
-<p>نان چاباتا، مرغ مزه دار گریل شده، دیپ پستو</p>
-<strong>۵۸۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-06" data-src="assets/menu/opt/menu-food-06.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ مرغ و دیپ حمص"></image-slot></div>
-<h3>ساندویچ مرغ و دیپ حمص</h3>
-<p>نان چاباتا، مرغ مزه دار گریل شده، دیپ حمص</p>
-<strong>۵۸۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-07" data-src="assets/menu/opt/menu-food-07.webp" shape="rounded" radius="14" placeholder="عکس ساندویچ بوقلمون و دیپ پستو"></image-slot></div>
-<h3>ساندویچ بوقلمون و دیپ پستو</h3>
-<p>نان چاباتا، بوقلمون پروسس شده، دیپ پستو</p>
-<strong>۶۰۰</strong>
-</article>
-
-<article class="item">
-<div class="item-photo t-skel t-avatar" data-state="loading"><image-slot id="menu-food-08" shape="rounded" radius="14" placeholder="عکس سالاد مخصوص ال کافه"></image-slot></div>
-<h3>سالاد مخصوص ال کافه</h3>
-<p>کاهو فرانسوی، مرغ طعم دار گریل شده، میکس سبزیجات، پنیر پارمسان</p>
-<strong>۱۰۰</strong>
-</article>
-
-</div>
-</section>
-
-<div class="rule" aria-hidden="true"></div>
-
-<section class="cat" aria-labelledby="cat-addons">
-<div class="cat-head">
-<h2 id="cat-addons">افزودنی</h2>
-<p>[توضیح دسته]</p>
-</div>
-<ul class="addons">
-<li><span>سیروپ</span><b>۷۵</b></li>
-<li><span>شیر غیرلبنی</span><b>۱۳۰</b></li>
-<li><span>شیر بدون لاکتوز</span><b>۱۰۰</b></li>
-<li><span>خامه تاپینگ</span><b>۸۰</b></li>
-</ul>
-</section>
-
-</main>
 
 <footer class="foot">
 <img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
@@ -1160,6 +1342,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
       }
     }
 
+    // The same active category, said once in the rail for assistive tech and
+    // once in the sticky bar for everyone else. The bar copy is aria-hidden:
+    // the rail already carries it through aria-current, and announcing a
+    // heading again on every scroll would be noise rather than orientation.
+    var barCat = document.querySelector(".bar-cat");
+
     function setActive(id) {
       links.forEach(function (link) {
         var on = link.getAttribute("href") === "#" + id;
@@ -1169,11 +1357,27 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
         if (on) {
           moveTo(link, current !== null);
           current = link;
+          if (barCat) {
+            var heading = document.getElementById(id);
+            barCat.textContent = heading ? heading.textContent : link.textContent.trim();
+          }
         }
       });
     }
 
-    window.addEventListener("resize", function () { moveTo(current, false); });
+    // The rail overflows on short screens and its scrollbar is hidden by
+    // design, so it reports what is off each edge instead. Read together, then
+    // written together — this runs on every scroll of the rail.
+    function edges() {
+      var over = rail.scrollHeight - rail.clientHeight;
+      var top = rail.scrollTop;
+      rail.toggleAttribute("data-more-above", over > 1 && top > 1);
+      rail.toggleAttribute("data-more-below", over > 1 && top < over - 1);
+    }
+    rail.addEventListener("scroll", edges, { passive: true });
+    edges();
+
+    window.addEventListener("resize", function () { moveTo(current, false); edges(); });
 
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -1202,193 +1406,143 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 })();
 
 // transitions.dev — skeleton loader and reveal (14).
-// The two layers are built here rather than in the template: there are sixty
-// photo slots, and the skeleton is a pure presentation layer with no content
-// of its own. Injection is idempotent, so a re-render can't stack duplicates.
+// Two listeners and no polling at all. The tile pulses until its photograph
+// arrives and then swaps; the CSS above owns both halves, and this only reports
+// which half we are in.
+//
+// What was here before built the two layers from script and then asked, on a
+// frame loop, whether a shadow root had produced an <img> yet. It could not do
+// otherwise: the slot element hides its image inside a shadow root, where a
+// load event cannot reach. Now
+// that the build publishes a real <img>, the browser volunteers the answer.
+//
+// `load` does not bubble, but it does capture, so one listener on the document
+// hears all of them. `error` is bound the same way on purpose — a tile whose
+// photo 404s has to stop pulsing too, or the page keeps promising a picture
+// that is never coming.
 (function () {
-  var REVEAL_TIMEOUT = 6000;
-
-  function dress(skel) {
-    // Two separate questions, and conflating them is what left every photo
-    // loaded but invisible: "are the layers built?" is about markup, which the
-    // runtime happily copies into its rendered nodes, while "is anyone
-    // watching this node?" is about a closure, which it cannot copy. Testing
-    // only the first made a cloned tile look finished while nothing was left
-    // to hand it its image.
-    if (skel.hasAttribute("data-dressed")) return;
-    skel.setAttribute("data-dressed", "");
-
-    var content = skel.querySelector(".t-skel-content");
-    if (!content) {
-      content = document.createElement("div");
-      content.className = "t-skel-content";
-      while (skel.firstChild) content.appendChild(skel.firstChild);
-      var skeleton = document.createElement("div");
-      skeleton.className = "t-skel-skeleton is-pulsing";
-      skeleton.setAttribute("aria-hidden", "true");
-      skeleton.appendChild(document.createElement("span"));
-      skel.appendChild(skeleton);
-      skel.appendChild(content);
-    }
-
-    var done = false;
-    function reveal() {
-      if (done) return;
-      done = true;
-      skel.setAttribute("data-revealed", "");
-      skel.setAttribute("data-state", "loaded");
-    }
-
-    // <image-slot> keeps its <img> in an open shadow root, and load doesn't
-    // cross that boundary — so watch the image itself. Re-query and re-test
-    // every tick rather than trusting a single load listener: the element
-    // swaps its <img> as it settles, so a listener bound to the first one can
-    // be left holding a node that never fires again.
-    var tries = 0;
-    var timer = null;
-    (function watch() {
-      var slot = content.querySelector("image-slot");
-      // Still deferred: this photo hasn't been asked for yet, so there is
-      // nothing to wait on and no deadline to start. Keep the skeleton up and
-      // don't spend a try — the budget is for a load that has begun.
-      if (slot && slot.hasAttribute("data-src")) {
-        return requestAnimationFrame(watch);
-      }
-      // Last resort, armed only once the request is actually in flight: never
-      // leave a photo behind a skeleton because a load stalled or the source
-      // is broken — image-slot draws its own placeholder there, and the
-      // skeleton would hide it.
-      if (timer === null) timer = setTimeout(reveal, REVEAL_TIMEOUT);
-      var img = slot && slot.shadowRoot
-        ? slot.shadowRoot.querySelector("img")
-        : content.querySelector("img");
-      if (img && img.complete && (img.naturalWidth || !img.getAttribute("src"))) {
-        return reveal();
-      }
-      if (++tries < 400) requestAnimationFrame(watch);
-    })();
+  function ready(img) {
+    var frame = img.closest && img.closest(".item-photo");
+    if (frame) frame.setAttribute("data-ready", "");
   }
 
-  // Kept alive rather than disconnected after the first hit: the runtime
-  // mounts its own copies of this markup over the template's, so a one-shot
-  // pass would dress the template nodes and leave the visible ones bare.
-  // Coalesced to one pass per frame — the mount is a burst of mutations.
+  document.addEventListener("load", function (e) {
+    if (e.target.tagName === "IMG") ready(e.target);
+  }, true);
+  document.addEventListener("error", function (e) {
+    if (e.target.tagName === "IMG") ready(e.target);
+  }, true);
+
+  // Two cases the listeners cannot catch. A cached photo on a second visit can
+  // finish decoding before the parser reaches the end of the body, so its load
+  // event is already spent; and a tile holding no photograph at all has no
+  // image to wait on and would pulse forever.
+  function settle() {
+    document.querySelectorAll(".item-photo:not([data-ready])").forEach(function (frame) {
+      var img = frame.querySelector("img");
+      if (!img || img.complete) frame.setAttribute("data-ready", "");
+    });
+  }
+  settle();
+  window.addEventListener("load", settle);
+
+  // Inside the canvas tool the runtime mounts its own copy of this markup over
+  // the template's, so one pass would settle nodes that are about to be thrown
+  // away. Unlike the loop this replaces, it does nothing between mutations.
   var queued = false;
-  function dressAll() {
-    queued = false;
-    document.querySelectorAll(".t-skel").forEach(dress);
-  }
-  dressAll();
   new MutationObserver(function () {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(dressAll);
+    requestAnimationFrame(function () { queued = false; settle(); });
   }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 
-// Deferred photo loading.
-// Sixty photos on one page, all requested at once, means the four the reader
-// is actually looking at queue behind fifty-six they may never scroll to. The
-// source lives in data-src until the tile approaches the viewport; image-slot
-// observes `src`, so assigning it there is what starts the request.
+// Photo loading is the browser's job now: loading="lazy" on every tile past the
+// first row, and an intrinsic width and height so none of them shift while they
+// wait. The hand-written deferral that used to live here — an observer, a
+// scroll sweep and a four-hundred-millisecond pump — read every tile's bounding
+// box and wrote a src back into the same loop, which forced a layout per photo
+// on every scroll event. build.py writes the attributes that replaced it.
+
+// The two-line description opens on request.
 //
-// No no-JS fallback is possible or needed: <image-slot> is a custom element,
-// so with scripting off the page has no photos either way.
+// Which descriptions need a control is a rendered question, not a content one:
+// the same eighty-nine characters is four lines in a 141px column and two in a
+// 285px one. So the test is the paragraph's own overflow, re-run on resize and
+// once the real face has loaded — measured before the webfont lands, every
+// answer is about the fallback. A description that already fits loses both its
+// button and its tab stop.
+//
+// The clamp is visual only. The full text stays in the document, so a screen
+// reader reads every description in full whether or not anyone opens it.
 (function () {
-  // Roughly two screens of runway. Enough that a photo is decoded before it is
-  // scrolled to on a normal flick, short enough that a reader who stops at the
-  // first category never pays for the last one.
-  var MARGIN = "200% 0px";
-
-  // A request that lands while the reader sits still has no scroll to ride in
-  // on, so a short pump follows each one: sweep a few times, then stop. It
-  // ends on its own and never runs when nothing is in flight.
-  var pumpTicks = 0;
-  var pumpTimer = null;
-  function pump() {
-    if (pumpTimer !== null) { pumpTicks = 24; return; }
-    pumpTicks = 24;
-    pumpTimer = setInterval(function () {
-      sweep();
-      if (--pumpTicks > 0) return;
-      clearInterval(pumpTimer);
-      pumpTimer = null;
-    }, 400);
+  function label(btn, open) {
+    var item = btn.closest(".item");
+    var name = item ? item.querySelector("h3") : null;
+    btn.textContent = open ? "کمتر" : "بیشتر";
+    if (name) {
+      btn.setAttribute(
+        "aria-label",
+        (open ? "بستن توضیح " : "توضیح کامل ") + name.textContent.trim()
+      );
+    }
   }
 
-  function request(slot) {
-    var src = slot.getAttribute("data-src");
-    if (!src) return;
-    slot.removeAttribute("data-src");
-    slot.setAttribute("src", src);
-    pump();
-  }
-
-  var observer = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting) return;
-      observer.unobserve(entry.target);
-      request(entry.target);
+  function sync() {
+    var btns = [].slice.call(document.querySelectorAll(".item .more"));
+    // Every measurement read first, then every attribute written. Toggling
+    // `hidden` invalidates layout, so interleaving would force a reflow per
+    // button — eighty of them, on every resize tick.
+    var state = btns.map(function (btn) {
+      var p = btn.parentNode.querySelector("p");
+      if (!p) return null;
+      var open = p.hasAttribute("data-open");
+      // An open paragraph never overflows, so asking whether it still needs a
+      // button would always answer no and the control would delete itself the
+      // moment anyone used it.
+      return { btn: btn, open: open, fits: p.scrollHeight <= p.clientHeight + 1 };
     });
-  }, { rootMargin: MARGIN });
-
-  // Second path to the same request, for the same reason the landing copy has
-  // one: deferral means the observer is the only thing standing between the
-  // reader and the photos, and one mechanism holding all the content is how
-  // you end up with an empty page. A rect test on scroll fails differently.
-  function sweep() {
-    var reach = (window.innerHeight || 0) * 3;
-    document.querySelectorAll("image-slot[data-src]").forEach(function (slot) {
-      var box = slot.getBoundingClientRect();
-      // A tile with no box has not been laid out yet, and every un-laid-out
-      // element sits at 0,0 — sweeping then reads the whole page as on-screen
-      // and requests all sixty photos at once, which is the thing being fixed.
-      if (!box.height && !box.width) return;
-      if (box.top < reach && box.bottom > -reach) request(slot);
-    });
-    // And hand over any tile whose image has already settled. The frame loop
-    // that normally does this is per-tile and can be lost — a node the runtime
-    // re-rendered carries the markup but not the watcher — so this scroll pass
-    // is the one thing that sees every tile on the page, every time.
-    document.querySelectorAll(".t-skel:not([data-revealed])").forEach(function (skel) {
-      var slot = skel.querySelector("image-slot");
-      if (!slot || slot.hasAttribute("data-src")) return;
-      var img = slot.shadowRoot
-        ? slot.shadowRoot.querySelector("img")
-        : skel.querySelector("img");
-      if (img && img.complete && (img.naturalWidth || !img.getAttribute("src"))) {
-        skel.setAttribute("data-revealed", "");
-        skel.setAttribute("data-state", "loaded");
-      }
+    state.forEach(function (s) {
+      if (!s) return;
+      s.btn.hidden = !s.open && s.fits;
+      label(s.btn, s.open);
     });
   }
-  window.addEventListener("scroll", sweep, { passive: true });
-  window.addEventListener("resize", sweep);
-  window.addEventListener("load", sweep);
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest(".item .more");
+    if (!btn) return;
+    var p = btn.parentNode.querySelector("p");
+    if (!p) return;
+    var open = !p.hasAttribute("data-open");
+    p.toggleAttribute("data-open", open);
+    btn.setAttribute("aria-expanded", String(open));
+    label(btn, open);
+  });
 
   var queued = false;
-  function watchAll() {
-    queued = false;
-    document.querySelectorAll("image-slot[data-src]:not([data-lazy])")
-      .forEach(function (slot) {
-        slot.setAttribute("data-lazy", "");
-        observer.observe(slot);
-      });
-    sweep();
-  }
-  watchAll();
-  new MutationObserver(function () {
+  function schedule() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(watchAll);
-  }).observe(document.documentElement, { childList: true, subtree: true });
+    requestAnimationFrame(function () { queued = false; sync(); });
+  }
+
+  sync();
+  window.addEventListener("resize", schedule);
+  window.addEventListener("load", schedule);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+  new MutationObserver(schedule).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
 })();
 
 // transitions.dev — avatar group hover (11).
 // The grid is two-up, so the falloff runs along each row: neighbours are the
 // photos sharing a row, which is what the eye reads as "the group". The
-// timing-function is written inline BEFORE the variables so the return leg
-// picks up the bouncy curve and the lift keeps the clean one.
+// timing-function is written inline BEFORE the variables so the return leg and
+// the lift can carry different curves — both exponential now, the return just
+// pulled harder. It used to overshoot, which nothing else here does.
 (function () {
   if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
@@ -1407,18 +1561,39 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     var avatars = Array.prototype.slice.call(grid.querySelectorAll(".t-avatar"));
     if (!avatars.length) return;
 
+    var hintTimer = null;
+    function hint() {
+      // will-change is a promise that something is about to move, and it is
+      // only worth making while that is true. Set for the length of the
+      // transition and then taken back off; parked on the CSS rule instead, it
+      // handed all eighty-nine photos a compositor layer each, permanently, for
+      // a lift that only ever touches one row.
+      if (hintTimer !== null) clearTimeout(hintTimer);
+      avatars.forEach(function (el) { el.setAttribute("data-lifting", ""); });
+      hintTimer = setTimeout(function () {
+        hintTimer = null;
+        avatars.forEach(function (el) { el.removeAttribute("data-lifting"); });
+      }, num("--avatar-dur", 320) + 80);
+    }
+
     function setShifts(activeIdx, phase) {
       var lift = num("--avatar-lift", -4);
       var falloff = num("--avatar-falloff", 0.45);
       var scale = num("--avatar-scale", 1.05);
       var tf = phase === "out"
-        ? ease("--avatar-ease-out", "cubic-bezier(0.34, 3.85, 0.64, 1)")
+        ? ease("--avatar-ease-out", "cubic-bezier(0.16, 1, 0.3, 1)")
         : ease("--avatar-ease-in", "cubic-bezier(0.22, 1, 0.36, 1)");
-      var row = activeIdx == null ? null : avatars[activeIdx].offsetTop;
 
+      // Every row position read first, then every style written. Interleaved,
+      // the timing-function write invalidated layout and the offsetTop read
+      // forced it straight back — once per photo, on every hover.
+      var tops = avatars.map(function (el) { return el.offsetTop; });
+      var row = activeIdx == null ? null : tops[activeIdx];
+
+      hint();
       avatars.forEach(function (el, i) {
         el.style.transitionTimingFunction = tf;
-        if (activeIdx == null || el.offsetTop !== row) {
+        if (activeIdx == null || tops[i] !== row) {
           el.style.setProperty("--shift", "0px");
           el.style.setProperty("--scale-active", "1");
           return;

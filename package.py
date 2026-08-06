@@ -15,6 +15,7 @@ That failure already shipped once; the assertion below is what keeps it fixed.
 Run after py build.py:  py package.py
 """
 
+import io
 import os
 import zipfile
 
@@ -22,29 +23,42 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "lcafe-site.zip")
 
 # Files at the root that the host serves. .htaccess carries the redirects, the
-# 404 page, compression and cache policy; .image-slots.state.json is fetched by
-# image-slot.js on every page load, so its absence is a console error.
+# 404 page, compression and cache policy.
 #
 # support.js is NOT here. It is the design-canvas runtime loader, and build.py
 # strips its <script> from both published pages - so shipping it put 69 KB on
 # the host that no page has ever requested. It is still needed locally, where
 # the canvas tool opens the .dc.html sources directly.
-#
-# photo-tryout.js IS here, even though it is a staging tool that refuses to run
-# on this host. Both pages carry its <script> tag - there is one set of generated
-# pages, serving GitHub Pages and the host alike - so the choice is between 8 KB
-# that returns immediately on its hostname check and a 404 on every page load.
 ROOT_FILES = (
     ".htaccess",
-    ".image-slots.state.json",
     "404.html",
     "index.html",
     "menu.html",
     "robots.txt",
     "sitemap.xml",
-    "image-slot.js",
-    "photo-tryout.js",
 )
+
+# Root files that ship only when a published page still asks for them, and the
+# token that proves it does.
+#
+# image-slot.js and photo-tryout.js drive <image-slot>, and .image-slots.state.json
+# is the sidecar the first of those fetches on every page load. build.py now
+# rewrites the last <image-slot> on either page into plain <img>/<picture>, so
+# all three have no caller left - 77 KB of authoring machinery and one round
+# trip per visit, for pages that no longer contain the element it authors.
+#
+# Derived from the built pages rather than listed, because `py build.py
+# --keep-image-slot` puts the elements back for the phone photo-tryout loop.
+# A hard-coded list is wrong in one direction or the other after that flag, and
+# the direction it was wrong in before was shipping dead weight silently.
+CONDITIONAL_ROOT = {
+    "image-slot.js": "image-slot.js",
+    "photo-tryout.js": "photo-tryout.js",
+    ".image-slots.state.json": "image-slot.js",
+}
+
+# The pages whose markup decides the above.
+PUBLISHED = ("index.html", "menu.html")
 
 # Directories copied whole, by extension. assets/menu itself is excluded: the
 # originals there are ten times the pixels a tile shows and only assets/menu/opt
@@ -64,9 +78,18 @@ TREES = (
 # Loose files in assets/. cafe-interior.jpg is not in any src attribute - it is
 # the og:image, fetched by Telegram and WhatsApp when the link is shared - so a
 # reference scan alone misses it.
+#
+# The three derived cafe-interior files are the landing photo's responsive set,
+# written by optimize_images.py: a portrait crop at two widths for the phone,
+# where the frame is portrait and the 1920 landscape lost half its width to the
+# crop, and a 1280 tier so a desktop stops taking the 1920. The 1920 stays - it
+# is both the widest tier and the source the other three are derived from.
 ASSET_FILES = (
     "assets/cafe-interior.jpg",
     "assets/cafe-interior.webp",
+    "assets/cafe-interior-1280.webp",
+    "assets/cafe-interior-portrait-480.webp",
+    "assets/cafe-interior-portrait-760.webp",
     "assets/favicon.svg",
     "assets/icon-180.png",
     "assets/icon-512.png",
@@ -78,6 +101,17 @@ def collect():
     names = []
     for name in ROOT_FILES:
         names.append(name)
+
+    markup = ""
+    for page in PUBLISHED:
+        with io.open(os.path.join(HERE, page), encoding="utf-8") as fh:
+            markup += fh.read()
+    for name, token in sorted(CONDITIONAL_ROOT.items()):
+        if 'src="./%s"' % token in markup or 'src="%s"' % token in markup:
+            names.append(name)
+        else:
+            print("  not needed by either page, skipping: %s" % name)
+
     for name in ASSET_FILES:
         names.append(name)
     for tree, exts in TREES:
