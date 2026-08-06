@@ -45,29 +45,25 @@ def variant(stem, edge):
 
 LANDING_SRC = os.path.join(HERE, "assets", "cafe-interior.webp")
 
-# Measured in the browser, not guessed. The frame is not one shape:
+# One picture, several widths. There used to be two shapes here — a 3:4 crop
+# for the phone and the full landscape above 640 — because the frame took its
+# height from the viewport and cropped whatever did not fit. The frame now
+# takes the photograph's own 1920x1220 ratio, so nothing crops at any width and
+# there is only one shape left to serve.
 #
-#   375x812 phone   ->  375 x 503   (full-bleed, height:62vh)      ratio 0.75
-#   1280x900        -> 1162 x 792   (inset 8vw, height:60vw+75px)  ratio 1.47
+# The phone comes out ahead on bytes, not behind: a 760-wide full frame is
+# 760x483, where the 3:4 crop at the same width was 760x1013. Same width, 52%
+# fewer pixels to send and to decode — and now they are all of the room instead
+# of the middle half of it.
 #
-# The source is 1920x1220, landscape. Poured into the phone's PORTRAIT frame
-# with object-fit:cover, 52.6% of its width is cropped away and never reaches
-# the screen — so the phone was downloading ~146KB of the 277KB file to throw
-# it out. A second width cannot fix that; only a second CROP can.
-#
-# 3:4 is the crop the phone frame actually wants (0.75 against its measured
-# 0.745), centred, which is where this photo's content sits: the mural, the
-# banquettes and the sconces all survive it.
-PORTRAIT_RATIO = 0.75
 # 760 covers a 375px phone at 2x (needs 750) and a 430px phone at ~1.8x. 480
-# covers the 1x phones. A 1140 tier for 3x devices was measured at 142KB and
-# dropped: on the mobile data this menu is read over, the extra sharpness is
-# not worth 50KB over the 760 those screens downscale perfectly well.
-PORTRAIT_EDGES = (760, 480)
-# Wider than 640 the frame is landscape again and the existing 1920 file is
-# already right for it (measured oversample 1.03 at 1280/1.5x). 1280 is the
-# tier that was missing: without it every desktop took the 1920.
-LANDSCAPE_EDGES = (1280,)
+# covers the 1x phones. 1280 is the desktop tier; without it every desktop took
+# the 1920, which stays as the source of truth and the top of the set.
+LANDING_EDGES = (1280, 760, 480)
+
+# Derivatives of a crop that no longer exists. Removed on the next run so they
+# stop shipping: 143KB of a picture the page does not reference.
+LANDING_STALE = ("cafe-interior-portrait-480.webp", "cafe-interior-portrait-760.webp")
 
 
 def landing():
@@ -81,34 +77,35 @@ def landing():
         return 0
 
     stem = os.path.splitext(LANDING_SRC)[0]
-    jobs = []
-    for edge in PORTRAIT_EDGES:
-        jobs.append(("%s-portrait-%d.webp" % (stem, edge), edge, True))
-    for edge in LANDSCAPE_EDGES:
-        jobs.append(("%s-%d.webp" % (stem, edge), edge, False))
+    folder = os.path.dirname(LANDING_SRC)
+
+    for name in LANDING_STALE:
+        stale = os.path.join(folder, name)
+        if os.path.exists(stale):
+            os.remove(stale)
+            print("  landing: removed %s (crop no longer used)" % name)
 
     written = 0
-    for dst, edge, portrait in jobs:
+    for edge in LANDING_EDGES:
+        dst = "%s-%d.webp" % (stem, edge)
         # Same idempotence rule as the menu loop above.
         if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(LANDING_SRC):
             continue
 
         with Image.open(LANDING_SRC) as im:
             im = im.convert("RGB")
-            if portrait:
-                w, h = im.size
-                keep = int(round(h * PORTRAIT_RATIO))
-                left = (w - keep) // 2
-                im = im.crop((left, 0, left + keep, h))
-                im = im.resize((edge, int(round(edge / PORTRAIT_RATIO))), Image.LANCZOS)
-            else:
-                im.thumbnail((edge, edge), Image.LANCZOS)
+            # thumbnail() constrains the longer side, which on a landscape
+            # source is the width — and it never upscales, so a tier wider than
+            # the file would simply re-encode it at its own size.
+            im.thumbnail((edge, edge), Image.LANCZOS)
+            size = im.size
             buf = io.BytesIO()
             im.save(buf, "WEBP", quality=QUALITY, method=6)
 
         with open(dst, "wb") as fh:
             fh.write(buf.getvalue())
-        print("  landing: %s  %d KB" % (os.path.basename(dst), len(buf.getvalue()) // 1024))
+        print("  landing: %s  %dx%d  %d KB"
+              % (os.path.basename(dst), size[0], size[1], len(buf.getvalue()) // 1024))
         written += 1
     return written
 

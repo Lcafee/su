@@ -211,41 +211,38 @@ def strip_slot_machinery(html, src):
     return html
 
 
-# The landing photo's frame, measured in the browser rather than read off the
-# stylesheet, because two rules interact to produce it:
-#
-#   375x812 phone   ->  375 x 503   full-bleed, height:62vh          ratio 0.75
-#   1280x900        -> 1162 x 792   inset 8vw, height:60vw+75px      ratio 1.47
-#
-# One landscape file served both. Cover-fitting 1920x1220 into that PORTRAIT
-# phone frame threw away 52.6% of its width — about 146KB of a 277KB download
-# decoded and discarded on the device this site is built for. A srcset alone
-# cannot express that; the shape has to change with the breakpoint, which is
-# what <picture> is for. optimize_images.py writes the crops.
-LANDING_BREAK = "640px"
-LANDING_MOBILE = (
-    ("assets/cafe-interior-portrait-480.webp", 480),
-    ("assets/cafe-interior-portrait-760.webp", 760),
-)
-LANDING_WIDE = (
+# The landing photo is one shape at every width now, so it is one srcset and no
+# art direction. The frame used to take its height from the viewport and let
+# object-fit resolve the mismatch, which meant a 3:4 crop for the phone and a
+# sixth of the height gone on a wide desktop; it now takes the photograph's own
+# 1920x1220 and nothing is cut anywhere. <picture> stays as the wrapper because
+# the skeleton's CSS selects through it, but it carries a single source.
+LANDING_SET = (
+    ("assets/cafe-interior-480.webp", 480),
+    ("assets/cafe-interior-760.webp", 760),
     ("assets/cafe-interior-1280.webp", 1280),
     ("assets/cafe-interior.webp", 1920),
 )
-# Full width below the breakpoint. Above it the frame is the viewport minus the
-# start-side inset, which is 8vw until the clamp caps it at 140px (at 1750px).
-LANDING_SIZES_WIDE = "(min-width: 1750px) calc(100vw - 140px), 92vw"
+# Full width below 640, where the start-side inset is dropped. Above it the
+# frame is the viewport minus that inset, which is 8vw until the clamp caps it
+# at 140px (at 1750px).
+LANDING_SIZES = (
+    "(max-width: 640px) 100vw, (min-width: 1750px) calc(100vw - 140px), 92vw"
+)
 
 
 def publish_landing_photo(html, src):
     """Publish the landing's one photo as a <picture>, not as a custom element.
 
     Everything publish_photos() says about the menu applies here, and the
-    landing adds two the menu never had:
+    landing adds one the menu never had.
 
-    ART DIRECTION. The menu tile is square at every width. This frame is
-    portrait on a phone and landscape on a desktop, so the phone was paying for
-    pixels that were cropped off before they were painted. <picture> is the
-    only element that can say that; <image-slot> takes exactly one src.
+    This frame used to be portrait on a phone and landscape on a desktop, and
+    the two shapes needed two crops — which <picture> exists for, and which
+    <image-slot> cannot express with its single src. The frame now carries the
+    photograph's own ratio instead, so there is one shape, one srcset, and
+    nothing cropped at any width. The wrapper stays because the skeleton's CSS
+    selects through it.
 
     ALT TEXT. image-slot.js hard-codes alt="" into its shadow root and does not
     observe an alt attribute, so this photograph could not be given an
@@ -278,15 +275,17 @@ def publish_landing_photo(html, src):
             )
         alt_seen.append(alt)
 
-        srcset = lambda pairs: ", ".join("%s %dw" % (f, w) for f, w in pairs)
+        srcset = ", ".join("%s %dw" % (f, w) for f, w in LANDING_SET)
         return (
+            # The srcset rides on the <img>, not on a <source>. With the art
+            # direction gone there is one candidate list, and a single-source
+            # <picture> wraps it in an element that decides nothing. The
+            # wrapper itself stays only because the skeleton's CSS selects
+            # through it.
             '<picture>'
-            '<source media="(max-width: %s)" srcset="%s" sizes="100vw">'
-            '<source srcset="%s" sizes="%s">'
-            # width/height are the intrinsic ratio of the WIDE file. The frame
-            # sizes itself from the viewport and crops with object-fit, so
-            # these never drive layout — but they keep the <img> from being a
-            # zero-height box for the instant before CSS applies.
+            # width/height are the file's real ratio, and now the frame's too —
+            # .photo carries aspect-ratio:1920/1220, so these describe the box
+            # the browser reserves rather than contradicting it.
             # No loading="lazy". It looks right for something 1.45 viewports
             # down, and it is wrong here: the skeleton above this frame reveals
             # on whichever comes first, the image settling or a timeout, and a
@@ -295,14 +294,15 @@ def publish_landing_photo(html, src):
             # below-the-fold <img> is already deprioritised by the browser
             # without breaking that contract, which is all the finding asked
             # for; what had to go was the fetchpriority="high" on the preload.
-            '<img src="%s" width="1920" height="1220" alt="%s" decoding="async">'
+            '<img src="%s" srcset="%s" sizes="%s"'
+            ' width="1920" height="1220" alt="%s" decoding="async">'
             "</picture>"
         ) % (
-            LANDING_BREAK,
-            srcset(LANDING_MOBILE),
-            srcset(LANDING_WIDE),
-            LANDING_SIZES_WIDE,
-            LANDING_WIDE[-1][0],
+            # The fallback for anything that cannot read a srcset — a mid tier,
+            # not the 1920. Nothing modern reaches it.
+            LANDING_SET[-2][0],
+            srcset,
+            LANDING_SIZES,
             alt,
         )
 

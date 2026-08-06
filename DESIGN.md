@@ -288,6 +288,17 @@ read on — the inset is the desktop's version of the idea, not the canonical
 one. Anything that "restores consistency" here by re-applying the inset below
 640px is undoing this on purpose.
 
+The frame carries the photograph's own ratio (`aspect-ratio: 1920/1220`) and
+takes no height from the viewport, which is what makes this the one image on
+the site that is never cropped at any width — measured, 99.9% of the picture is
+on screen at 375, 1280 and 1920 alike. The frame used to be sized from the
+viewport instead, so its shape and the file's shape disagreed and `object-fit`
+settled the argument by cutting: a sixth of the height on a wide desktop, and
+on the phone a 3:4 crop that discarded half the room before the browser ever
+saw it. The cost of showing all of it is height — 238px on a 375px phone rather
+than 62vh — and the answer to a frame that feels too short is a taller
+photograph, never a narrower crop of this one.
+
 The menu narrows to a 720px column with a tighter gutter
 (`clamp(16px, 5vw, 64px)`) and a fixed two-column grid — `repeat(2, minmax(0, 1fr))`
 at every width, because the tiles are square and a single column would turn 80
@@ -307,10 +318,10 @@ position is fixed, so nothing moves on screen, but fourteen jump links no
 longer stand between the keyboard and the first word of content.
 
 Sole breakpoint: **640px**. Above it the category card becomes a two-column
-grid, and the landing photo both returns to its width-derived height and takes
-back its start-side inset — below it the height comes from the viewport
-(`62vh`) and the photo is full-bleed. Everything else scales continuously
-through `clamp()`.
+grid and the landing photo takes back its start-side inset; below it the photo
+is full-bleed. Its height is width-derived on both sides of the line — the
+breakpoint changes where the photo starts, not what shape it is. Everything
+else scales continuously through `clamp()`.
 
 ### Named Rules
 

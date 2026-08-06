@@ -80,16 +80,18 @@ TREES = (
 # reference scan alone misses it.
 #
 # The three derived cafe-interior files are the landing photo's responsive set,
-# written by optimize_images.py: a portrait crop at two widths for the phone,
-# where the frame is portrait and the 1920 landscape lost half its width to the
-# crop, and a 1280 tier so a desktop stops taking the 1920. The 1920 stays - it
-# is both the widest tier and the source the other three are derived from.
+# written by optimize_images.py. They used to be two shapes - a portrait crop
+# for the phone and the landscape above 640 - because the frame took its height
+# from the viewport and cropped the difference. The frame now carries the
+# photograph's own ratio, so these are plain widths of one picture and the
+# portrait pair is gone. The 1920 stays: it is both the widest tier and the
+# source the other three are derived from.
 ASSET_FILES = (
     "assets/cafe-interior.jpg",
     "assets/cafe-interior.webp",
     "assets/cafe-interior-1280.webp",
-    "assets/cafe-interior-portrait-480.webp",
-    "assets/cafe-interior-portrait-760.webp",
+    "assets/cafe-interior-760.webp",
+    "assets/cafe-interior-480.webp",
     "assets/favicon.svg",
     "assets/icon-180.png",
     "assets/icon-512.png",

@@ -185,8 +185,21 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 /* The photo is the page's single light moment. Inset on the start side — the
    right, in RTL — so a strip of the field survives at the reading origin and
-   the photo's edge cuts the marks mid-glyph. */
-.photo{height:min(88vh,60vw + 75px);background:var(--ink);overflow:hidden;
+   the photo's edge cuts the marks mid-glyph.
+
+   The frame takes the photograph's own shape and nothing else. It used to take
+   a height from the viewport, which meant the frame was some ratio and the
+   picture was another and object-fit resolved the difference the only way it
+   can — by cutting. At 1920 the frame came out at 1.87 against the file's 1.57
+   and lost a sixth of the height; on the phone the mismatch was answered by
+   shipping a 3:4 crop that threw away half the width before the browser saw
+   it. Neither was visible as damage, which is what made it worth fixing: the
+   room in this picture is the whole point of it, and a third of the room was
+   never on screen.
+
+   With the ratio matched, object-fit:cover is a no-op and stays only as a
+   guard — contain would letterbox on the maroon and read as a bug. */
+.photo{aspect-ratio:1920/1220;background:var(--ink);overflow:hidden;
   margin-block:var(--air);margin-inline-start:clamp(0px,8vw,140px)}
 
 /* The menu is the page's one action, so it earns the page's one centred block.
@@ -265,9 +278,11 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 .t-skel-content>image-slot{display:block;width:100%;height:100%}
 /* The published page carries a <picture> here instead of the element above —
-   build.py swaps it. Cover-cropping is the browser's job in both cases; doing
-   it in CSS is what lets the frame change aspect at the breakpoint without
-   anything having to re-measure. */
+   build.py swaps it. object-fit stays on the rule as a guard rather than as a
+   mechanism: the frame carries the photograph's own ratio, so there is nothing
+   left for cover to trim. If a future re-crop changes the file's shape, this
+   is what keeps the frame filled instead of letterboxed — and the aspect-ratio
+   on .photo is what has to be updated to match. */
 .t-skel-content>picture{display:block;width:100%;height:100%}
 .t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover}
 .t-skel-skeleton{
@@ -349,14 +364,19 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 @media (max-width:640px){
-  /* Two changes, two reasons - the second one went unwritten for a while and
-     read as an accident, so: the width-derived height collapses to ~300px on a
-     phone, too thin to read as the page's one image, so drive it off the
-     viewport instead. And the start-side inset is dropped on purpose. At 375px
-     that clamp is a 30px margin, which reads as a mistake rather than as the
-     strip of pattern field it is on a wide screen. Full-bleed is the decision
-     on the phone. DESIGN.md records it; do not "restore consistency" here. */
-  .photo{margin-inline-start:0;height:62vh}
+  /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
+     margin, which reads as a mistake rather than as the strip of pattern field
+     it is on a wide screen. Full-bleed is the decision on the phone. DESIGN.md
+     records it; do not "restore consistency" here.
+
+     The 62vh height that used to sit here is gone. It was chosen because a
+     width-derived frame collapsed to something too thin to read as the page's
+     one image — but the way it bought that height was by cropping to a 3:4
+     portrait, and half the room went with it. Full-bleed at the photograph's
+     own ratio is 238px on a 375px phone: shorter than 62vh and the whole
+     picture. If it needs to be taller than that, it needs a taller photograph,
+     not a narrower crop of this one. */
+  .photo{margin-inline-start:0}
   .mark{height:112vh;top:-6vh}
 }
 </style>
