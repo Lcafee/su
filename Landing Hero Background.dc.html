@@ -167,12 +167,50 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .page{position:relative;z-index:2}
 
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.hero{margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
+.hero{position:relative;isolation:isolate;overflow:clip;margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
 .hero-chandelier{
+  position:relative;
+  z-index:1;
   display:block;
-  width:min(94vw,calc(92svh * .646),680px);
+  width:min(82vw,calc(80svh * .646),590px);
   max-width:100%;
   height:auto;
+}
+.hero-product{
+  position:absolute;
+  z-index:0;
+  display:block;
+  width:var(--product-size);
+  height:auto;
+  pointer-events:none;
+  user-select:none;
+  transform-origin:center;
+  will-change:transform;
+  animation:hero-product-drift var(--drift-duration) ease-in-out var(--drift-delay) infinite alternate;
+}
+.hero-product--upper-left{
+  --product-size:clamp(112px,14vw,176px);--drift-duration:8.6s;--drift-delay:-2.1s;
+  --drift-y:-9px;--rotate-from:-3deg;--rotate-to:1deg;
+  top:14%;left:max(-20px,calc(50% - 540px));
+}
+.hero-product--upper-right{
+  --product-size:clamp(86px,10vw,128px);--drift-duration:9.4s;--drift-delay:-4.3s;
+  --drift-y:8px;--rotate-from:2deg;--rotate-to:-1deg;
+  top:20%;right:max(-12px,calc(50% - 500px));
+}
+.hero-product--lower-left{
+  --product-size:clamp(108px,13vw,164px);--drift-duration:7.8s;--drift-delay:-5.2s;
+  --drift-y:-7px;--rotate-from:-2deg;--rotate-to:2deg;
+  top:58%;left:max(-28px,calc(50% - 550px));
+}
+.hero-product--lower-right{
+  --product-size:clamp(88px,10vw,126px);--drift-duration:9.8s;--drift-delay:-1.4s;
+  --drift-y:6px;--rotate-from:3deg;--rotate-to:0deg;
+  top:65%;right:max(-20px,calc(50% - 530px));
+}
+@keyframes hero-product-drift{
+  from{transform:translate3d(0,0,0) rotate(var(--rotate-from))}
+  to{transform:translate3d(0,var(--drift-y),0) rotate(var(--rotate-to))}
 }
 
 .h2{margin:0 0 clamp(18px,3.2vw,26px);font-family:var(--display);font-weight:700;
@@ -380,8 +418,13 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
   .t-skel-skeleton,.t-skel-content{transition:none!important}
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
+  .hero-product{animation:none!important;will-change:auto}
 }
 @media (max-width:640px){
+  .hero-product--upper-left{--product-size:clamp(72px,20vw,90px);top:16%;left:-8px}
+  .hero-product--upper-right{--product-size:clamp(64px,17vw,78px);top:25%;right:-6px}
+  .hero-product--lower-left,.hero-product--lower-right{display:none}
+
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
      margin, which reads as a mistake rather than as the strip of pattern field
      it is on a wide screen. Full-bleed is the decision on the phone. DESIGN.md
@@ -408,6 +451,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 <header class="hero">
 <h1 class="sr-only">ال کافه</h1>
+<img class="hero-product hero-product--upper-left" src="assets/images/cl-01-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
+<img class="hero-product hero-product--upper-right" src="assets/images/rf-03-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
+<img class="hero-product hero-product--lower-left" src="assets/images/it-02-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
+<img class="hero-product hero-product--lower-right" src="assets/images/cl-02-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
 <img class="hero-chandelier" src="assets/l-cafe-chandelier.webp" width="785" height="1216" alt="لوستر الیافی دست‌ساز ال کافه با تزئینات گل، آویخته از طناب" decoding="async" fetchpriority="high">
 </header>
 
