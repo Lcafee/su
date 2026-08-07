@@ -152,7 +152,25 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 /* Right-anchored blocks bracket the page: about opens it, contact closes it. */
 .about{padding:clamp(80px,15vw,150px) var(--gutter) 0;max-width:1180px;margin:0 auto}
-.about .inner{max-width:52ch;text-align:right}
+.about .inner{
+  position:relative;
+  isolation:isolate;
+  max-width:52ch;
+  padding:clamp(36px,7vw,64px);
+  text-align:right;
+}
+.about .h2,.about .body{position:relative;z-index:1}
+.about-mark{
+  position:absolute;
+  z-index:0;
+  width:clamp(92px,24vw,150px);
+  height:auto;
+  opacity:.16;
+  pointer-events:none;
+  user-select:none;
+}
+.about-mark--bottom-left{bottom:-14px;left:-10px}
+.about-mark--top-right{top:-14px;right:-10px;transform:rotate(180deg)}
 
 /* The photo is the page's single light moment. Inset on the start side — the
    right, in RTL — so a strip of the field survives at the reading origin and
@@ -367,6 +385,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 <main id="about">
 <section class="about">
 <div class="inner t-stagger">
+<img class="about-mark about-mark--bottom-left" src="assets/l-cafe-symbol-light.png" alt="" aria-hidden="true">
+<img class="about-mark about-mark--top-right" src="assets/l-cafe-symbol-light.png" alt="" aria-hidden="true">
 <h2 class="h2 t-stagger-line t-stagger-line--1">درباره ما</h2>
 <p class="body t-stagger-line t-stagger-line--2">در ال کافه، احترام، سلامت و کیفیت اساس هر تجربه است. از انتخاب مواد اولیه تا شیوه میزبانی، همه‌چیز با دقت انجام می‌شود تا فضایی امن، گرم و آرام در میان روزهای پرمشغله شما بسازیم.</p>
 </div>
