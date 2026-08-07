@@ -170,9 +170,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .hero{position:relative;isolation:isolate;overflow:clip;min-height:112svh;margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
 .hero-chandelier{
   position:relative;
+  top:0;
   z-index:1;
   display:block;
-  width:min(82vw,calc(80svh * .646),590px);
+  width:min(62vw,calc(61svh * .646),450px);
   max-width:100%;
   height:auto;
 }
@@ -189,28 +190,43 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   animation:hero-product-drift var(--drift-duration) ease-in-out var(--drift-delay) infinite alternate;
 }
 .hero-product--upper-left{
-  --product-size:clamp(160px,19vw,250px);--drift-duration:7.4s;--drift-delay:-1.7s;
-  --drift-y:-12px;--rotate-from:-6deg;--rotate-to:-1deg;
-  top:10%;left:max(-56px,calc(50% - 650px));
+  --product-size:clamp(250px,27vw,360px);--drift-duration:8.6s;--drift-delay:-2.3s;
+  --drift-x:7px;--drift-y:-15px;--rotate-from:-7deg;--rotate-to:-2deg;
+  top:13%;left:max(-120px,calc(50% - 790px));
 }
 .hero-product--upper-right{
-  --product-size:clamp(118px,13vw,168px);--drift-duration:9.1s;--drift-delay:-4.8s;
-  --drift-y:8px;--rotate-from:3deg;--rotate-to:-.5deg;
-  top:27%;right:max(-36px,calc(50% - 585px));
+  --product-size:clamp(112px,12vw,152px);--drift-duration:11.7s;--drift-delay:-7.1s;
+  --drift-x:-8px;--drift-y:10px;--rotate-from:4deg;--rotate-to:0deg;
+  top:6%;right:max(22px,calc(50% - 625px));opacity:.82;
 }
 .hero-product--lower-left{
-  --product-size:clamp(155px,18vw,228px);--drift-duration:8.3s;--drift-delay:-6.2s;
-  --drift-y:-14px;--rotate-from:-4deg;--rotate-to:0deg;
-  top:52%;left:max(-74px,calc(50% - 640px));
+  --product-size:clamp(190px,20vw,270px);--drift-duration:9.4s;--drift-delay:-5.4s;
+  --drift-x:-10px;--drift-y:-13px;--rotate-from:-3deg;--rotate-to:1deg;
+  top:45%;left:max(-65px,calc(50% - 735px));
 }
 .hero-product--lower-right{
-  --product-size:clamp(130px,15vw,190px);--drift-duration:10.2s;--drift-delay:-2.9s;
-  --drift-y:10px;--rotate-from:5deg;--rotate-to:-1deg;
-  top:69%;right:max(-52px,calc(50% - 620px));
+  --product-size:clamp(255px,27vw,360px);--drift-duration:12.4s;--drift-delay:-3.7s;
+  --drift-x:8px;--drift-y:14px;--rotate-from:6deg;--rotate-to:1deg;
+  top:36%;right:max(-105px,calc(50% - 800px));
+}
+.hero-product--mid-left{
+  --product-size:clamp(100px,10vw,138px);--drift-duration:10.8s;--drift-delay:-8.6s;
+  --drift-x:5px;--drift-y:8px;--rotate-from:5deg;--rotate-to:2deg;
+  top:29%;left:max(18px,calc(50% - 590px));opacity:.82;
+}
+.hero-product--mid-right{
+  --product-size:clamp(175px,18vw,240px);--drift-duration:7.9s;--drift-delay:-1.1s;
+  --drift-x:-7px;--drift-y:-11px;--rotate-from:-5deg;--rotate-to:-1deg;
+  top:18%;right:max(-8px,calc(50% - 710px));
+}
+.hero-product--edge-left{
+  --product-size:clamp(170px,17vw,225px);--drift-duration:13.1s;--drift-delay:-10.2s;
+  --drift-x:9px;--drift-y:12px;--rotate-from:2deg;--rotate-to:-3deg;
+  top:3%;left:max(70px,calc(50% - 500px));
 }
 @keyframes hero-product-drift{
   from{transform:translate3d(0,0,0) rotate(var(--rotate-from))}
-  to{transform:translate3d(0,var(--drift-y),0) rotate(var(--rotate-to))}
+  to{transform:translate3d(var(--drift-x),var(--drift-y),0) rotate(var(--rotate-to))}
 }
 
 .h2{margin:0 0 clamp(18px,3.2vw,26px);font-family:var(--display);font-weight:700;
@@ -537,9 +553,13 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .hero-product{animation:none!important;will-change:auto}
 }
 @media (max-width:640px){
-  .hero-product--upper-left{--product-size:clamp(104px,29vw,124px);top:12%;left:-28px}
-  .hero-product--upper-right{--product-size:clamp(88px,24vw,104px);top:24%;right:-16px}
-  .hero-product--lower-left,.hero-product--lower-right{display:none}
+  .hero-product--upper-left{--product-size:clamp(146px,43vw,174px);top:14%;left:-62px}
+  .hero-product--upper-right{--product-size:clamp(92px,27vw,112px);top:4%;right:-14px}
+  .hero-product--lower-left{--product-size:clamp(132px,38vw,156px);top:43%;left:-50px}
+  .hero-product--lower-right{--product-size:clamp(150px,45vw,182px);top:34%;right:-68px}
+  .hero-product--mid-left{--product-size:clamp(82px,24vw,102px);top:25%;left:-4px}
+  .hero-product--mid-right{--product-size:clamp(122px,36vw,148px);top:18%;right:-40px}
+  .hero-product--edge-left{display:none}
 
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
      margin, which reads as a mistake rather than as the strip of pattern field
@@ -571,6 +591,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 <img class="hero-product hero-product--upper-right" src="assets/images/rf-03-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
 <img class="hero-product hero-product--lower-left" src="assets/images/it-02-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
 <img class="hero-product hero-product--lower-right" src="assets/images/cl-02-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
+<img class="hero-product hero-product--mid-left" src="assets/images/cl-02-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
+<img class="hero-product hero-product--mid-right" src="assets/images/it-02-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
+<img class="hero-product hero-product--edge-left" src="assets/images/rf-03-640.webp" width="640" height="640" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
 <img class="hero-chandelier" src="assets/l-cafe-chandelier.webp" width="785" height="1216" alt="لوستر الیافی دست‌ساز ال کافه با تزئینات گل، آویخته از طناب" decoding="async" fetchpriority="high">
 </header>
 
