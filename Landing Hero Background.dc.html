@@ -167,7 +167,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .page{position:relative;z-index:2}
 
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.hero{position:relative;isolation:isolate;overflow:clip;margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
+.hero{position:relative;isolation:isolate;overflow:clip;min-height:112svh;margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
 .hero-chandelier{
   position:relative;
   z-index:1;
@@ -189,24 +189,24 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   animation:hero-product-drift var(--drift-duration) ease-in-out var(--drift-delay) infinite alternate;
 }
 .hero-product--upper-left{
-  --product-size:clamp(112px,14vw,176px);--drift-duration:8.6s;--drift-delay:-2.1s;
-  --drift-y:-9px;--rotate-from:-3deg;--rotate-to:1deg;
-  top:14%;left:max(-20px,calc(50% - 540px));
+  --product-size:clamp(160px,19vw,250px);--drift-duration:7.4s;--drift-delay:-1.7s;
+  --drift-y:-12px;--rotate-from:-6deg;--rotate-to:-1deg;
+  top:10%;left:max(-56px,calc(50% - 650px));
 }
 .hero-product--upper-right{
-  --product-size:clamp(86px,10vw,128px);--drift-duration:9.4s;--drift-delay:-4.3s;
-  --drift-y:8px;--rotate-from:2deg;--rotate-to:-1deg;
-  top:20%;right:max(-12px,calc(50% - 500px));
+  --product-size:clamp(118px,13vw,168px);--drift-duration:9.1s;--drift-delay:-4.8s;
+  --drift-y:8px;--rotate-from:3deg;--rotate-to:-.5deg;
+  top:27%;right:max(-36px,calc(50% - 585px));
 }
 .hero-product--lower-left{
-  --product-size:clamp(108px,13vw,164px);--drift-duration:7.8s;--drift-delay:-5.2s;
-  --drift-y:-7px;--rotate-from:-2deg;--rotate-to:2deg;
-  top:58%;left:max(-28px,calc(50% - 550px));
+  --product-size:clamp(155px,18vw,228px);--drift-duration:8.3s;--drift-delay:-6.2s;
+  --drift-y:-14px;--rotate-from:-4deg;--rotate-to:0deg;
+  top:52%;left:max(-74px,calc(50% - 640px));
 }
 .hero-product--lower-right{
-  --product-size:clamp(88px,10vw,126px);--drift-duration:9.8s;--drift-delay:-1.4s;
-  --drift-y:6px;--rotate-from:3deg;--rotate-to:0deg;
-  top:65%;right:max(-20px,calc(50% - 530px));
+  --product-size:clamp(130px,15vw,190px);--drift-duration:10.2s;--drift-delay:-2.9s;
+  --drift-y:10px;--rotate-from:5deg;--rotate-to:-1deg;
+  top:69%;right:max(-52px,calc(50% - 620px));
 }
 @keyframes hero-product-drift{
   from{transform:translate3d(0,0,0) rotate(var(--rotate-from))}
@@ -421,8 +421,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .hero-product{animation:none!important;will-change:auto}
 }
 @media (max-width:640px){
-  .hero-product--upper-left{--product-size:clamp(72px,20vw,90px);top:16%;left:-8px}
-  .hero-product--upper-right{--product-size:clamp(64px,17vw,78px);top:25%;right:-6px}
+  .hero-product--upper-left{--product-size:clamp(104px,29vw,124px);top:12%;left:-28px}
+  .hero-product--upper-right{--product-size:clamp(88px,24vw,104px);top:24%;right:-16px}
   .hero-product--lower-left,.hero-product--lower-right{display:none}
 
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
