@@ -30,6 +30,7 @@
      instead of the warm cache hit the whole hint is for. -->
 <link rel="preload" href="assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/l-cafe-chandelier.webp" as="image" type="image/webp" fetchpriority="high">
 
 <!-- CANVAS ONLY — build.py removes this comment and the link under it.
      In this file the photo is an <image-slot>, a custom element whose <img>
@@ -163,16 +164,16 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   background-repeat:repeat;
   background-size:var(--tile) calc(var(--tile) * 0.983)}
 
-/* The signature. Absent during the hero, then it takes the wordmark's place
-   at dead centre as that fades — the two never share the screen. */
-.mark{position:fixed;top:-25vh;left:50%;z-index:1;pointer-events:none;
-  height:150vh;width:auto;opacity:0;will-change:transform,opacity}
-.mark path{fill:#E6E5E1}
-
 .page{position:relative;z-index:2}
 
-.hero{margin:0;width:100%;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
-.hero img{width:clamp(190px,22vw,420px);height:auto}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.hero{margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
+.hero-chandelier{
+  display:block;
+  width:min(94vw,calc(92svh * .646),680px);
+  max-width:100%;
+  height:auto;
+}
 
 .h2{margin:0 0 clamp(18px,3.2vw,26px);font-family:var(--display);font-weight:700;
   font-size:clamp(30px,6.4vw,52px);line-height:1.3;letter-spacing:-.005em;color:var(--ink)}
@@ -358,7 +359,6 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   /* The whole feature off, not just its animations - a zeroed view transition
      still holds the old page on screen while the new one loads. */
   @view-transition{navigation:none}
-  .mark{transform:translate3d(-50%,0,0) !important}
   .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
   .t-skel-skeleton,.t-skel-content{transition:none!important}
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
@@ -377,28 +377,21 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      picture. If it needs to be taller than that, it needs a taller photograph,
      not a narrower crop of this one. */
   .photo{margin-inline-start:0}
-  .mark{height:112vh;top:-6vh}
 }
 </style>
 </helmet>
 <div dir="rtl">
 
 <div class="field" aria-hidden="true"></div>
-<!-- No inline opacity/transform: the resting state is the one CSS already
-     describes (.mark is opacity:0, the wordmark is opaque), and the handoff
-     script writes over it from scroll. That way the hero with no JS is the
-     hero at scroll zero, rather than a mark stuck at full strength. -->
-<svg class="mark" viewBox="9.455400 14.402475 41.399475 55.502550" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-<path d="M 24.578125 15.261719 C 24.578125 24.546875 24.488281 23.8125 24.414062 33.097656 C 24.34375 41.796875 24.257812 51.75 24.152344 62.957031 C 24.132812 65.070312 24.085938 67.1875 24.089844 69.304688 C 24.867188 69.21875 25.640625 69.132812 26.417969 69.046875 C 26.386719 64.195312 25.316406 58.125 22.746094 53.96875 C 21.121094 51.339844 18.703125 48.667969 15.625 47.792969 C 13.488281 47.1875 10.808594 47.789062 9.714844 49.894531 C 9.074219 51.125 9.695312 52.183594 10.753906 52.894531 C 12.335938 53.957031 14.390625 54.386719 16.222656 54.753906 C 18.941406 55.296875 21.707031 55.605469 24.464844 55.84375 C 30.777344 56.390625 37.125 56.535156 43.457031 56.558594 C 47.253906 56.574219 45.484375 56.546875 49.28125 56.429688 C 49.75 56.414062 50.597656 56.292969 50.804688 55.773438 C 50.988281 55.308594 50.644531 54.988281 50.152344 55.003906 C 41.828125 55.265625 39.03125 55.222656 30.710938 54.785156 C 25.644531 54.519531 20.375 54.265625 15.460938 52.898438 C 14.289062 52.574219 12.605469 52.132812 11.945312 51.085938 C 11.5 50.382812 12.121094 49.179688 12.980469 49 C 13.894531 48.808594 15.210938 49.476562 16.050781 50.007812 C 17.550781 50.960938 18.792969 52.308594 19.824219 53.742188 C 22.789062 57.855469 24.058594 64.285156 24.089844 69.304688 C 24.097656 70.34375 26.421875 69.886719 26.417969 69.046875 C 26.402344 63.179688 26.53125 56.054688 26.582031 50.191406 C 26.679688 39.292969 26.773438 39.667969 26.84375 28.773438 C 26.875 24.183594 26.90625 19.59375 26.90625 15.003906 C 26.90625 13.964844 24.578125 14.417969 24.578125 15.261719"></path>
-</svg>
 
 <div class="page">
 
 <a class="skip" href="#about">رفتن به محتوای اصلی</a>
 
-<h1 class="hero">
-<img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
-</h1>
+<header class="hero">
+<h1 class="sr-only">ال کافه</h1>
+<img class="hero-chandelier" src="assets/l-cafe-chandelier.webp" width="785" height="1216" alt="لوستر الیافی دست‌ساز ال کافه با تزئینات گل، آویخته از طناب" decoding="async" fetchpriority="high">
+</header>
 
 <main id="about">
 <section class="about">
@@ -566,71 +559,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 })();
 </script>
 <script>
-// The hero handoff. This was a DCLogic component, and it was the only thing on
-// either page that needed the runtime: two inline styles driven by scroll.
-// Holding the whole document hidden until React arrives is a steep price for
-// two numbers, so they are written here instead.
-//
-// Same curve, same constants, same measured end point as the component had.
-// Only the write target changed - from a re-render to the two elements.
+// CANVAS ONLY. The published page contains a native <picture>; this keeps the
+// editable image-slot preview fitted when the canvas changes its frame.
 (function () {
-  // Peak opacity of the giant mark. Low on purpose: its presence comes from
-  // scale, not from value, so it never fights the copy for attention.
-  var PEAK = 0.13;
-
-  var logo = document.querySelector('.hero img');
-  var mark = document.querySelector('.mark');
-  if (!logo || !mark) return;
-
-  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var end = (window.innerHeight || 800) * 0.5;
-  var lastEased = -1;
-  var lastDrift = -1;
-
-  function paint() {
-    var t = Math.min(1, Math.max(0, window.scrollY / end));
-    // smoothstep: eases in and out instead of a straight ramp
-    var eased = t * t * (3 - 2 * t);
-    // Hold dead centre until the wordmark is fully gone, then drift up slower
-    // than the copy. Drifting during the handoff would stop it reading as
-    // "arriving here".
-    var drift = still ? 0 : Math.max(0, window.scrollY - end) * 0.35;
-    if (eased === lastEased && drift === lastDrift) return;
-    lastEased = eased;
-    lastDrift = drift;
-    // Both sides of the handoff ride the same curve, so they cross once
-    // instead of both sitting half-visible.
-    var scale = still ? 1 : 0.94 + eased * 0.06;
-    logo.style.opacity = 1 - eased;
-    mark.style.opacity = eased * PEAK;
-    mark.style.transform = 'translate3d(-50%,' + (-drift) + 'px,0) scale(' + scale + ')';
-  }
-
-  // Finish the fade exactly where the copy arrives, measured from the real
-  // layout rather than a guessed fraction of the viewport.
-  function measure() {
-    var copy = document.getElementById('about');
-    var vh = window.innerHeight || 800;
-    var top = copy ? copy.getBoundingClientRect().top + window.scrollY : vh;
-    end = Math.max(1, top - vh * 0.5);
-    lastEased = -1;
-    paint();
-  }
-
-  window.addEventListener('scroll', paint, { passive: true });
-  window.addEventListener('resize', measure);
-  window.addEventListener('load', measure);
-
-  // The old race is gone - the stylesheet is a plain <head> stylesheet now, so
-  // the hero has its height before this line runs. The observer stays for the
-  // reflows that remain: a font swapping in, a phone rotating.
-  var hero = document.querySelector('.hero');
-  if (hero && window.ResizeObserver) new ResizeObserver(measure).observe(hero);
-  measure();
-
-  // CANVAS ONLY. Returns on its first line in the published page, which has no
-  // <image-slot> left in it — the .t-skel-content>picture rule in the
-  // stylesheet does this job there, in CSS, with nothing to arm.
   // <image-slot> sizes its <img> with percentages of the frame, computed once
   // and never revised. Any later change to the frame's ASPECT RATIO - a
   // breakpoint, a phone rotation - then stretches the photo instead of

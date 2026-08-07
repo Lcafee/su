@@ -12,7 +12,6 @@ colors:
   fill: "rgba(243,241,236,.06)"
   fill-hi: "rgba(243,241,236,.1)"
   shadow-tint: "rgba(13,1,4,.14)"
-  mark-fill: "#E6E5E1"
 typography:
   display:
     fontFamily: "Sahel, Vazirmatn, system-ui, sans-serif"
@@ -167,10 +166,6 @@ subsequent value is the same cream turned down.
 - **Shadow Tint** (`rgba(13,1,4,.14)`): the drop of the one shadow in the
   system. A darkened pomegranate, never neutral black — a grey shadow over
   this maroon reads as dirt.
-- **Mark Fill** (`#E6E5E1`): the giant «ال» glyph on the landing, and only it.
-  A hair cooler and darker than cream on purpose: at 13% opacity behind the
-  copy, full cream lifted it just enough to compete.
-
 ### Named Rules
 
 **The Two-Hue Rule.** There are exactly two colours in this system. Anything
@@ -480,14 +475,14 @@ graphic device.
   so a waiting tile never shifts, and everything past the first row is
   natively lazy.
 
-### Signature Component: the mark handoff
+### Signature Component: the hanging chandelier
 
-On the landing, the wordmark sits at dead centre of a full-viewport hero and
-fades out on scroll while the giant «ال» glyph fades in behind the page at a
-peak opacity of **0.13**, scaling from 0.94 to 1.0. Both sides ride the same
-smoothstep curve so they cross exactly once and never share the screen. The
-glyph's presence comes from scale, never from value — raising that 0.13 makes
-it compete with the copy and destroys the effect.
+The landing opens with the real L Cafe chandelier isolated against the
+continuous maroon pattern field. Its rope begins at the page's top edge and the
+photograph remains in normal document flow, so it scrolls away with the page.
+The alpha cutout has no frame, shadow, logo, copy or overlay. Intrinsic
+dimensions reserve its layout before download, while a viewport-height-aware
+width cap keeps the whole object proportional on phones, tablets and desktops.
 
 ## Do's and Don'ts
 
@@ -520,7 +515,7 @@ it compete with the copy and destroys the effect.
 - **Don't** set menu item names in the display face.
 - **Don't** add drop shadows to floating chrome; blur plus hairline is the
   vocabulary.
-- **Don't** raise the giant mark's peak opacity above 0.13.
+- **Don't** frame, shadow, stretch, crop or overlay the chandelier cutout.
 - **Don't** let a transition be the reason text cannot be read — the reveal
   animations must never be the only path to visible copy.
 - **Don't** restart the pattern tile at a section boundary.
