@@ -97,27 +97,26 @@
   --air:clamp(104px,17vw,180px);
   --tile:clamp(200px,46vw,346px);
 
-  /* One restrained motion voice for copy, image arrival and page handoff. */
-  --motion-dur:400ms;
-  --motion-ease:cubic-bezier(0.22, 1, 0.36, 1);
   /* transitions.dev — texts reveal (18) */
-  --stagger-dur:var(--motion-dur);
-  --stagger-distance:8px;
+  --stagger-dur:500ms;
+  --stagger-distance:12px;
   --stagger-stagger:40ms;
-  --stagger-blur:1.5px;
-  --stagger-ease:var(--motion-ease);
+  --stagger-blur:3px;
+  --stagger-ease:cubic-bezier(0.22, 1, 0.36, 1);
   /* transitions.dev — skeleton loader and reveal (14) */
   --pulse-dur:1000ms;
   --pulse-count:infinite;
   --pulse-min:0.5;
-  --reveal-dur:var(--motion-dur);
-  --reveal-blur:1.5px;
-  --reveal-ease:var(--motion-ease);
+  --reveal-dur:400ms;
+  --reveal-blur:2px;
+  /* Matches --stagger-ease above rather than the browser default, so the photo
+     resolving and the copy rising share one curve. */
+  --reveal-ease:cubic-bezier(0.22, 1, 0.36, 1);
   /* transitions.dev — page side-by-side (08) */
-  --page-slide-dur:var(--motion-dur);
-  --page-slide-distance:6px;
-  --page-blur:1.5px;
-  --page-slide-ease:var(--motion-ease);
+  --page-slide-dur:250ms;
+  --page-slide-distance:8px;
+  --page-blur:3px;
+  --page-slide-ease:cubic-bezier(0.22, 1, 0.36, 1);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{overflow-x:hidden}
@@ -138,7 +137,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .page{position:relative;z-index:2}
 
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.hero{position:relative;isolation:isolate;overflow:clip;min-height:112svh;margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
+.hero{position:relative;isolation:isolate;overflow:clip;min-height:112svh;margin:0;width:100%;display:flex;align-items:flex-start;justify-content:center;background:var(--bg)}
 .hero-chandelier{
   position:relative;
   top:0;
@@ -206,7 +205,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .body{margin:0;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
 
 /* Right-anchored blocks bracket the page: about opens it, contact closes it. */
-.about{padding:clamp(80px,15vw,150px) var(--gutter) 0;max-width:1180px;margin:0 auto}
+.about{position:relative;isolation:isolate;padding:clamp(80px,15vw,150px) var(--gutter) 0;max-width:1180px;margin:0 auto}
+.about::before{content:"";position:absolute;z-index:-1;inset-block:0 calc(-1 * var(--air));inset-inline:calc(50% - 50vw);background:var(--bg)}
 .about .inner{
   position:relative;
   isolation:isolate;
@@ -244,20 +244,14 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    With the ratio matched, object-fit:cover is a no-op and stays only as a
    guard — contain would letterbox on the maroon and read as a bug. */
 .photo{aspect-ratio:1920/1220;background:var(--ink);overflow:hidden;
-  margin-block-start:calc(var(--air) + 16px);margin-block-end:clamp(112px,11vw,156px);
-  margin-inline-start:clamp(0px,8vw,140px)}
+  margin-block:var(--air);margin-inline-start:clamp(0px,8vw,140px)}
 
-/* The menu is the page's one action and visual climax. On a wide screen the
-   title leads from the RTL reading edge while the explanation and existing
-   button form a quieter support column. Space, scale and placement do the work;
-   the action itself keeps the same printed-block character. */
-.menu{padding:0 var(--gutter);margin:0 auto clamp(96px,8vw,120px);max-width:1180px;text-align:right}
-.menu .inner{width:100%;display:grid;
-  grid-template-columns:minmax(0,1.45fr) minmax(280px,.72fr);
-  gap:clamp(48px,8vw,112px);align-items:end}
-.menu-title{margin:0;font-family:var(--display);font-weight:700;
-  font-size:clamp(56px,7.2vw,92px);line-height:1.15;letter-spacing:-.005em;color:var(--ink)}
-.menu-support{max-width:34ch;padding-bottom:clamp(4px,1vw,12px)}
+/* The menu is the page's one action, so it earns the page's one centred block.
+   It closes tighter into contact than the photo does into either neighbour:
+   two quiet text blocks belong together, the photo needs room to be an object. */
+.menu{padding:0 var(--gutter);margin:0 auto var(--flow);max-width:1180px;
+  display:flex;flex-direction:column;align-items:center;text-align:center}
+.menu .inner{max-width:46ch}
 .cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(26px,4vw,34px);
   padding:0 30px;background:var(--ink);color:var(--bg);
   font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
@@ -426,7 +420,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   transform:translateY(0);
   filter:blur(0);
   transition:
-    opacity 200ms var(--motion-ease),
+    opacity 200ms ease,
     transform 0s linear,
     filter 0s linear;
   transition-delay:0s;
@@ -550,13 +544,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      own ratio is 238px on a 375px phone: shorter than 62vh and the whole
      picture. If it needs to be taller than that, it needs a taller photograph,
      not a narrower crop of this one. */
-  .photo{margin-block-start:calc(var(--air) + 8px);
-    margin-block-end:clamp(72px,20vw,88px);margin-inline-start:0}
-  .menu{margin-bottom:clamp(72px,20vw,88px);text-align:center}
-  .menu .inner{display:block;width:auto;max-width:36ch;margin-inline:auto}
-  .menu-title{margin-bottom:clamp(18px,5vw,24px);
-    font-size:clamp(46px,14vw,58px);line-height:1.2}
-  .menu-support{max-width:32ch;margin-inline:auto;padding:0}
+  .photo{margin-inline-start:0}
 }
 </style>
 </head>
@@ -605,11 +593,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 <section class="menu" aria-label="منو">
 <div class="inner t-stagger">
-<h2 class="menu-title t-stagger-line t-stagger-line--1">منو</h2>
-<div class="menu-support">
+<h2 class="h2 t-stagger-line t-stagger-line--1">منو</h2>
 <p class="body t-stagger-line t-stagger-line--2">انتخاب‌هایی سالم و باکیفیت، با دقت آماده شده‌اند تا برای هر لحظه از روز، طعمی شایسته شما بسازند.</p>
 <a class="cta" href="menu.html">مشاهده منو</a>
-</div>
 </div>
 </section>
 
