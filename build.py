@@ -127,6 +127,9 @@ SIZES = "(min-width: 880px) 285px, 38vw"
 EAGER = 4
 PRIORITY = 2
 
+FORCE_MENU_IMAGE_PREVIEW = True
+FORCE_MENU_IMAGE_SRC = "assets/menu/opt/rf-02.webp"
+
 
 def publish_photos(html, src):
     """Publish the menu's photos as plain <img>, not as a custom element.
@@ -152,7 +155,11 @@ def publish_photos(html, src):
 
     def convert(match):
         attrs = dict(ATTR_RE.findall(match.group(1)))
-        photo = attrs.get("data-src") or attrs.get("src") or ""
+        photo = (
+            FORCE_MENU_IMAGE_SRC
+            if FORCE_MENU_IMAGE_PREVIEW
+            else attrs.get("data-src") or attrs.get("src") or ""
+        )
 
         # No photo for this item yet. menu_render points those at a shared
         # placeholder file so the canvas tool has something to show while
