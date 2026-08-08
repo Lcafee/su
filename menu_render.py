@@ -2,9 +2,9 @@
 """Render the menu's <main> from menu.json using the markup already in Menu.dc.html.
 
 The templates are not written here. They are lifted out of the .dc.html at build
-time by matching the first real item against its own entry in menu.json - so the
-design-canvas tool stays the owner of the markup, and a change it makes to a tile
-is picked up on the next build instead of drifting away from a copy kept here.
+time by replacing the first real item's structural fields with placeholders - so
+the design-canvas tool stays the owner of the markup, and a change it makes to a
+tile is picked up on the next build instead of drifting away from a copy kept here.
 
 Split of ownership:
   Menu.dc.html  - what a tile looks like
@@ -25,42 +25,41 @@ SECTION = re.compile(r'<section class="cat" aria-labelledby="[^"]+">.*?</section
 ARTICLE = re.compile(r'<article class="item">.*?</article>', re.S)
 
 
-def _sub_once(text, old, new, what):
-    """Replace exactly one literal occurrence, or say which one went missing.
-
-    Silent no-ops are how a template quietly stops carrying a field, so a miss
-    is an error rather than a slightly wrong page nobody notices for a month.
-    """
-    if text.count(old) != 1:
+def _match_once(text, pattern, field, kind):
+    """Return one structural match, rejecting missing or ambiguous markup."""
+    matches = list(re.finditer(pattern, text, re.S))
+    if len(matches) != 1:
         raise SystemExit(
-            "menu_render: expected exactly one %r while building the %s template, found %d.\n"
+            "menu_render: expected exactly one %s while building the %s template, found %d.\n"
             "The markup in Menu.dc.html changed shape - update this file to match."
-            % (old, what, text.count(old)))
-    return text.replace(old, new)
+            % (field, kind, len(matches)))
+    return matches[0]
 
 
-def _item_template(block, item, kind):
-    """Turn one real <article> into a template by swapping its own values out."""
-    t = block
-    if "slotId" in item:
-        t = _sub_once(t, 'id="%s"' % item["slotId"], 'id="{slotId}"', kind)
-        t = _sub_once(t, 'placeholder="%s"' % item["caption"], 'placeholder="{caption}"', kind)
-        if item.get("photo"):
-            t = _sub_once(t, 'data-src="assets/menu/opt/%s"' % item["photo"],
-                          'data-src="assets/menu/opt/{photo}"', kind)
-    t = _sub_once(t, "<h3>%s</h3>" % item["name"], "<h3>{name}</h3>", kind)
-    t = _sub_once(t, "<p>%s</p>" % item["desc"], "<p>{desc}</p>", kind)
-    if "price" in item:
-        t = _sub_once(t, "<strong>%s</strong>" % item["price"], "<strong>{price}</strong>", kind)
+def _replace_field(text, pattern, placeholder, field, kind):
+    """Replace capture group 2 of one structural match with a placeholder."""
+    match = _match_once(text, pattern, field, kind)
+    return text[:match.start(2)] + placeholder + text[match.end(2):]
+
+
+def _item_template(block, kind, priced):
+    """Turn one real <article> into a template without consulting menu copy."""
+    slot_match = _match_once(
+        block, r'(<image-slot\b[^>]*>)(.*?)(</image-slot>)', "image-slot", kind)
+    slot = slot_match.group(0)
+    slot = _replace_field(slot, r'(\sid=")([^"]*)(")', "{slotId}",
+                          "image-slot id", kind)
+    slot = _replace_field(slot, r'(\splaceholder=")([^"]*)(")', "{caption}",
+                          "image-slot placeholder", kind)
+    slot = _replace_field(slot, r'(\sdata-src="assets/menu/opt/)([^"]*)(")', "{photo}",
+                          "image-slot photo path", kind)
+    t = block[:slot_match.start()] + slot + block[slot_match.end():]
+    t = _replace_field(t, r'(<h3>)(.*?)(</h3>)', "{name}", "<h3>", kind)
+    t = _replace_field(t, r'(<p>)(.*?)(</p>)', "{desc}", "<p>", kind)
+    if priced:
+        t = _replace_field(t, r'(<strong>)(.*?)(</strong>)', "{price}",
+                           "<strong>", kind)
     return t
-
-
-def _find(cats, pred):
-    for c in cats:
-        for i in c["items"]:
-            if pred(i):
-                return c, i
-    raise SystemExit("menu_render: menu.json has no item matching a required template shape")
 
 
 def build_main(dc_html, data):
@@ -84,12 +83,8 @@ def build_main(dc_html, data):
     priced = next(a for a in articles if "<strong>" in a)
     opted = next(a for a in articles if '<dl class="opts">' in a)
 
-    grid_cats = [c for c in cats if c["layout"] == "grid"]
-    _, first_priced = _find(grid_cats, lambda i: "price" in i)
-    _, first_opted = _find(grid_cats, lambda i: "options" in i)
-
-    tpl_priced = _item_template(priced, first_priced, "priced item")
-    tpl_opted = _item_template(opted, first_opted, "option item")
+    tpl_priced = _item_template(priced, "priced item", priced=True)
+    tpl_opted = _item_template(opted, "option item", priced=False)
 
     # the row shape is shared by option chips and the add-on list: both are a
     # label and the price of that label, which is why both are description lists
