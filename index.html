@@ -96,26 +96,27 @@
   --air:clamp(104px,17vw,180px);
   --tile:clamp(200px,46vw,346px);
 
+  /* One restrained motion voice for copy, image arrival and page handoff. */
+  --motion-dur:400ms;
+  --motion-ease:cubic-bezier(0.22, 1, 0.36, 1);
   /* transitions.dev — texts reveal (18) */
-  --stagger-dur:500ms;
-  --stagger-distance:12px;
+  --stagger-dur:var(--motion-dur);
+  --stagger-distance:8px;
   --stagger-stagger:40ms;
-  --stagger-blur:3px;
-  --stagger-ease:cubic-bezier(0.22, 1, 0.36, 1);
+  --stagger-blur:1.5px;
+  --stagger-ease:var(--motion-ease);
   /* transitions.dev — skeleton loader and reveal (14) */
   --pulse-dur:1000ms;
   --pulse-count:infinite;
   --pulse-min:0.5;
-  --reveal-dur:400ms;
-  --reveal-blur:2px;
-  /* Matches --stagger-ease above rather than the browser default, so the photo
-     resolving and the copy rising share one curve. */
-  --reveal-ease:cubic-bezier(0.22, 1, 0.36, 1);
+  --reveal-dur:var(--motion-dur);
+  --reveal-blur:1.5px;
+  --reveal-ease:var(--motion-ease);
   /* transitions.dev — page side-by-side (08) */
-  --page-slide-dur:250ms;
-  --page-slide-distance:8px;
-  --page-blur:3px;
-  --page-slide-ease:cubic-bezier(0.22, 1, 0.36, 1);
+  --page-slide-dur:var(--motion-dur);
+  --page-slide-distance:6px;
+  --page-blur:1.5px;
+  --page-slide-ease:var(--motion-ease);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{overflow-x:hidden}
@@ -135,14 +136,14 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 /* The signature. Absent during the hero, then it takes the wordmark's place
    at dead centre as that fades — the two never share the screen. */
-.mark{position:fixed;top:-25vh;left:50%;z-index:1;pointer-events:none;
-  height:150vh;width:auto;opacity:0;will-change:transform,opacity}
+.mark{position:fixed;top:-21vh;left:50%;z-index:1;pointer-events:none;
+  height:142vh;width:auto;opacity:0;will-change:transform,opacity}
 .mark path{fill:#E6E5E1}
 
 .page{position:relative;z-index:2}
 
 .hero{margin:0;width:100%;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
-.hero img{width:clamp(190px,22vw,420px);height:auto}
+.hero img{width:clamp(200px,23vw,430px);height:auto;transform:translateY(-1.5svh)}
 
 .h2{margin:0 0 clamp(18px,3.2vw,26px);font-family:var(--display);font-weight:700;
   font-size:clamp(30px,6.4vw,52px);line-height:1.3;letter-spacing:-.005em;color:var(--ink)}
@@ -152,6 +153,13 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 /* Right-anchored blocks bracket the page: about opens it, contact closes it. */
 .about{padding:clamp(80px,15vw,150px) var(--gutter) 0;max-width:1180px;margin:0 auto}
 .about .inner{max-width:52ch;text-align:right}
+.about-label{margin:0 0 clamp(14px,2vw,20px);font-family:var(--font);font-weight:400;
+  font-size:clamp(12px,calc(.25vw + 11.5px),13px);line-height:1.7;color:var(--ink-soft)}
+.about-headline{max-width:17ch;margin:0 0 clamp(24px,3.2vw,32px);font-family:var(--display);
+  font-weight:700;font-size:clamp(32px,calc(6vw + 12px),56px);line-height:1.4;
+  color:var(--ink);text-wrap:balance}
+.about-body{width:min(92%,42ch);margin:0;font-family:var(--font);font-weight:400;
+  font-size:clamp(15px,calc(1vw + 12px),17px);line-height:2;color:var(--ink-strong)}
 
 /* The photo is the page's single light moment. Inset on the start side — the
    right, in RTL — so a strip of the field survives at the reading origin and
@@ -170,14 +178,20 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    With the ratio matched, object-fit:cover is a no-op and stays only as a
    guard — contain would letterbox on the maroon and read as a bug. */
 .photo{aspect-ratio:1920/1220;background:var(--ink);overflow:hidden;
-  margin-block:var(--air);margin-inline-start:clamp(0px,8vw,140px)}
+  margin-block-start:calc(var(--air) + 16px);margin-block-end:clamp(112px,11vw,156px);
+  margin-inline-start:clamp(0px,8vw,140px)}
 
-/* The menu is the page's one action, so it earns the page's one centred block.
-   It closes tighter into contact than the photo does into either neighbour:
-   two quiet text blocks belong together, the photo needs room to be an object. */
-.menu{padding:0 var(--gutter);margin:0 auto var(--flow);max-width:1180px;
-  display:flex;flex-direction:column;align-items:center;text-align:center}
-.menu .inner{max-width:46ch}
+/* The menu is the page's one action and visual climax. On a wide screen the
+   title leads from the RTL reading edge while the explanation and existing
+   button form a quieter support column. Space, scale and placement do the work;
+   the action itself keeps the same printed-block character. */
+.menu{padding:0 var(--gutter);margin:0 auto clamp(96px,8vw,120px);max-width:1180px;text-align:right}
+.menu .inner{width:100%;display:grid;
+  grid-template-columns:minmax(0,1.45fr) minmax(280px,.72fr);
+  gap:clamp(48px,8vw,112px);align-items:end}
+.menu-title{margin:0;font-family:var(--display);font-weight:700;
+  font-size:clamp(56px,7.2vw,92px);line-height:1.15;letter-spacing:-.005em;color:var(--ink)}
+.menu-support{max-width:34ch;padding-bottom:clamp(4px,1vw,12px)}
 .cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(26px,4vw,34px);
   padding:0 30px;background:var(--ink);color:var(--bg);
   font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
@@ -187,8 +201,14 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    areas were 4px apart while the text inside them is ~16px — so a tap aimed
    between two lines had no dead space to land in and resolved to whichever
    box owned that pixel. The gap is the target, not the height. */
-.contact .inner{text-align:right;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-.contact .body{margin-bottom:clamp(10px,2vw,16px)}
+.contact .inner{text-align:right;display:grid;
+  grid-template-columns:minmax(0,1.45fr) minmax(280px,.72fr);
+  gap:clamp(48px,8vw,112px);align-items:start}
+.contact-primary{max-width:44ch}
+.contact-primary .body{max-width:34ch;margin:0}
+.contact-secondary{display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  padding-top:clamp(8px,2vw,24px)}
+.contact-secondary .body{margin:0 0 8px}
 .contact a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);
   text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line)}
 
@@ -231,7 +251,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   transform:translateY(0);
   filter:blur(0);
   transition:
-    opacity 200ms ease,
+    opacity 200ms var(--motion-ease),
     transform 0s linear,
     filter 0s linear;
   transition-delay:0s;
@@ -346,8 +366,18 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      own ratio is 238px on a 375px phone: shorter than 62vh and the whole
      picture. If it needs to be taller than that, it needs a taller photograph,
      not a narrower crop of this one. */
-  .photo{margin-inline-start:0}
-  .mark{height:112vh;top:-6vh}
+  .photo{margin-block-start:calc(var(--air) + 8px);
+    margin-block-end:clamp(72px,20vw,88px);margin-inline-start:0}
+  .menu{margin-bottom:clamp(72px,20vw,88px);text-align:center}
+  .menu .inner{display:block;width:auto;max-width:36ch;margin-inline:auto}
+  .menu-title{margin-bottom:clamp(18px,5vw,24px);
+    font-size:clamp(46px,14vw,58px);line-height:1.2}
+  .menu-support{max-width:32ch;margin-inline:auto;padding:0}
+  .contact .inner{display:block}
+  .contact-primary{max-width:none}
+  .contact-primary .body{max-width:30ch}
+  .contact-secondary{margin-top:clamp(32px,9vw,40px);padding-top:0}
+  .mark{height:108vh;top:-4vh}
 }
 </style>
 </head>
@@ -374,8 +404,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 <main id="about">
 <section class="about">
 <div class="inner t-stagger">
-<h2 class="h2 t-stagger-line t-stagger-line--1">درباره ما</h2>
-<p class="body t-stagger-line t-stagger-line--2">در ال کافه، احترام، سلامت و کیفیت اساس هر تجربه است. از انتخاب مواد اولیه تا شیوه میزبانی، همه‌چیز با دقت انجام می‌شود تا فضایی امن، گرم و آرام در میان روزهای پرمشغله شما بسازیم.</p>
+<p class="about-label t-stagger-line t-stagger-line--1">درباره ما</p>
+<h2 class="about-headline t-stagger-line t-stagger-line--2">احترام، سلامت و کیفیت اساس هر تجربه در ال کافه است.</h2>
+<p class="about-body t-stagger-line t-stagger-line--3">از انتخاب مواد اولیه تا شیوه میزبانی، همه‌چیز با دقت انجام می‌شود تا فضایی امن، گرم و آرام در میان روزهای پرمشغله شما بسازیم.</p>
 </div>
 </section>
 
@@ -393,20 +424,26 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 <section class="menu" aria-label="منو">
 <div class="inner t-stagger">
-<h2 class="h2 t-stagger-line t-stagger-line--1">منو</h2>
+<h2 class="menu-title t-stagger-line t-stagger-line--1">منو</h2>
+<div class="menu-support">
 <p class="body t-stagger-line t-stagger-line--2">انتخاب‌هایی سالم و باکیفیت، با دقت آماده شده‌اند تا برای هر لحظه از روز، طعمی شایسته شما بسازند.</p>
 <a class="cta" href="menu.html">مشاهده منو</a>
+</div>
 </div>
 </section>
 
 <section class="contact" aria-label="تماس">
 <div class="inner t-stagger">
+<div class="contact-primary">
 <h2 class="h2 t-stagger-line t-stagger-line--1">منتظرتونیم</h2>
 <p class="body t-stagger-line t-stagger-line--2">خیابان چهارباغ بالا، نبش کوچه یحیی خان، مجتمع متروپل</p>
+</div>
+<div class="contact-secondary">
 <p class="body t-stagger-line t-stagger-line--3">ساعت ۷ تا ۲۳</p>
 <a href="tel:+989130005768"><bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi></a>
 <a href="https://maps.app.goo.gl/UcyaTAH42vChA7RA9" target="_blank" rel="noopener noreferrer">مسیر روی نقشه</a>
 <a href="https://www.instagram.com/lcafe.esf/" target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام ال کافه"><bdi>@lcafe.esf</bdi></a>
+</div>
 </div>
 </section>
 </main>
@@ -539,23 +576,40 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 // The hero handoff. This was a DCLogic component, and it was the only thing on
 // either page that needed the runtime: two inline styles driven by scroll.
 // Holding the whole document hidden until React arrives is a steep price for
-// two numbers, so they are written here instead.
+// three visual values, so they are written here instead.
 //
-// Same curve, same constants, same measured end point as the component had.
-// Only the write target changed - from a re-render to the two elements.
+// The measured handoff remains; the field now follows the same smoothstep so
+// its changing presence reads as one continuous system rather than five scenes.
 (function () {
   // Peak opacity of the giant mark. Low on purpose: its presence comes from
   // scale, not from value, so it never fights the copy for attention.
-  var PEAK = 0.13;
+  var PEAK = 0.095;
 
   var logo = document.querySelector('.hero img');
   var mark = document.querySelector('.mark');
-  if (!logo || !mark) return;
+  var field = document.querySelector('.field');
+  if (!logo || !mark || !field) return;
 
   var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var end = (window.innerHeight || 800) * 0.5;
+  var markExitStart = end;
+  var markExitEnd = end + 1;
+  var zones = [];
   var lastEased = -1;
   var lastDrift = -1;
+  var lastField = -1;
+
+  function fieldStrength(y) {
+    if (!zones.length || y <= zones[0].y) return zones.length ? zones[0].value : 1;
+    for (var i = 1; i < zones.length; i++) {
+      if (y > zones[i].y) continue;
+      var span = Math.max(1, zones[i].y - zones[i - 1].y);
+      var t = Math.min(1, Math.max(0, (y - zones[i - 1].y) / span));
+      var eased = t * t * (3 - 2 * t);
+      return zones[i - 1].value + (zones[i].value - zones[i - 1].value) * eased;
+    }
+    return zones[zones.length - 1].value;
+  }
 
   function paint() {
     var t = Math.min(1, Math.max(0, window.scrollY / end));
@@ -564,16 +618,22 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
     // Hold dead centre until the wordmark is fully gone, then drift up slower
     // than the copy. Drifting during the handoff would stop it reading as
     // "arriving here".
-    var drift = still ? 0 : Math.max(0, window.scrollY - end) * 0.35;
-    if (eased === lastEased && drift === lastDrift) return;
+    var drift = still ? 0 : Math.max(0, window.scrollY - end) * 0.38;
+    var fieldOpacity = fieldStrength(window.scrollY + (window.innerHeight || 800) * 0.5);
+    var exitT = Math.min(1, Math.max(0,
+      (window.scrollY - markExitStart) / Math.max(1, markExitEnd - markExitStart)));
+    var exitEased = exitT * exitT * (3 - 2 * exitT);
+    if (eased === lastEased && drift === lastDrift && fieldOpacity === lastField) return;
     lastEased = eased;
     lastDrift = drift;
+    lastField = fieldOpacity;
     // Both sides of the handoff ride the same curve, so they cross once
     // instead of both sitting half-visible.
-    var scale = still ? 1 : 0.94 + eased * 0.06;
+    var scale = still ? 1 : 0.96 + eased * 0.04;
     logo.style.opacity = 1 - eased;
-    mark.style.opacity = eased * PEAK;
+    mark.style.opacity = eased * PEAK * (1 - exitEased);
     mark.style.transform = 'translate3d(-50%,' + (-drift) + 'px,0) scale(' + scale + ')';
+    field.style.opacity = fieldOpacity.toFixed(4);
   }
 
   // Finish the fade exactly where the copy arrives, measured from the real
@@ -582,8 +642,24 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
     var copy = document.getElementById('about');
     var vh = window.innerHeight || 800;
     var top = copy ? copy.getBoundingClientRect().top + window.scrollY : vh;
+    function midpoint(selector, fallback) {
+      var element = document.querySelector(selector);
+      if (!element) return fallback;
+      var box = element.getBoundingClientRect();
+      return box.top + window.scrollY + box.height * 0.5;
+    }
+    zones = [
+      { y: midpoint('.hero', vh * 0.5), value: 1 },
+      { y: midpoint('.about', vh * 1.3), value: 0.34 },
+      { y: midpoint('.photo', vh * 2.2), value: 0.06 },
+      { y: midpoint('.menu', vh * 2.9), value: 0.30 },
+      { y: midpoint('.contact', vh * 3.3), value: 0.18 }
+    ];
+    markExitStart = zones[1].y - vh * 0.25;
+    markExitEnd = Math.max(markExitStart + 1, zones[2].y - vh * 0.5);
     end = Math.max(1, top - vh * 0.5);
     lastEased = -1;
+    lastField = -1;
     paint();
   }
 
