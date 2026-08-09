@@ -87,53 +87,6 @@
           "code": "1010"
         },
         {
-          "slotId": "menu-hot-coffee-02",
-          "caption": "عکس V60",
-          "photo": "menu-hot-coffee-02.webp",
-          "name": "V60",
-          "desc": "کلمبیای تک‌خاستگاه با رایحه گلی و طعم‌یادهای میوه‌ای.",
-          "price": "۵۰۰",
-          "code": "5001"
-        },
-        {
-          "slotId": "menu-hot-coffee-03",
-          "caption": "عکس لاته",
-          "photo": "menu-hot-coffee-03.webp",
-          "name": "لاته",
-          "desc": "اسپرسو و شیر گرم با میکروفوم نرم و ابریشمی.",
-          "options": [
-            {
-              "label": "۶۰/۴۰",
-              "price": "۳۱۰",
-              "code": "1020"
-            },
-            {
-              "label": "۱۰۰",
-              "price": "۳۳۰",
-              "code": "1025"
-            }
-          ]
-        },
-        {
-          "slotId": "menu-hot-coffee-04",
-          "caption": "عکس کاپوچینو",
-          "photo": "menu-hot-coffee-04.webp",
-          "name": "کاپوچینو",
-          "desc": "اسپرسو، شیر گرم و فوم مخملی با حضور پررنگ‌تر قهوه.",
-          "options": [
-            {
-              "label": "۶۰/۴۰",
-              "price": "۲۹۰",
-              "code": "1040"
-            },
-            {
-              "label": "۱۰۰",
-              "price": "۳۱۰",
-              "code": "1045"
-            }
-          ]
-        },
-        {
           "slotId": "menu-hot-coffee-05",
           "caption": "عکس آمریکانو",
           "photo": "menu-hot-coffee-05.webp",
@@ -191,6 +144,44 @@
           ]
         },
         {
+          "slotId": "menu-hot-coffee-04",
+          "caption": "عکس کاپوچینو",
+          "photo": "menu-hot-coffee-04.webp",
+          "name": "کاپوچینو",
+          "desc": "اسپرسو، شیر گرم و فوم مخملی با حضور پررنگ‌تر قهوه.",
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۲۹۰",
+              "code": "1040"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۱۰",
+              "code": "1045"
+            }
+          ]
+        },
+        {
+          "slotId": "menu-hot-coffee-03",
+          "caption": "عکس لاته",
+          "photo": "menu-hot-coffee-03.webp",
+          "name": "لاته",
+          "desc": "اسپرسو و شیر گرم با میکروفوم نرم و ابریشمی.",
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۳۱۰",
+              "code": "1020"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۳۰",
+              "code": "1025"
+            }
+          ]
+        },
+        {
           "slotId": "menu-hot-coffee-08",
           "caption": "عکس موکا",
           "photo": "menu-hot-coffee-08.webp",
@@ -208,24 +199,6 @@
               "code": "1055"
             }
           ]
-        },
-        {
-          "slotId": "menu-hot-coffee-09",
-          "caption": "عکس قهوه ترک",
-          "photo": "menu-hot-coffee-09.webp",
-          "name": "قهوه ترک",
-          "desc": "قهوه‌ای غلیظ با آسیاب بسیار ریز و سرو سنتی.",
-          "price": "۲۳۵",
-          "code": "1074"
-        },
-        {
-          "slotId": "menu-hot-coffee-10",
-          "caption": "عکس پرشین کافی",
-          "photo": "menu-hot-coffee-10.webp",
-          "name": "پرشین کافی",
-          "desc": "قهوه، شیر، هل و سس زعفران ال‌کافه.",
-          "price": "۳۹۰",
-          "code": "1075"
         },
         {
           "slotId": "menu-hot-coffee-11",
@@ -253,6 +226,33 @@
           "desc": "اسپرسو، وانیل، شیر و خامه با لیدی‌فینگر و شکلات.",
           "price": "۴۰۰",
           "code": "1070"
+        },
+        {
+          "slotId": "menu-hot-coffee-02",
+          "caption": "عکس V60",
+          "photo": "menu-hot-coffee-02.webp",
+          "name": "V60",
+          "desc": "کلمبیای تک‌خاستگاه با رایحه گلی و طعم‌یادهای میوه‌ای.",
+          "price": "۵۰۰",
+          "code": "5001"
+        },
+        {
+          "slotId": "menu-hot-coffee-09",
+          "caption": "عکس قهوه ترک",
+          "photo": "menu-hot-coffee-09.webp",
+          "name": "قهوه ترک",
+          "desc": "قهوه‌ای غلیظ با آسیاب بسیار ریز و سرو سنتی.",
+          "price": "۲۳۵",
+          "code": "1074"
+        },
+        {
+          "slotId": "menu-hot-coffee-10",
+          "caption": "عکس پرشین کافی",
+          "photo": "menu-hot-coffee-10.webp",
+          "name": "پرشین کافی",
+          "desc": "قهوه، شیر، هل و سس زعفران ال‌کافه.",
+          "price": "۳۹۰",
+          "code": "1075"
         }
       ]
     },
@@ -301,15 +301,6 @@
           ]
         },
         {
-          "slotId": "menu-cold-coffee-03",
-          "caption": "عکس کلدبرو",
-          "photo": "",
-          "name": "کلدبرو",
-          "desc": "قهوه با عصاره‌گیری سرد و طولانی؛ نرم و کم‌تلخ.",
-          "price": "۳۵۰",
-          "code": "5002"
-        },
-        {
           "slotId": "menu-cold-coffee-04",
           "caption": "عکس آیس اسپنیش لاته پسته",
           "photo": "menu-cold-coffee-04.webp",
@@ -326,6 +317,15 @@
           "desc": "اسپرسو عربیکا، شیر، سس زعفران ال‌کافه و یخ.",
           "price": "۴۱۵",
           "code": "3009"
+        },
+        {
+          "slotId": "menu-cold-coffee-03",
+          "caption": "عکس کلدبرو",
+          "photo": "",
+          "name": "کلدبرو",
+          "desc": "قهوه با عصاره‌گیری سرد و طولانی؛ نرم و کم‌تلخ.",
+          "price": "۳۵۰",
+          "code": "5002"
         }
       ]
     },
@@ -335,24 +335,6 @@
       "intro": "نوشیدنی‌های غلیظ، یخی و کرمی با طعم‌های دسرگونه.",
       "layout": "grid",
       "items": [
-        {
-          "slotId": "menu-frappe-01",
-          "caption": "عکس میلک شیک چاکلت دبی",
-          "photo": "",
-          "name": "میلک شیک چاکلت دبی",
-          "desc": "ژلاتوی وانیلی دست‌ساز با شکلات مخصوص ال‌کافه.",
-          "price": "۴۲۰",
-          "code": "25001"
-        },
-        {
-          "slotId": "menu-frappe-02",
-          "caption": "عکس میلک شیک لوتوس",
-          "photo": "",
-          "name": "میلک شیک لوتوس",
-          "desc": "ژلاتوی وانیلی دست‌ساز با کرم بیسکویت لوتوس.",
-          "price": "۴۲۰",
-          "code": "25002"
-        },
         {
           "slotId": "menu-frappe-03",
           "caption": "عکس فراپه کارامل نمکی",
@@ -370,6 +352,24 @@
           "desc": "فراپه یخی و کرمی با طعم عمیق ارده.",
           "price": "۳۷۰",
           "code": "26006"
+        },
+        {
+          "slotId": "menu-frappe-01",
+          "caption": "عکس میلک شیک چاکلت دبی",
+          "photo": "",
+          "name": "میلک شیک چاکلت دبی",
+          "desc": "ژلاتوی وانیلی دست‌ساز با شکلات مخصوص ال‌کافه.",
+          "price": "۴۲۰",
+          "code": "25001"
+        },
+        {
+          "slotId": "menu-frappe-02",
+          "caption": "عکس میلک شیک لوتوس",
+          "photo": "",
+          "name": "میلک شیک لوتوس",
+          "desc": "ژلاتوی وانیلی دست‌ساز با کرم بیسکویت لوتوس.",
+          "price": "۴۲۰",
+          "code": "25002"
         }
       ]
     },
@@ -389,15 +389,6 @@
           "code": "26020"
         },
         {
-          "slotId": "menu-cloudy-02",
-          "caption": "عکس کلودی زعفران",
-          "photo": "cl-02.webp",
-          "name": "کلودی زعفران",
-          "desc": "نوشیدنی لایه‌ای زعفران با فوم نرم و کرمی.",
-          "price": "۴۳۰",
-          "code": "26022"
-        },
-        {
           "slotId": "menu-cloudy-03",
           "caption": "عکس کلودی کوکی",
           "photo": "cl-03.webp",
@@ -405,6 +396,15 @@
           "desc": "نوشیدنی کرمی کوکی با حضور ملایم اسپرسو.",
           "price": "۴۳۰",
           "code": "26021"
+        },
+        {
+          "slotId": "menu-cloudy-02",
+          "caption": "عکس کلودی زعفران",
+          "photo": "cl-02.webp",
+          "name": "کلودی زعفران",
+          "desc": "نوشیدنی لایه‌ای زعفران با فوم نرم و کرمی.",
+          "price": "۴۳۰",
+          "code": "26022"
         }
       ]
     },
@@ -414,51 +414,6 @@
       "intro": "چای، دمنوش و نوشیدنی‌های گرم برای سلیقه‌های مختلف.",
       "layout": "grid",
       "items": [
-        {
-          "slotId": "menu-hot-drinks-01",
-          "caption": "عکس اپل پارادایس",
-          "photo": "menu-hot-drinks-01.webp",
-          "name": "اپل پارادایس",
-          "desc": "ترکیب گرم سیب، به و دارچین.",
-          "price": "۲۰۰",
-          "code": "7052"
-        },
-        {
-          "slotId": "menu-hot-drinks-02",
-          "caption": "عکس رویال جاسمین",
-          "photo": "menu-hot-drinks-02.webp",
-          "name": "رویال جاسمین",
-          "desc": "چای سبز و گل یاس؛ سبک و گلی.",
-          "price": "۲۰۰",
-          "code": "7053"
-        },
-        {
-          "slotId": "menu-hot-drinks-03",
-          "caption": "عکس پینک رز",
-          "photo": "menu-hot-drinks-03.webp",
-          "name": "پینک رز",
-          "desc": "بابونه، گل محمدی و لوندر؛ لطیف و گلی.",
-          "price": "۲۰۰",
-          "code": "7051"
-        },
-        {
-          "slotId": "menu-hot-drinks-04",
-          "caption": "عکس پیچ بلک تی",
-          "photo": "menu-hot-drinks-04.webp",
-          "name": "پیچ بلک تی",
-          "desc": "چای سیاه پررنگ با هلو.",
-          "price": "۲۰۰",
-          "code": "7056"
-        },
-        {
-          "slotId": "menu-hot-drinks-05",
-          "caption": "عکس کاسکارا و میکس بری",
-          "photo": "menu-hot-drinks-05.webp",
-          "name": "کاسکارا و میکس بری",
-          "desc": "کاسکارا و میکس بری خشک؛ میوه‌ای و کمی ترش.",
-          "price": "۲۸۰",
-          "code": "7054"
-        },
         {
           "slotId": "menu-hot-drinks-06",
           "caption": "عکس چای سیاه",
@@ -508,6 +463,51 @@
           "desc": "شیر گرم و ترکیب هات‌چاکلت ال‌کافه؛ غلیظ و شکلاتی.",
           "price": "۳۴۰",
           "code": "4009"
+        },
+        {
+          "slotId": "menu-hot-drinks-01",
+          "caption": "عکس اپل پارادایس",
+          "photo": "menu-hot-drinks-01.webp",
+          "name": "اپل پارادایس",
+          "desc": "ترکیب گرم سیب، به و دارچین.",
+          "price": "۲۰۰",
+          "code": "7052"
+        },
+        {
+          "slotId": "menu-hot-drinks-04",
+          "caption": "عکس پیچ بلک تی",
+          "photo": "menu-hot-drinks-04.webp",
+          "name": "پیچ بلک تی",
+          "desc": "چای سیاه پررنگ با هلو.",
+          "price": "۲۰۰",
+          "code": "7056"
+        },
+        {
+          "slotId": "menu-hot-drinks-02",
+          "caption": "عکس رویال جاسمین",
+          "photo": "menu-hot-drinks-02.webp",
+          "name": "رویال جاسمین",
+          "desc": "چای سبز و گل یاس؛ سبک و گلی.",
+          "price": "۲۰۰",
+          "code": "7053"
+        },
+        {
+          "slotId": "menu-hot-drinks-03",
+          "caption": "عکس پینک رز",
+          "photo": "menu-hot-drinks-03.webp",
+          "name": "پینک رز",
+          "desc": "بابونه، گل محمدی و لوندر؛ لطیف و گلی.",
+          "price": "۲۰۰",
+          "code": "7051"
+        },
+        {
+          "slotId": "menu-hot-drinks-05",
+          "caption": "عکس کاسکارا و میکس بری",
+          "photo": "menu-hot-drinks-05.webp",
+          "name": "کاسکارا و میکس بری",
+          "desc": "کاسکارا و میکس بری خشک؛ میوه‌ای و کمی ترش.",
+          "price": "۲۸۰",
+          "code": "7054"
         }
       ]
     },
@@ -545,6 +545,15 @@
           "code": "24006"
         },
         {
+          "slotId": "menu-cold-drinks-06",
+          "caption": "عکس ال سامر",
+          "photo": "menu-cold-drinks-06.webp",
+          "name": "ال سامر",
+          "desc": "توت‌فرنگی و آناناس تازه؛ یخی، غلیظ و استوایی.",
+          "price": "۳۵۰",
+          "code": "24013"
+        },
+        {
           "slotId": "menu-cold-drinks-04",
           "caption": "عکس هات شات",
           "photo": "",
@@ -561,15 +570,6 @@
           "desc": "زنجبیل، چای ترش و توت‌فرنگی؛ تند و میوه‌ای.",
           "price": "۲۶۰",
           "code": "24010"
-        },
-        {
-          "slotId": "menu-cold-drinks-06",
-          "caption": "عکس ال سامر",
-          "photo": "menu-cold-drinks-06.webp",
-          "name": "ال سامر",
-          "desc": "توت‌فرنگی و آناناس تازه؛ یخی، غلیظ و استوایی.",
-          "price": "۳۵۰",
-          "code": "24013"
         }
       ]
     },
@@ -641,6 +641,15 @@
       "layout": "grid",
       "items": [
         {
+          "slotId": "menu-matcha-07",
+          "caption": "عکس ماچا لاته",
+          "photo": "",
+          "name": "ماچا لاته",
+          "desc": "ماچای ژاپنی و شیر؛ بدون شیرینی افزوده.",
+          "price": "۳۲۰",
+          "code": "2006"
+        },
+        {
           "slotId": "menu-matcha-01",
           "caption": "عکس ماچا لاته پسته",
           "photo": "",
@@ -659,13 +668,13 @@
           "code": "2003"
         },
         {
-          "slotId": "menu-matcha-07",
-          "caption": "عکس ماچا لاته",
-          "photo": "",
-          "name": "ماچا لاته",
-          "desc": "ماچای ژاپنی و شیر؛ بدون شیرینی افزوده.",
-          "price": "۳۲۰",
-          "code": "2006"
+          "slotId": "menu-matcha-09",
+          "caption": "عکس آیس ماچا لاته",
+          "photo": "menu-matcha-02.webp",
+          "name": "آیس ماچا لاته",
+          "desc": "ماچای ژاپنی، شیر و یخ؛ بدون شیرینی افزوده.",
+          "price": "۳۴۰",
+          "code": "2007"
         },
         {
           "slotId": "menu-matcha-02",
@@ -686,13 +695,13 @@
           "code": "2005"
         },
         {
-          "slotId": "menu-matcha-09",
-          "caption": "عکس آیس ماچا لاته",
-          "photo": "menu-matcha-02.webp",
-          "name": "آیس ماچا لاته",
-          "desc": "ماچای ژاپنی، شیر و یخ؛ بدون شیرینی افزوده.",
-          "price": "۳۴۰",
-          "code": "2007"
+          "slotId": "menu-matcha-11",
+          "caption": "عکس آیس اسپرولینا",
+          "photo": "menu-matcha-03.webp",
+          "name": "آیس اسپرولینا",
+          "desc": "شیر، اسپرولینای آبی و یخ؛ بدون شیرینی افزوده.",
+          "price": "۳۳۰",
+          "code": "2049"
         },
         {
           "slotId": "menu-matcha-03",
@@ -711,15 +720,6 @@
           "desc": "شیر، اسپرولینای آبی، سس زعفران ال‌کافه و یخ.",
           "price": "۴۱۰",
           "code": "2053"
-        },
-        {
-          "slotId": "menu-matcha-11",
-          "caption": "عکس آیس اسپرولینا",
-          "photo": "menu-matcha-03.webp",
-          "name": "آیس اسپرولینا",
-          "desc": "شیر، اسپرولینای آبی و یخ؛ بدون شیرینی افزوده.",
-          "price": "۳۳۰",
-          "code": "2049"
         },
         {
           "slotId": "menu-matcha-04",

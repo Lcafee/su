@@ -127,7 +127,7 @@ SIZES = "(min-width: 880px) 285px, 38vw"
 EAGER = 4
 PRIORITY = 2
 
-FORCE_MENU_IMAGE_PREVIEW = True
+FORCE_MENU_IMAGE_PREVIEW = False
 FORCE_MENU_IMAGE_SRC = "assets/menu/opt/rf-02.webp"
 
 
