@@ -76,6 +76,16 @@ window.__resources = {
   --underline:rgba(243,241,236,.35);
   --fill:rgba(243,241,236,.06);
   --fill-hi:rgba(243,241,236,.1);
+  --bg-deep:#300910;
+  --bg-raised:#571523;
+  --glass-fill:linear-gradient(145deg,rgba(243,241,236,.105),rgba(243,241,236,.025) 48%,rgba(243,241,236,.055));
+  --glass-fill-quiet:linear-gradient(145deg,rgba(243,241,236,.075),rgba(243,241,236,.016));
+  --glass-border:rgba(243,241,236,.25);
+  --glass-border-soft:rgba(243,241,236,.19);
+  --glass-filter:blur(16px) saturate(125%) brightness(1.04);
+  --glass-shadow:0 18px 44px rgba(13,1,4,.18),inset 0 1px 0 rgba(243,241,236,.26),inset 0 -1px 0 rgba(243,241,236,.045);
+  --radius-panel:20px;
+  --radius-image:14px;
   --gutter:clamp(16px,5vw,64px);
   --rail:clamp(54px,14vw,80px);
 
@@ -110,8 +120,17 @@ window.__resources = {
   --page-blur:3px;
   --page-slide-ease:cubic-bezier(0.22, 1, 0.36, 1);
 }
-html{scroll-behavior:smooth;overflow-x:hidden}
-html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
+html{scroll-behavior:smooth;overflow-x:hidden;background:var(--bg-deep)}
+html,body{margin:0;padding:0;font-family:var(--font);-webkit-text-size-adjust:100%}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 82% 1%,rgba(243,241,236,.07) 0,transparent 30rem),
+    radial-gradient(circle at 4% 34%,rgba(var(--bg-rgb),.3) 0,transparent 36rem),
+    linear-gradient(180deg,var(--bg-raised) 0,var(--bg) 24rem,var(--bg-deep) 100%);
+}
 a{color:var(--ink)}
 /* 2px, matching the landing and the system's tightest radius. It was 4px here
    and 2px there — one role, two values, across two pages of the same site. */
@@ -120,7 +139,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 .skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
 .skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
 
-.bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px var(--gutter);background:rgba(var(--bg-rgb),.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px var(--gutter);background:linear-gradient(180deg,rgba(var(--bg-rgb),.9),rgba(var(--bg-rgb),.8));backdrop-filter:blur(14px) saturate(122%);-webkit-backdrop-filter:blur(14px) saturate(122%);border-bottom:1px solid var(--glass-border-soft);box-shadow:inset 0 -1px 0 rgba(243,241,236,.035)}
 .bar-back{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;font:500 13px var(--font);text-decoration:none}
 .bar-back span[aria-hidden]{font-size:16px;line-height:1}
 .bar img{height:34px;width:auto;display:block}
@@ -137,7 +156,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 
 #menu{padding-top:clamp(20px,5vw,40px)}
 .cat{padding:0 var(--gutter);max-width:720px;margin:0 auto}
-.cat-head{display:grid;grid-template-columns:1fr;gap:8px;margin:clamp(34px,8vw,60px) 0 clamp(20px,5vw,32px);padding:clamp(16px,4vw,24px);border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,var(--fill-hi),var(--fill));box-shadow:0 14px 30px rgba(13,1,4,.14),inset 0 1px 0 var(--fill-hi);text-align:right}
+.cat-head{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:1fr;gap:8px;margin:clamp(34px,8vw,60px) 0 clamp(20px,5vw,32px);padding:clamp(16px,4vw,24px);border:1px solid var(--glass-border);border-radius:var(--radius-panel);background:var(--glass-fill);box-shadow:var(--glass-shadow);backdrop-filter:var(--glass-filter);-webkit-backdrop-filter:var(--glass-filter);text-align:right}
+.cat-head::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(114deg,rgba(243,241,236,.15),transparent 25%,transparent 78%,rgba(243,241,236,.025))}
+.cat-head::after{content:"";position:absolute;z-index:0;width:150px;height:150px;top:-105px;left:-55px;border-radius:50%;pointer-events:none;background:rgba(243,241,236,.075);filter:blur(20px)}
+.cat-head>*{position:relative;z-index:1}
 .cat-head h2{margin:0;font:700 clamp(20px,5.4vw,28px)/1.4 var(--display);color:var(--ink);scroll-margin-top:110px}
 .cat-head p{margin:0;font:400 clamp(12px,3.2vw,14px)/1.9 var(--font);color:var(--ink-dim)}
 
@@ -148,7 +170,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(12px,3.5vw,22px);row-gap:clamp(28px,7vw,44px)}
 
 .item{display:flex;flex-direction:column;gap:10px;text-align:right;min-width:0}
-.item-photo{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--fill)}
+.item-photo{position:relative;aspect-ratio:1;border:1px solid var(--glass-border-soft);border-radius:var(--radius-image);overflow:hidden;background:var(--glass-fill-quiet);box-shadow:0 10px 24px rgba(13,1,4,.12),inset 0 1px 0 rgba(243,241,236,.16)}
 /* No min-height on the name or the description. It used to be there to keep
    the prices in a row level with each other, but it never was what did that:
    the grid already stretches both tiles to the taller one, and margin-top:auto
@@ -169,6 +191,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   overflow:hidden;
 }
 .item p[data-open]{-webkit-line-clamp:none;line-clamp:none;overflow:visible}
+.item p[data-measuring]{position:absolute;visibility:hidden;display:block;width:var(--measure-width);height:auto;-webkit-line-clamp:unset;line-clamp:unset;overflow:visible}
 /* 1.62, not 1.85. This column is 22 characters wide — the narrowest measure on
    the page — and leading tightens as the measure narrows. The looser value had
    it backwards, giving the shortest lines the most air. */
@@ -244,7 +267,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
    came out of the gaps and the padding: 642 of column, which clears that phone
    with room and clears every taller one outright. The active pill supplies the
    separation the gap used to. */
-.rail{position:fixed;top:50%;right:0;transform:translateY(-50%);z-index:15;width:var(--rail);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:1px;padding:4px 0;background:rgba(var(--bg-rgb),.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-right:0;border-radius:14px 0 0 14px}
+.rail{position:fixed;top:50%;right:0;transform:translateY(-50%);z-index:15;width:var(--rail);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:1px;padding:4px 0;background:linear-gradient(145deg,rgba(var(--bg-rgb),.88),rgba(var(--bg-rgb),.74));backdrop-filter:blur(14px) saturate(122%);-webkit-backdrop-filter:blur(14px) saturate(122%);border:1px solid var(--glass-border-soft);border-right:0;border-radius:14px 0 0 14px;box-shadow:inset 0 1px 0 rgba(243,241,236,.12),inset 0 -1px 0 rgba(243,241,236,.035)}
 .rail::-webkit-scrollbar{display:none}
 /* Shorter screens still overflow, so the rail admits it: whichever edge has
    entries behind it fades out. JS sets the attributes; there is no CSS way to
@@ -263,13 +286,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
    carries more stroke detail per em than Latin does, and this is the one
    control on the page, so it holds the ceiling everywhere instead. */
 .rail a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:4px 5px;font:500 11px/1.35 var(--font);color:var(--ink);text-decoration:none;text-align:center}
-.rail i{width:5px;height:5px;border-radius:50%;background:var(--ink);flex:0 0 auto;opacity:0;transition:opacity .2s ease}
+.rail i{width:5px;height:5px;border-radius:50%;background:var(--ink);flex:0 0 auto;opacity:0;transition:opacity var(--tabs-dur) var(--tabs-ease)}
 /* --ink-dim, not opacity:.62. The two land on the same pixels and audit
    completely differently: with the opacity, `color` still reads as pure --ink,
    so a contrast probe over this rule reports 13.72:1 while the screen is
    showing 5.96:1. That is not hypothetical — it is what a probe reported here.
    The dot keeps its opacity, because a dot appearing is not text being dimmed. */
-.rail span{color:var(--ink-dim);transition:color .2s ease}
+.rail span{color:var(--ink-dim);transition:color var(--tabs-dur) var(--tabs-ease)}
 .rail a.on i{opacity:1}
 .rail a.on span{color:var(--ink)}
 
@@ -284,7 +307,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   right:4px;
   left:4px;
   height:0;
-  background:var(--tabs-pill-bg);
+  background:linear-gradient(145deg,rgba(243,241,236,.13),rgba(243,241,236,.055));
+  border:1px solid rgba(243,241,236,.1);
+  box-shadow:inset 0 1px 0 rgba(243,241,236,.12);
   border-radius:10px;
   transform:translateY(0);
   transition:
@@ -393,13 +418,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
   }
   .cat{padding-inline:var(--gutter)}
   .cat-head{
-    gap:4px;
+    gap:3px;
     margin:clamp(16px,4.5vw,20px) 0 clamp(15px,4vw,18px);
-    padding:0;
-    border:0;
-    border-radius:0;
-    background:none;
-    box-shadow:none;
+    padding:clamp(13px,3.6vw,15px) clamp(14px,4vw,17px);
+    border:1px solid var(--glass-border-soft);
+    border-radius:var(--radius-panel);
+    background:var(--glass-fill-quiet);
+    box-shadow:0 12px 28px rgba(13,1,4,.14),inset 0 1px 0 rgba(243,241,236,.2),inset 0 -1px 0 rgba(243,241,236,.035);
+    backdrop-filter:blur(14px) saturate(120%) brightness(1.03);
+    -webkit-backdrop-filter:blur(14px) saturate(120%) brightness(1.03);
   }
   #menu>.cat:first-of-type .cat-head{margin-top:0}
   .cat-head h2{
@@ -429,7 +456,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     row-gap:var(--mobile-row-gap);
   }
   .item{gap:0}
-  .item-photo{margin-bottom:clamp(9px,2.4vw,10px);border-radius:10px}
+  .item-photo{margin-bottom:clamp(9px,2.4vw,10px);border-radius:14px;box-shadow:0 8px 20px rgba(13,1,4,.11),inset 0 1px 0 rgba(243,241,236,.13)}
   .item-photo::before{
     background:var(--fill-hi);
     animation:none;
@@ -447,7 +474,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     overflow-wrap:break-word;
     word-break:normal;
   }
-  .item p,.item p[data-open]{
+  .item p{
     margin:0;
     font:400 clamp(12px,2.95vw,13px)/1.6 var(--font);
     color:var(--ink-dim);
@@ -455,7 +482,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     line-clamp:2;
     overflow:hidden;
   }
-  .item .more{display:none!important}
+  .item p[data-open]{-webkit-line-clamp:none;line-clamp:none;overflow:visible}
+  .item .more{margin-top:4px;font-size:11.5px}
   .item strong{
     margin:auto 0 0;
     padding:8px 0 0;
@@ -526,12 +554,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     overscroll-behavior-inline:contain;
     touch-action:pan-x;
     -webkit-overflow-scrolling:touch;
-    background:rgba(var(--bg-rgb),.95);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
+    background:linear-gradient(180deg,rgba(var(--bg-rgb),.9),rgba(var(--bg-rgb),.8));
+    backdrop-filter:blur(14px) saturate(122%);
+    -webkit-backdrop-filter:blur(14px) saturate(122%);
     border:0;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--glass-border-soft);
     border-radius:0;
+    box-shadow:inset 0 -1px 0 rgba(243,241,236,.035);
   }
   .rail[data-more-above],.rail[data-more-below]{
     -webkit-mask-image:linear-gradient(to left,var(--fade-top),var(--fade-bottom));
@@ -563,7 +592,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
       opacity var(--mobile-motion-fast) var(--mobile-motion-ease),
       transform var(--mobile-motion-fast) var(--mobile-motion-ease);
   }
-  .rail a.on::after{opacity:1;transform:translateY(0)}
+  .rail a.on::after{opacity:.78;transform:translateY(0)}
   .rail a:focus-visible{outline-offset:-3px}
   .rail i,.rail .t-tabs-pill{display:none}
 
@@ -582,6 +611,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
     from{opacity:.45;transform:translateY(2px)}
     to{opacity:1;transform:translateY(0)}
   }
+}
+
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .bar,.rail{background:rgba(var(--bg-rgb),.97)}
+  .cat-head{background:var(--bg)}
 }
 
 /* transitions.dev — avatar group hover (11). Each photo is a
@@ -1739,8 +1773,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 // The clamp is visual only. The full text stays in the document, so a screen
 // reader reads every description in full whether or not anyone opens it.
 (function () {
-  var mobile = window.matchMedia("(max-width: 639px)");
-
   function label(btn, open) {
     var item = btn.closest(".item");
     var name = item ? item.querySelector("h3") : null;
@@ -1755,15 +1787,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 
   function sync() {
     var btns = [].slice.call(document.querySelectorAll(".item .more"));
-    if (mobile.matches) {
-      btns.forEach(function (btn) {
-        var p = btn.parentNode.querySelector("p");
-        if (p) p.removeAttribute("data-open");
-        btn.hidden = true;
-        btn.setAttribute("aria-expanded", "false");
-      });
-      return;
-    }
     // Every measurement read first, then every attribute written. Toggling
     // `hidden` invalidates layout, so interleaving would force a reflow per
     // button — eighty of them, on every resize tick.
@@ -1774,10 +1797,22 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
       // An open paragraph never overflows, so asking whether it still needs a
       // button would always answer no and the control would delete itself the
       // moment anyone used it.
-      return { btn: btn, open: open, fits: p.scrollHeight <= p.clientHeight + 1 };
+      var rect = p.getBoundingClientRect();
+      return { btn: btn, p: p, open: open, closedHeight: rect.height, width: rect.width };
+    });
+    state.forEach(function (s) {
+      if (!s || s.open) return;
+      s.p.style.setProperty("--measure-width", s.width + "px");
+      s.p.setAttribute("data-measuring", "");
     });
     state.forEach(function (s) {
       if (!s) return;
+      s.fits = !s.open && s.p.getBoundingClientRect().height <= s.closedHeight + 1;
+    });
+    state.forEach(function (s) {
+      if (!s) return;
+      s.p.removeAttribute("data-measuring");
+      s.p.style.removeProperty("--measure-width");
       s.btn.hidden = !s.open && s.fits;
       label(s.btn, s.open);
     });
@@ -1785,7 +1820,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset
 
   document.addEventListener("click", function (e) {
     var btn = e.target.closest && e.target.closest(".item .more");
-    if (!btn || mobile.matches) return;
+    if (!btn) return;
     var p = btn.parentNode.querySelector("p");
     if (!p) return;
     var open = !p.hasAttribute("data-open");

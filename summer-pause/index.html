@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#5b1729">
+  <meta name="color-scheme" content="dark light">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="description" content="با دو انتخاب کوتاه، نوشیدنی مخصوص حال‌وهوای تابستانی خودت را در L Cafe پیدا کن.">
+  <link rel="icon" href="assets/brand/lcafe-logo.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="assets/images/it-01-640.webp" imagesrcset="assets/images/it-01-640.webp 640w, assets/images/it-01-960.webp 960w, assets/images/it-01.webp 1254w" imagesizes="(max-width: 480px) 88vw, 422px" fetchpriority="high">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:wght@700&family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:wght@700&family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260724-price-visibility">
+  <title>Find Your Summer Pause | L Cafe</title>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">رفتن به محتوای اصلی</a>
+
+  <div class="app-shell" id="appShell">
+    <main id="mainContent" tabindex="-1">
+      <section class="screen home-screen" id="homeScreen" aria-labelledby="homeTitle" hidden>
+        <div class="home-backdrop" aria-hidden="true">
+          <figure class="home-frame home-frame--one"><img id="homeImageA" alt="" src="assets/images/it-01.webp" srcset="assets/images/it-01-640.webp 640w, assets/images/it-01-960.webp 960w, assets/images/it-01.webp 1254w" width="1254" height="1254" sizes="(max-width: 480px) 88vw, 422px" loading="eager" fetchpriority="high" decoding="async"></figure>
+          <figure class="home-frame home-frame--two"><img id="homeImageB" alt="" width="1254" height="1254" sizes="(max-width: 480px) 44vw, 211px" loading="lazy" fetchpriority="low" decoding="async"></figure>
+          <figure class="home-frame home-frame--three"><img id="homeImageC" alt="" width="1254" height="1254" sizes="(max-width: 480px) 42vw, 202px" loading="lazy" fetchpriority="low" decoding="async"></figure>
+          <div class="home-light"></div>
+        </div>
+
+        <header class="home-brand">
+          <img class="brand-logo" src="assets/brand/lcafe-logo.svg" alt="L Cafe — Your Daily Pause" width="146" height="72">
+          <span class="season-mark" dir="ltr">SUMMER · 1405</span>
+        </header>
+
+        <div class="home-copy">
+          <p class="eyebrow" dir="ltr">A TASTE MADE FOR YOUR MOMENT</p>
+          <h1 id="homeTitle" dir="ltr"><span>FIND YOUR</span><strong>SUMMER PAUSE</strong></h1>
+          <p>دو انتخاب کوتاه؛ یک نوشیدنی که به حال‌وهوای همین لحظه‌ات نزدیک‌تر است.</p>
+        </div>
+
+        <div class="home-actions" aria-label="مسیرهای اصلی">
+          <button class="action action--primary" id="startQuizButton" type="button">
+            <span class="action-copy"><b>نوشیدنی من را پیدا کن</b></span>
+            <span class="action-icon" aria-hidden="true">←</span>
+          </button>
+          <button class="action action--text action--outlined" id="openMenuButton" type="button">
+            <span>دیدن تمام نوشیدنی‌ها</span>
+          </button>
+        </div>
+        <div class="scroll-cue" aria-hidden="true"><span></span>SCROLL TO TASTE</div>
+      </section>
+
+      <section class="screen quiz-screen" id="quizScreen" aria-labelledby="questionTitle" hidden>
+        <div class="quiz-scene" aria-hidden="true">
+          <img class="quiz-scene-image quiz-scene-image--a" id="quizSceneImageA" alt="" width="1254" height="1254" sizes="(max-width: 480px) 78vw, 374px" decoding="async">
+          <img class="quiz-scene-image quiz-scene-image--b" id="quizSceneImageB" alt="" width="1254" height="1254" sizes="(max-width: 480px) 72vw, 346px" decoding="async">
+          <div class="quiz-scene-shade"></div>
+        </div>
+
+        <header class="screen-header screen-header--light">
+          <button class="icon-button" id="quizBackButton" type="button" aria-label="بازگشت"><span aria-hidden="true">→</span></button>
+          <img class="mini-logo" src="assets/brand/lcafe-logo.svg" alt="L Cafe" width="92" height="44">
+          <div class="step-indicator" role="progressbar" aria-label="پیشرفت کوییز" aria-valuemin="1" aria-valuemax="2" aria-valuenow="1">
+            <span id="stepCurrent">01</span><i></i><span>02</span>
+          </div>
+        </header>
+
+        <div class="quiz-content">
+          <p class="quiz-caption" id="questionCaption" dir="ltr">CHOOSE THE FEELING</p>
+          <h2 id="questionTitle" tabindex="-1">الان از نوشیدنی‌ات چه جور حسی می‌خوای؟</h2>
+          <div class="answer-list" id="answerList"></div>
+        </div>
+      </section>
+
+      <section class="screen reveal-screen" id="revealScreen" aria-labelledby="revealTitle" hidden>
+        <div class="reveal-image-wrap" aria-hidden="true"><img id="revealImage" alt="" width="1254" height="1254" sizes="(max-width: 480px) 100vw, 480px" decoding="async"></div>
+        <div class="reveal-mask" aria-hidden="true"></div>
+        <div class="reveal-copy">
+          <p dir="ltr">YOUR PAUSE IS READY</p>
+          <h2 id="revealTitle" tabindex="-1">این انتخاب برای توست</h2>
+        </div>
+      </section>
+
+      <section class="screen result-screen" id="resultScreen" aria-labelledby="resultName" hidden>
+        <div class="result-hero">
+          <div class="result-backdrop" aria-hidden="true">
+            <img class="result-image" id="resultImage" alt="" width="1254" height="1254" sizes="(max-width: 480px) 100vw, 480px" fetchpriority="high" decoding="async">
+            <div class="result-aura"></div>
+            <div class="result-film"></div>
+          </div>
+
+          <header class="screen-header screen-header--light result-header">
+            <button class="icon-button" id="resultHomeButton" type="button" aria-label="بازگشت به صفحه اول"><span aria-hidden="true">×</span></button>
+            <img class="mini-logo" src="assets/brand/lcafe-logo.svg" alt="L Cafe" width="92" height="44">
+          </header>
+
+          <p class="result-ghost" id="resultLineEn" dir="ltr" aria-hidden="true">CLOUDY</p>
+
+          <div class="result-hero-content">
+            <div class="result-title-block">
+              <p class="result-kicker" dir="ltr">THIS ONE FEELS LIKE YOU</p>
+              <h1 id="resultName" tabindex="-1">کلودی پسته</h1>
+              <p class="result-name-en" id="resultNameEn" dir="ltr">Pistachio Cloudy</p>
+            </div>
+            <div class="result-price-badge"><span>قیمت</span><strong id="resultPrice">۴۳۰٬۰۰۰ تومان</strong></div>
+          </div>
+        </div>
+
+        <div class="result-glass-panel">
+        <article class="result-story" aria-labelledby="resultStoryTitle">
+          <header class="result-story-head">
+            <div><h2 id="resultStoryTitle">حال‌وهوای این انتخاب</h2></div>
+          </header>
+          <p class="result-description" id="resultDescription"></p>
+          <div class="result-sensory">
+            <section class="result-sensory-item">
+              <span class="result-sensory-label" dir="ltr">MOOD</span>
+              <strong id="resultMood" dir="ltr"></strong>
+            </section>
+            <section class="result-sensory-item">
+              <span class="result-sensory-label" dir="ltr">TASTE NOTES</span>
+              <ul class="tag-list" id="resultTags" aria-label="ویژگی‌های طعمی"></ul>
+            </section>
+          </div>
+        </article>
+
+        <aside class="encore" aria-labelledby="encoreTitle">
+          <header class="encore-head">
+            <div><p dir="ltr">A SECOND POSSIBILITY</p><h2 id="encoreTitle">یک کشف دیگر</h2></div>
+            <span aria-hidden="true">Encore</span>
+          </header>
+          <div class="encore-stage">
+            <figure class="encore-visual"><img id="encoreImage" alt="" width="1254" height="1254" sizes="(max-width: 480px) calc(100vw - 84px), 396px" loading="lazy" decoding="async"></figure>
+            <div class="encore-copy">
+              <div class="encore-meta"><span id="encoreLine">فراپه</span><strong id="encorePrice">۳۷۰٬۰۰۰ تومان</strong></div>
+              <h3 id="encoreName">فراپه ارده</h3>
+              <p id="encoreNameEn" dir="ltr">Tahini Frappe</p>
+              <span class="encore-rule" aria-hidden="true"></span>
+            </div>
+          </div>
+        </aside>
+        </div>
+
+        <div class="result-actions">
+          <button class="action action--primary action--dark" id="restartQuizButton" type="button"><span class="action-copy"><b>دوباره امتحان کن</b><small>انتخاب تازه، نتیجه تازه</small></span><span class="action-icon" aria-hidden="true">↻</span></button>
+          <button class="action action--text action--dark-text" id="resultMenuButton" type="button"><span>دیدن منوی کامل تابستان</span><span aria-hidden="true">←</span></button>
+        </div>
+      </section>
+
+      <section class="screen menu-screen is-active" id="menuScreen" aria-labelledby="menuTitle">
+        <div class="menu-cover">
+          <div class="menu-cover-gallery" aria-hidden="true">
+            <figure class="menu-cover-frame menu-cover-frame--one"><img id="menuCoverImageA" alt="" width="1254" height="1254" sizes="(max-width: 480px) 74vw, 355px" decoding="async"></figure>
+            <figure class="menu-cover-frame menu-cover-frame--two"><img id="menuCoverImageB" alt="" width="1254" height="1254" sizes="(max-width: 480px) 58vw, 278px" loading="lazy" decoding="async"></figure>
+            <figure class="menu-cover-frame menu-cover-frame--three"><img id="menuCoverImageC" alt="" width="1254" height="1254" sizes="(max-width: 480px) 70vw, 336px" loading="lazy" decoding="async"></figure>
+            <div class="menu-cover-shade"></div>
+          </div>
+
+          <header class="menu-top menu-top--cover">
+            <button class="icon-button" id="closeMenuButton" type="button" aria-label="بازگشت به نتیجه" hidden><span aria-hidden="true">→</span></button>
+            <img class="mini-logo" src="assets/brand/lcafe-logo.svg" alt="L Cafe" width="92" height="44">
+            <span class="season-mark" dir="ltr">SUMMER · 1405</span>
+          </header>
+
+          <div class="menu-intro menu-intro--compact">
+            <div class="menu-intro-heading">
+              <p class="eyebrow" dir="ltr">THE SUMMER COLLECTION</p>
+              <p class="menu-intro-fa">کالکشن تابستانی ال کافه</p>
+            </div>
+            <h1 class="sr-only" id="menuTitle" tabindex="-1">منوی کامل نوشیدنی‌های تابستانی</h1>
+            <p class="menu-intro-summary">چهار حال‌وهوا، ده نوشیدنی؛ انتخابی برای مکث همین لحظه.</p>
+            <button class="menu-intro-quiz" id="menuQuizButtonTop" type="button">
+              <span class="action-copy"><b>نوشیدنی من را پیدا کن</b><small>دو سؤال کوتاه، یک پیشنهاد مخصوص تو</small></span>
+              <span class="action-icon" aria-hidden="true">←</span>
+            </button>
+          </div>
+        </div>
+
+
+        <div class="menu-chapters" id="menuChapters"></div>
+
+        <footer class="menu-footer"><img src="assets/brand/lcafe-logo.svg" alt="L Cafe — Your Daily Pause" width="120" height="58" loading="lazy" decoding="async"><p dir="ltr">FIND YOUR SUMMER PAUSE</p><button type="button" id="menuQuizButton">پیدا کردن نوشیدنی من</button></footer>
+      </section>
+    </main>
+
+    <div class="transition-pattern" id="transitionPattern" aria-hidden="true">
+      <div class="transition-pattern__grid"></div>
+      <span class="transition-pattern__label" dir="ltr">YOUR DAILY PAUSE</span>
+    </div>
+
+    <div class="sr-status" id="screenReaderStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <noscript><div class="noscript">برای استفاده از کوییز و مشاهده منو، JavaScript مرورگر را فعال کنید.</div></noscript>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js?v=20260721-natural-claim" defer></script>
+</body>
+</html>
