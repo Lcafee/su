@@ -105,6 +105,9 @@ def build_main(dc_html, data):
                         .replace("<p>%s</p>" % src_intro, "<p>{intro}</p>", 1))
 
     addons_sec = next((s for s in sections if '<dl class="addons">' in s), None)
+    if addons_sec is None:
+        raise SystemExit(
+            'menu_render: no <dl class="addons"> found in Menu.dc.html')
 
     # --- render ------------------------------------------------------------
     out = []
@@ -113,7 +116,17 @@ def build_main(dc_html, data):
             rows = "\n".join(tpl_row.format(label=i["name"], price=i["price"])
                              for i in c["items"])
             sec = addons_sec
-            aid = re.search(r'aria-labelledby="([^"]+)"', sec).group(1)
+            # Add-ons use a different body shape, but their category metadata
+            # is still menu.json-owned. Replacing only the rows left the canvas
+            # placeholder intro in production and let the heading/id drift.
+            sec = _replace_field(sec, r'(aria-labelledby=")([^"]*)(")', c["id"],
+                                 "section aria-labelledby", "add-ons section")
+            sec = _replace_field(sec, r'(<h2 id=")([^"]*)(">)', c["id"],
+                                 "heading id", "add-ons section")
+            sec = _replace_field(sec, r'(<h2 id="[^"]+">)(.*?)(</h2>)', c["title"],
+                                 "heading text", "add-ons section")
+            sec = _replace_field(sec, r'(<h2 id="[^"]+">.*?</h2>\s*<p>)(.*?)(</p>)',
+                                 c["intro"], "category intro", "add-ons section")
             sec = re.sub(r'(<dl class="addons">).*?(</dl>)',
                          lambda m: m.group(1) + "\n" + rows + "\n" + m.group(2), sec, flags=re.S)
             out.append(sec)
