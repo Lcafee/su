@@ -164,8 +164,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   background-repeat:repeat;
   background-size:var(--tile) calc(var(--tile) * 0.983)}
 
-/* The signature. Absent during the hero, then it takes the wordmark's place
-   at dead centre as that fades — the two never share the screen. */
+/* The signature. Absent during the hero, then it takes the phrase's place at
+   dead centre as that fades — the two never share the screen. */
 .mark{position:fixed;top:-21vh;left:50%;z-index:1;pointer-events:none;
   height:142vh;width:auto;opacity:0;will-change:transform,opacity}
 .mark path{fill:#E6E5E1}
@@ -173,11 +173,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .page{position:relative;z-index:2}
 
 .hero{margin:0;width:100%;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
-.hero-lockup{width:clamp(200px,23vw,430px);display:flex;flex-direction:column;align-items:center;
-  gap:clamp(14px,1.5vw,20px);transform:translateY(-1.5svh)}
-.hero img{display:block;width:100%;height:auto}
-.hero-tagline{font:500 clamp(9px,calc(.35vw + 7.8px),12px)/1 var(--font);
-  letter-spacing:.28em;color:var(--ink-strong);white-space:nowrap}
+.hero-phrase{display:block;padding-inline-start:.32em;transform:translateY(-1.5svh);
+  font:500 clamp(14px,1.25vw,20px)/1 var(--font);letter-spacing:.32em;
+  color:var(--ink);white-space:nowrap}
 
 .body{margin:0;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
 
@@ -210,17 +208,11 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   margin-block-start:var(--flow);margin-block-end:clamp(112px,11vw,156px);
   margin-inline-start:clamp(0px,8vw,140px)}
 
-/* The menu is the page's one action and visual climax. On a wide screen the
-   title leads from the RTL reading edge while the explanation and existing
-   button form a quieter support column. Space, scale and placement do the work;
-   the action itself keeps the same printed-block character. */
-.menu{padding:0 var(--gutter);margin:0 auto clamp(96px,8vw,120px);max-width:1180px;text-align:right}
-.menu .inner{width:100%;display:grid;
-  grid-template-columns:minmax(0,1.45fr) minmax(280px,.72fr);
-  gap:clamp(48px,8vw,112px);align-items:end}
-.menu-title{margin:0;font-family:var(--display);font-weight:700;
-  font-size:clamp(56px,7.2vw,92px);line-height:1.15;letter-spacing:-.005em;color:var(--ink)}
-.menu-support{max-width:34ch;padding-bottom:clamp(4px,1vw,12px)}
+/* The menu entry is a quiet handoff, not another display-heading moment. Its
+   copy and the page's one primary action form one centred editorial unit. */
+.menu{padding:0 var(--gutter);margin:0 auto var(--flow);max-width:1180px;text-align:center}
+.menu .inner{width:min(100%,34ch);margin-inline:auto}
+.menu-support{max-width:none}
 .cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(26px,4vw,34px);
   padding:0 30px;background:var(--ink);color:var(--bg);
   font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
@@ -399,11 +391,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      not a narrower crop of this one. */
   .photo{margin-block-start:var(--flow);
     margin-block-end:clamp(72px,20vw,88px);margin-inline-start:0}
-  .menu{margin-bottom:clamp(72px,20vw,88px);text-align:center}
-  .menu .inner{display:block;width:auto;max-width:36ch;margin-inline:auto}
-  .menu-title{margin-bottom:clamp(18px,5vw,24px);
-    font-size:clamp(46px,14vw,58px);line-height:1.2}
-  .menu-support{max-width:32ch;margin-inline:auto;padding:0}
+  .menu{margin-bottom:var(--flow)}
   .contact{padding-bottom:clamp(72px,20vw,88px)}
   .contact .inner{display:block;padding-top:clamp(42px,12vw,54px)}
   .contact-primary{max-width:none}
@@ -421,7 +409,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 <div class="field" aria-hidden="true"></div>
 <!-- No inline opacity/transform: the resting state is the one CSS already
-     describes (.mark is opacity:0, the wordmark is opaque), and the handoff
+     describes (.mark is opacity:0, the phrase is opaque), and the handoff
      script writes over it from scroll. That way the hero with no JS is the
      hero at scroll zero, rather than a mark stuck at full strength. -->
 <svg class="mark" viewBox="9.455400 14.402475 41.399475 55.502550" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -433,10 +421,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 <a class="skip" href="#about">رفتن به محتوای اصلی</a>
 
 <h1 class="hero">
-<span class="hero-lockup">
-<img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="L Cafe">
-<span class="hero-tagline" lang="en" dir="ltr">YOUR DAILY PAUSE</span>
-</span>
+<span class="hero-phrase" lang="en" dir="ltr">YOUR DAILY PAUSE</span>
 </h1>
 
 <main id="about">
@@ -461,9 +446,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 <section class="menu" aria-label="منو">
 <div class="inner t-stagger">
-<h2 class="menu-title t-stagger-line t-stagger-line--1">منو</h2>
 <div class="menu-support">
-<p class="body t-stagger-line t-stagger-line--2">انتخاب‌هایی سالم و باکیفیت، با دقت آماده شده‌اند تا برای هر لحظه از روز، طعمی شایسته شما بسازند.</p>
+<p class="body t-stagger-line t-stagger-line--1">انتخاب‌هایی سالم و باکیفیت، با دقت آماده شده‌اند تا برای هر لحظه از روز، طعمی شایسته شما بسازند.</p>
 <a class="cta" href="Menu.dc.html">مشاهده منو</a>
 </div>
 </div>
@@ -625,10 +609,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   // scale, not from value, so it never fights the copy for attention.
   var PEAK = 0.095;
 
-  var logo = document.querySelector('.hero-lockup');
+  var heroBrand = document.querySelector('.hero-phrase');
   var mark = document.querySelector('.mark');
   var field = document.querySelector('.field');
-  if (!logo || !mark || !field) return;
+  if (!heroBrand || !mark || !field) return;
 
   var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var end = (window.innerHeight || 800) * 0.5;
@@ -655,7 +639,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
     var t = Math.min(1, Math.max(0, window.scrollY / end));
     // smoothstep: eases in and out instead of a straight ramp
     var eased = t * t * (3 - 2 * t);
-    // Hold dead centre until the wordmark is fully gone, then drift up slower
+    // Hold dead centre until the phrase is fully gone, then drift up slower
     // than the copy. Drifting during the handoff would stop it reading as
     // "arriving here".
     var drift = still ? 0 : Math.max(0, window.scrollY - end) * 0.38;
@@ -670,7 +654,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
     // Both sides of the handoff ride the same curve, so they cross once
     // instead of both sitting half-visible.
     var scale = still ? 1 : 0.96 + eased * 0.04;
-    logo.style.opacity = 1 - eased;
+    heroBrand.style.opacity = 1 - eased;
     mark.style.opacity = eased * PEAK * (1 - exitEased);
     mark.style.transform = 'translate3d(-50%,' + (-drift) + 'px,0) scale(' + scale + ')';
     field.style.opacity = fieldOpacity.toFixed(4);
