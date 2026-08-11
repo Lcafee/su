@@ -138,14 +138,25 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    dead centre as that fades — the two never share the screen. */
 .mark{position:fixed;top:-21vh;left:50%;z-index:1;pointer-events:none;
   height:142vh;width:auto;opacity:0;will-change:transform,opacity}
+.mark[hidden]{display:none}
 .mark path{fill:#E6E5E1}
 
 .page{position:relative;z-index:2}
 
-.hero{margin:0;width:100%;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center}
+.hero{position:relative;margin:0;width:100%;height:100vh;height:100svh;
+  display:flex;align-items:center;justify-content:center}
 .hero-phrase{display:block;padding-inline-start:.32em;transform:translateY(-1.5svh);
-  font:500 clamp(14px,1.25vw,20px)/1 var(--font);letter-spacing:.32em;
-  color:var(--ink);white-space:nowrap}
+  max-width:92vw;font:600 clamp(18px,3vw,32px)/1.15 var(--font);
+  letter-spacing:clamp(.16em,.5vw,.26em);color:var(--ink);white-space:nowrap}
+.scroll-cue{position:absolute;bottom:clamp(18px,4svh,38px);left:50%;
+  transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;
+  gap:9px;color:var(--ink-soft);opacity:.72;pointer-events:none}
+.scroll-cue-label{font:500 11px/1.3 var(--font)}
+.scroll-cue-line{position:relative;width:1px;height:22px;overflow:hidden;
+  background:rgba(243,241,236,.24)}
+.scroll-cue-line::after{content:"";position:absolute;top:-60%;left:0;width:1px;height:60%;
+  background:var(--ink);animation:scroll-cue 2.4s var(--motion-ease) infinite}
+@keyframes scroll-cue{0%,18%{transform:translateY(0)}72%,100%{transform:translateY(60px)}}
 
 .body{margin:0;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
 
@@ -342,6 +353,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      still holds the old page on screen while the new one loads. */
   @view-transition{navigation:none}
   .mark{transform:translate3d(-50%,0,0) !important}
+  .scroll-cue-line::after{display:none}
   .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
   .t-skel-skeleton,.t-skel-content{transition:none!important}
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
@@ -383,7 +395,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      describes (.mark is opacity:0, the phrase is opaque), and the handoff
      script writes over it from scroll. That way the hero with no JS is the
      hero at scroll zero, rather than a mark stuck at full strength. -->
-<svg class="mark" viewBox="9.455400 14.402475 41.399475 55.502550" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<svg class="mark" hidden viewBox="9.455400 14.402475 41.399475 55.502550" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
 <path d="M 24.578125 15.261719 C 24.578125 24.546875 24.488281 23.8125 24.414062 33.097656 C 24.34375 41.796875 24.257812 51.75 24.152344 62.957031 C 24.132812 65.070312 24.085938 67.1875 24.089844 69.304688 C 24.867188 69.21875 25.640625 69.132812 26.417969 69.046875 C 26.386719 64.195312 25.316406 58.125 22.746094 53.96875 C 21.121094 51.339844 18.703125 48.667969 15.625 47.792969 C 13.488281 47.1875 10.808594 47.789062 9.714844 49.894531 C 9.074219 51.125 9.695312 52.183594 10.753906 52.894531 C 12.335938 53.957031 14.390625 54.386719 16.222656 54.753906 C 18.941406 55.296875 21.707031 55.605469 24.464844 55.84375 C 30.777344 56.390625 37.125 56.535156 43.457031 56.558594 C 47.253906 56.574219 45.484375 56.546875 49.28125 56.429688 C 49.75 56.414062 50.597656 56.292969 50.804688 55.773438 C 50.988281 55.308594 50.644531 54.988281 50.152344 55.003906 C 41.828125 55.265625 39.03125 55.222656 30.710938 54.785156 C 25.644531 54.519531 20.375 54.265625 15.460938 52.898438 C 14.289062 52.574219 12.605469 52.132812 11.945312 51.085938 C 11.5 50.382812 12.121094 49.179688 12.980469 49 C 13.894531 48.808594 15.210938 49.476562 16.050781 50.007812 C 17.550781 50.960938 18.792969 52.308594 19.824219 53.742188 C 22.789062 57.855469 24.058594 64.285156 24.089844 69.304688 C 24.097656 70.34375 26.421875 69.886719 26.417969 69.046875 C 26.402344 63.179688 26.53125 56.054688 26.582031 50.191406 C 26.679688 39.292969 26.773438 39.667969 26.84375 28.773438 C 26.875 24.183594 26.90625 19.59375 26.90625 15.003906 C 26.90625 13.964844 24.578125 14.417969 24.578125 15.261719"></path>
 </svg>
 
@@ -393,6 +405,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 <h1 class="hero">
 <span class="hero-phrase" lang="en" dir="ltr">YOUR DAILY PAUSE</span>
+<span class="scroll-cue" aria-hidden="true">
+<span class="scroll-cue-label">ادامه</span>
+<span class="scroll-cue-line"></span>
+</span>
 </h1>
 
 <main id="about">
@@ -575,14 +591,20 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 // The measured handoff remains; the field now follows the same smoothstep so
 // its changing presence reads as one continuous system rather than five scenes.
 (function () {
+  // One owning switch keeps the giant mark restorable without shipping its
+  // rendering or animation work while the feature is visually disabled.
+  var GIANT_MARK_ENABLED = false;
+
   // Peak opacity of the giant mark. Low on purpose: its presence comes from
   // scale, not from value, so it never fights the copy for attention.
   var PEAK = 0.095;
 
   var heroBrand = document.querySelector('.hero-phrase');
+  var scrollCue = document.querySelector('.scroll-cue');
   var mark = document.querySelector('.mark');
   var field = document.querySelector('.field');
   if (!heroBrand || !mark || !field) return;
+  mark.toggleAttribute('hidden', !GIANT_MARK_ENABLED);
 
   var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var end = (window.innerHeight || 800) * 0.5;
@@ -612,21 +634,29 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
     // Hold dead centre until the phrase is fully gone, then drift up slower
     // than the copy. Drifting during the handoff would stop it reading as
     // "arriving here".
-    var drift = still ? 0 : Math.max(0, window.scrollY - end) * 0.38;
+    var drift = GIANT_MARK_ENABLED && !still ? Math.max(0, window.scrollY - end) * 0.38 : 0;
     var fieldOpacity = fieldStrength(window.scrollY + (window.innerHeight || 800) * 0.5);
-    var exitT = Math.min(1, Math.max(0,
-      (window.scrollY - markExitStart) / Math.max(1, markExitEnd - markExitStart)));
-    var exitEased = exitT * exitT * (3 - 2 * exitT);
+    var exitEased = 0;
+    if (GIANT_MARK_ENABLED) {
+      var exitT = Math.min(1, Math.max(0,
+        (window.scrollY - markExitStart) / Math.max(1, markExitEnd - markExitStart)));
+      exitEased = exitT * exitT * (3 - 2 * exitT);
+    }
     if (eased === lastEased && drift === lastDrift && fieldOpacity === lastField) return;
     lastEased = eased;
     lastDrift = drift;
     lastField = fieldOpacity;
     // Both sides of the handoff ride the same curve, so they cross once
     // instead of both sitting half-visible.
-    var scale = still ? 1 : 0.96 + eased * 0.04;
     heroBrand.style.opacity = 1 - eased;
-    mark.style.opacity = eased * PEAK * (1 - exitEased);
-    mark.style.transform = 'translate3d(-50%,' + (-drift) + 'px,0) scale(' + scale + ')';
+    if (scrollCue) {
+      scrollCue.style.opacity = ((1 - eased) * 0.72).toFixed(4);
+    }
+    if (GIANT_MARK_ENABLED) {
+      var scale = still ? 1 : 0.96 + eased * 0.04;
+      mark.style.opacity = eased * PEAK * (1 - exitEased);
+      mark.style.transform = 'translate3d(-50%,' + (-drift) + 'px,0) scale(' + scale + ')';
+    }
     field.style.opacity = fieldOpacity.toFixed(4);
   }
 
