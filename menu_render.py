@@ -19,10 +19,26 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PLACEHOLDER = "item-placeholder.webp"
+SUMMER_IMAGES_ENABLED = False
+SUMMER_PHOTO_PREFIXES = ("cl-", "fr-", "it-", "rf-")
 
 MAIN = re.compile(r'(<main id="menu">)(.*?)(</main>)', re.S)
 SECTION = re.compile(r'<section class="cat" aria-labelledby="[^"]+">.*?</section>', re.S)
 ARTICLE = re.compile(r'<article class="item">.*?</article>', re.S)
+
+
+def _photo_for_item(item):
+    """Return the assigned photo or the shared placeholder presentation.
+
+    Summer references stay intact in menu.json; the single switch makes their
+    temporary placeholder treatment explicit and reversible.
+    """
+    photo = item.get("photo")
+    if not photo:
+        return PLACEHOLDER
+    if not SUMMER_IMAGES_ENABLED and photo.startswith(SUMMER_PHOTO_PREFIXES):
+        return PLACEHOLDER
+    return photo
 
 
 def _match_once(text, pattern, field, kind):
@@ -134,7 +150,7 @@ def build_main(dc_html, data):
 
         items = []
         for it in c["items"]:
-            photo = it.get("photo") or PLACEHOLDER
+            photo = _photo_for_item(it)
             if "options" in it:
                 t = tpl_opted
                 rows = "\n".join(tpl_row.format(label=o["label"], price=o["price"])

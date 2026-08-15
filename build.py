@@ -158,16 +158,14 @@ def publish_photos(html, src):
         photo = (
             FORCE_MENU_IMAGE_SRC
             if FORCE_MENU_IMAGE_PREVIEW
-            else attrs.get("data-src") or attrs.get("src") or ""
+            else attrs.get("data-src") or attrs.get("src")
+            or "assets/menu/opt/%s" % menu_render.PLACEHOLDER
         )
 
-        # No photo for this item yet. menu_render points those at a shared
-        # placeholder file so the canvas tool has something to show while
-        # authoring, but shipping one identical stand-in twenty-six times tells
-        # the reader the site is unfinished. An empty tile is the honest state,
-        # and it costs no request at all.
-        if not photo or photo.endswith(menu_render.PLACEHOLDER):
-            return '<span class="item-photo-empty" aria-hidden="true"></span>'
+        # Missing and temporarily withheld Summer imagery both arrive here as
+        # the project's shared placeholder. Publish it through the same <img>
+        # path as every product photo so the card geometry and responsive
+        # source selection stay identical.
 
         i = seen[0]
         seen[0] += 1

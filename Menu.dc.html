@@ -83,7 +83,7 @@ window.__resources = {
   --radius:12px;
   --ease:cubic-bezier(.22,1,.36,1);
 }
-html{scroll-behavior:smooth;overflow-x:hidden;background:var(--ivory)}
+html{scroll-behavior:smooth;overflow-x:clip;background:var(--ivory)}
 html,body{margin:0;padding:0;font-family:var(--font);-webkit-text-size-adjust:100%}
 body{
   position:relative;
@@ -146,7 +146,7 @@ a:focus-visible,button:focus-visible{
   bottom:max(14px,env(safe-area-inset-bottom,0px));
   z-index:40;
   min-height:44px;
-  max-width:min(176px,calc(100vw - 24px));
+  max-width:min(176px,calc(100% - 24px));
   display:grid;
   grid-template-columns:auto minmax(0,1fr);
   align-items:center;
@@ -411,7 +411,7 @@ a:focus-visible,button:focus-visible{
   right:max(12px,env(safe-area-inset-right,0px));
   bottom:calc(68px + env(safe-area-inset-bottom,0px));
   z-index:45;
-  width:min(344px,calc(100vw - 24px));
+  width:min(344px,calc(100% - 24px));
   max-height:calc(100vh - 92px);
   max-height:calc(100dvh - 92px);
   overflow:auto;
@@ -526,7 +526,7 @@ a:focus-visible,button:focus-visible{
   .item h3{font-size:clamp(14px,4.5vw,15.5px)}
   .item p{font-size:12px}
   .category-trigger{right:10px;bottom:10px}
-  .category-nav{right:10px;bottom:64px;width:calc(100vw - 20px)}
+  .category-nav{right:10px;bottom:64px;width:calc(100% - 20px)}
 }
 @media (min-width:760px){
   .cat-head{grid-template-columns:220px minmax(0,1fr)}

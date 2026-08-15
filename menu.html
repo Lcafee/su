@@ -64,7 +64,7 @@
   --radius:12px;
   --ease:cubic-bezier(.22,1,.36,1);
 }
-html{scroll-behavior:smooth;overflow-x:hidden;background:var(--ivory)}
+html{scroll-behavior:smooth;overflow-x:clip;background:var(--ivory)}
 html,body{margin:0;padding:0;font-family:var(--font);-webkit-text-size-adjust:100%}
 body{
   position:relative;
@@ -127,7 +127,7 @@ a:focus-visible,button:focus-visible{
   bottom:max(14px,env(safe-area-inset-bottom,0px));
   z-index:40;
   min-height:44px;
-  max-width:min(176px,calc(100vw - 24px));
+  max-width:min(176px,calc(100% - 24px));
   display:grid;
   grid-template-columns:auto minmax(0,1fr);
   align-items:center;
@@ -392,7 +392,7 @@ a:focus-visible,button:focus-visible{
   right:max(12px,env(safe-area-inset-right,0px));
   bottom:calc(68px + env(safe-area-inset-bottom,0px));
   z-index:45;
-  width:min(344px,calc(100vw - 24px));
+  width:min(344px,calc(100% - 24px));
   max-height:calc(100vh - 92px);
   max-height:calc(100dvh - 92px);
   overflow:auto;
@@ -507,7 +507,7 @@ a:focus-visible,button:focus-visible{
   .item h3{font-size:clamp(14px,4.5vw,15.5px)}
   .item p{font-size:12px}
   .category-trigger{right:10px;bottom:10px}
-  .category-nav{right:10px;bottom:64px;width:calc(100vw - 20px)}
+  .category-nav{right:10px;bottom:64px;width:calc(100% - 20px)}
 }
 @media (min-width:760px){
   .cat-head{grid-template-columns:220px minmax(0,1fr)}
@@ -576,7 +576,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>ماسگرانولا</h3>
 <p>ماست پروتئینی با گرانولا، موز و سس بری.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -584,7 +584,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>ال کوچیا</h3>
 <p>ترکیبی سبک و سیرکننده بر پایه دانه چیا و مواد تازه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -682,7 +682,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>اسپنیش لاته پسته</h3>
 <p>اسپرسو عربیکا، شیر و سس پسته ال‌کافه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -690,7 +690,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>اسپنیش لاته زعفران</h3>
 <p>اسپرسو عربیکا، شیر و سس زعفران ال‌کافه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -768,7 +768,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>آیس اسپنیش لاته زعفران</h3>
 <p>اسپرسو عربیکا، شیر، سس زعفران ال‌کافه و یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -776,7 +776,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کلدبرو</h3>
 <p>قهوه با عصاره‌گیری سرد و طولانی؛ نرم و کم‌تلخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -784,7 +784,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>آیس پرشین کافی پسته</h3>
 <p>نسخه سرد پرشین کافی با طعم پسته و یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -792,7 +792,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>آیس چاکلت</h3>
 <p>نوشیدنی سرد شکلاتی با یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -800,7 +800,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>آیس موکا</h3>
 <p>قهوه و شکلات در ترکیبی سرد با یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -819,7 +819,7 @@ a:focus-visible,button:focus-visible{
 </div>
 <div class="grid">
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/fr-01.webp" srcset="assets/menu/opt/fr-01-300.webp 300w, assets/menu/opt/fr-01.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>فراپه کارامل نمکی</h3>
 <p>فراپه یخی و کرمی قهوه با کارامل نمکی.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -827,7 +827,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/fr-02.webp" srcset="assets/menu/opt/fr-02-300.webp 300w, assets/menu/opt/fr-02.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>فراپه ارده</h3>
 <p>فراپه یخی و کرمی با طعم عمیق ارده.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -835,7 +835,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>میلک شیک چاکلت دبی</h3>
 <p>ژلاتوی وانیلی دست‌ساز با شکلات مخصوص ال‌کافه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -843,7 +843,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>میلک شیک لوتوس</h3>
 <p>ژلاتوی وانیلی دست‌ساز با کرم بیسکویت لوتوس.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -859,7 +859,7 @@ a:focus-visible,button:focus-visible{
 </div>
 <div class="grid">
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/cl-01.webp" srcset="assets/menu/opt/cl-01-300.webp 300w, assets/menu/opt/cl-01.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کلودی پسته</h3>
 <p>نوشیدنی لایه‌ای پسته با فوم نرم و کرمی.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -867,7 +867,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/cl-03.webp" srcset="assets/menu/opt/cl-03-300.webp 300w, assets/menu/opt/cl-03.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کلودی کوکی</h3>
 <p>نوشیدنی کرمی کوکی با حضور ملایم اسپرسو.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -875,7 +875,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/cl-02.webp" srcset="assets/menu/opt/cl-02-300.webp 300w, assets/menu/opt/cl-02.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کلودی زعفران</h3>
 <p>نوشیدنی لایه‌ای زعفران با فوم نرم و کرمی.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -975,7 +975,7 @@ a:focus-visible,button:focus-visible{
 </div>
 <div class="grid">
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>لیموناد</h3>
 <p>لیمو و سودا روی یخ؛ ترش و تازه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -983,7 +983,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>موهیتو</h3>
 <p>نعناع، لیمو و سودا روی یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -991,7 +991,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>جینجر لایم</h3>
 <p>زنجبیل، لایم و سودا؛ تازه و کمی تند.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1007,7 +1007,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>هات شات</h3>
 <p>شات عصاره زنجبیل و لیمو؛ تند و ترش.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1015,7 +1015,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>رد هات شات</h3>
 <p>زنجبیل، چای ترش و توت‌فرنگی؛ تند و میوه‌ای.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1031,7 +1031,7 @@ a:focus-visible,button:focus-visible{
 </div>
 <div class="grid">
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/it-02.webp" srcset="assets/menu/opt/it-02-300.webp 300w, assets/menu/opt/it-02.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>هربال‌تی پیچ بلک</h3>
 <p>چای سیاه سرد با طعم و رایحه هلو.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1039,7 +1039,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/it-01.webp" srcset="assets/menu/opt/it-01-300.webp 300w, assets/menu/opt/it-01.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>هربال‌تی اپل پارادایس</h3>
 <p>ترکیب سرد سیب، به و دارچین.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1055,7 +1055,7 @@ a:focus-visible,button:focus-visible{
 </div>
 <div class="grid">
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/rf-02.webp" srcset="assets/menu/opt/rf-02-300.webp 300w, assets/menu/opt/rf-02.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>رفرشر انبه و شاهتوت</h3>
 <p>انبه و شاهتوت با سودا و اندکی عسل.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1063,7 +1063,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/rf-01.webp" srcset="assets/menu/opt/rf-01-300.webp 300w, assets/menu/opt/rf-01.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>رفرشر توت‌فرنگی و گیلاس</h3>
 <p>توت‌فرنگی و گیلاس با سودا و اندکی عسل.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1071,7 +1071,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><img src="assets/menu/opt/rf-03.webp" srcset="assets/menu/opt/rf-03-300.webp 300w, assets/menu/opt/rf-03.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>رفرشر جینجر بیزل</h3>
 <p>زنجبیل و ریحان ایتالیایی با سودا و اندکی عسل.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1087,7 +1087,7 @@ a:focus-visible,button:focus-visible{
 </div>
 <div class="grid">
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>ماچا لاته</h3>
 <p>ماچای ژاپنی و شیر؛ بدون شیرینی افزوده.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1095,7 +1095,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>ماچا لاته پسته</h3>
 <p>ماچای ژاپنی، شیر و سس پسته ال‌کافه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1103,7 +1103,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>ماچا لاته زعفران</h3>
 <p>ماچای ژاپنی، شیر و سس زعفران ال‌کافه.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1159,7 +1159,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>آیس اسپنیش ردبری ماچا</h3>
 <p>ماچا، شیر، سس شاهتوت ال‌کافه و یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1167,7 +1167,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>آیس اسپنیش ردبری اسپرولینا</h3>
 <p>اسپرولینای آبی، شیر، سس شاهتوت ال‌کافه و یخ.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1239,7 +1239,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کیک هویج</h3>
 <p>کیک هویج با گردو، دارچین و جوز هندی.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1295,7 +1295,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>گلدن آلموند</h3>
 <p>دسری لطیف با محوریت بادام و طعمی مغزی.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1303,7 +1303,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کروسان ساده</h3>
 <p>کروسان کره‌ای با لایه‌های سبک و پوسته ترد.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1311,7 +1311,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کروسان شکلاتی</h3>
 <p>کروسان کره‌ای و لایه‌ای با مغز شکلات.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1319,7 +1319,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کروسان نان وپنیر</h3>
 <p>کروسان لایه‌ای در کنار پنیر.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1327,7 +1327,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>کروسان بادام زمینی</h3>
 <p>کروسان لایه‌ای با کرم بادام‌زمینی.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1367,7 +1367,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>لقمه صبحانه</h3>
 <p>کروسان با پنیر طعم‌دار، گوجه خشک و روکولا.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1399,7 +1399,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>سالاد مخصوص ال کافه</h3>
 <p>کاهوی فرانسوی، مرغ گریل‌شده، سبزیجات و پارمسان.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
@@ -1407,7 +1407,7 @@ a:focus-visible,button:focus-visible{
 </article>
 
 <article class="item">
-<div class="item-photo t-avatar"><span class="item-photo-empty" aria-hidden="true"></span></div>
+<div class="item-photo t-avatar"><img src="assets/menu/opt/item-placeholder.webp" srcset="assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w" sizes="(min-width: 880px) 285px, 38vw" width="600" height="600" alt="" decoding="async" loading="lazy"></div>
 <h3>تست آووکادو پسته</h3>
 <p>نان تست با آووکادو و پسته.</p>
 <button class="more" type="button" aria-expanded="false" hidden>بیشتر</button>
