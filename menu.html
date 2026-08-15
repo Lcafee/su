@@ -43,8 +43,6 @@
   --display:'Sahel','Vazirmatn',system-ui,sans-serif;
   --scarlet:#681F2D;
   --scarlet-rgb:104,31,45;
-  --scarlet-deep:#4A111C;
-  --scarlet-deep-rgb:74,17,28;
   --ivory:#F3F1EC;
   --ivory-rgb:243,241,236;
   --ivory-deep:#E6E5E1;
@@ -62,7 +60,7 @@
   --on-dark-line:rgba(var(--ivory-rgb),.2);
   --gutter:clamp(14px,4vw,48px);
   --content:900px;
-  --bar-h:58px;
+  --scroll-offset:12px;
   --radius:12px;
   --ease:cubic-bezier(.22,1,.36,1);
 }
@@ -123,124 +121,71 @@ a:focus-visible,button:focus-visible{
   z-index:50;
 }
 
-.bar{
-  position:sticky;
-  top:0;
-  z-index:30;
-  min-height:var(--bar-h);
+.category-trigger{
+  position:fixed;
+  right:max(12px,env(safe-area-inset-right,0px));
+  bottom:max(14px,env(safe-area-inset-bottom,0px));
+  z-index:40;
+  min-height:44px;
+  max-width:min(176px,calc(100vw - 24px));
   display:grid;
-  grid-template-columns:auto minmax(0,1fr) auto auto;
+  grid-template-columns:auto minmax(0,1fr);
   align-items:center;
   gap:8px;
-  padding:6px var(--gutter);
-  color:var(--on-dark);
-  background:rgba(var(--scarlet-rgb),.96);
-  border-bottom:1px solid var(--on-dark-line);
+  padding:7px 12px;
+  border:1px solid var(--line-strong);
+  border-radius:999px;
+  color:var(--ink);
+  background:rgba(var(--ivory-rgb),.96);
+  box-shadow:0 8px 22px rgba(var(--scarlet-rgb),.12);
   backdrop-filter:blur(6px);
   -webkit-backdrop-filter:blur(6px);
+  cursor:pointer;
+  text-align:right;
 }
-.bar-back,.bar-nav,.nav-close{
+.category-trigger-label{font:600 12.5px/1 var(--font)}
+.category-trigger-current{
+  min-width:0;
+  overflow:hidden;
+  padding-inline-start:8px;
+  border-inline-start:1px solid var(--line);
+  color:var(--ink-dim);
+  font:400 11.5px/1.3 var(--font);
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.category-trigger-current:empty{display:none}
+.category-trigger[aria-expanded="true"]{
+  border-color:var(--scarlet);
+  color:var(--ivory);
+  background:var(--scarlet);
+}
+.category-trigger[aria-expanded="true"] .category-trigger-current{
+  border-color:var(--on-dark-line);
+  color:var(--on-dark-soft);
+}
+.category-trigger[aria-expanded="true"]:focus-visible{outline-color:var(--ivory)}
+.nav-close{
   min-height:44px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
 }
-.bar-back{
-  padding:0 3px;
-  color:var(--on-dark-soft);
-  font:500 12.5px/1.4 var(--font);
-  text-decoration:none;
-}
-.bar-cat{
-  min-width:0;
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
-  color:var(--on-dark-soft);
-  font:500 12.5px/1.4 var(--font);
-  text-align:center;
-}
-.bar-nav{
-  min-width:68px;
-  padding:0 12px;
-  border:1px solid var(--on-dark-line);
-  border-radius:999px;
-  background:rgba(var(--ivory-rgb),.08);
-  color:var(--on-dark);
-  font:500 12.5px/1 var(--font);
-  cursor:pointer;
-}
-.bar img{display:block;width:auto;height:30px}
-.bar a:focus-visible,.bar button:focus-visible{outline-color:var(--ivory)}
-
-#menu{position:relative;z-index:1;padding-top:12px}
-.menu-opening{
-  position:relative;
-  isolation:isolate;
-  width:min(calc(100% - (2 * var(--gutter))),var(--content));
-  min-height:clamp(118px,24vw,154px);
-  margin:0 auto 2px;
-  overflow:hidden;
-  border-block:1px solid var(--on-dark-line);
-  background-color:var(--scarlet);
-  background:
-    linear-gradient(90deg,rgba(var(--scarlet-deep-rgb),.04),rgba(var(--scarlet-deep-rgb),.38)),
-    var(--scarlet);
-}
-.menu-opening::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:3;
-  pointer-events:none;
-  background:linear-gradient(270deg,rgba(var(--scarlet-deep-rgb),.7),rgba(var(--scarlet-deep-rgb),.22) 56%,transparent 86%);
-}
-.menu-opening-copy{
-  position:absolute;
-  z-index:5;
-  right:clamp(16px,4vw,30px);
-  bottom:clamp(12px,2.8vw,20px);
-  max-width:18rem;
-}
-.menu-opening h1{
-  margin:0;
-  color:var(--on-dark);
-  font:700 clamp(25px,5.6vw,36px)/1.3 var(--display);
-  text-wrap:balance;
-}
-.menu-opening p{
-  margin:4px 0 0;
-  color:var(--on-dark-soft);
-  font:400 clamp(11.5px,3vw,13px)/1.7 var(--font);
-}
-.menu-opening-frame{
-  position:absolute;
-  z-index:2;
-  margin:0;
-  aspect-ratio:1;
-  opacity:.84;
-  mix-blend-mode:screen;
-}
-.menu-opening-frame img{
-  display:block;
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  filter:drop-shadow(0 8px 16px rgba(var(--scarlet-deep-rgb),.2));
-}
-.menu-opening-frame--one{width:33%;top:-22%;left:-4%;transform:rotate(-7deg)}
-.menu-opening-frame--two{width:27%;top:-34%;left:19%;transform:rotate(5deg)}
-.menu-opening-frame--three{width:30%;top:18%;left:31%;transform:rotate(-2deg)}
+#menu{position:relative;z-index:1}
 
 .cat{
   width:min(100%,var(--content));
+  max-width:100%;
   margin:0 auto;
   padding:clamp(24px,5vw,42px) var(--gutter) clamp(34px,7vw,58px);
-  scroll-margin-top:var(--bar-h);
+  scroll-margin-top:var(--scroll-offset);
 }
 .cat + .cat{border-top:0}
 .cat-head{
   position:relative;
+  width:100%;
+  max-width:100%;
+  min-width:0;
   display:grid;
   grid-template-columns:minmax(112px,.72fr) minmax(0,1.28fr);
   align-items:start;
@@ -254,11 +199,12 @@ a:focus-visible,button:focus-visible{
   background:var(--fill);
   text-align:right;
 }
+.cat-head>*{min-width:0;overflow-wrap:anywhere}
 .cat-head h2{
   margin:0;
   color:var(--ink);
   font:700 clamp(21px,5.4vw,28px)/1.35 var(--display);
-  scroll-margin-top:calc(var(--bar-h) + 14px);
+  scroll-margin-top:var(--scroll-offset);
   text-wrap:balance;
 }
 .cat-head p{
@@ -443,22 +389,22 @@ a:focus-visible,button:focus-visible{
 
 .category-nav{
   position:fixed;
-  inset:auto max(10px,env(safe-area-inset-right,0px)) auto auto;
-  top:calc(var(--bar-h) + 8px);
+  right:max(12px,env(safe-area-inset-right,0px));
+  bottom:calc(68px + env(safe-area-inset-bottom,0px));
   z-index:45;
-  width:min(370px,calc(100vw - 24px));
-  max-height:calc(100vh - var(--bar-h) - 18px);
-  max-height:calc(100dvh - var(--bar-h) - 18px);
+  width:min(344px,calc(100vw - 24px));
+  max-height:calc(100vh - 92px);
+  max-height:calc(100dvh - 92px);
   overflow:auto;
   overscroll-behavior:contain;
   padding:10px;
   border:1px solid var(--line-strong);
   border-radius:var(--radius);
   color:var(--ink);
-  background:rgba(var(--ivory-rgb),.92);
-  box-shadow:0 12px 28px rgba(var(--scarlet-rgb),.12);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
+  background:rgba(var(--ivory-rgb),.96);
+  box-shadow:0 10px 26px rgba(var(--scarlet-rgb),.13);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
   animation:nav-in 180ms var(--ease) both;
 }
 .category-nav-head{
@@ -466,13 +412,13 @@ a:focus-visible,button:focus-visible{
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:8px;
-  padding:0 2px 8px;
+  margin-bottom:6px;
+  padding:0 4px 7px;
   border-bottom:1px solid var(--line);
 }
 .category-nav h2{
   margin:0;
-  font:700 18px/1.4 var(--display);
+  font:700 16px/1.4 var(--display);
 }
 .nav-close{
   padding:0 10px;
@@ -485,22 +431,22 @@ a:focus-visible,button:focus-visible{
 .category-links{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:4px;
+  gap:2px 4px;
 }
 .category-links a{
   min-height:44px;
   display:flex;
   align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border-radius:10px;
+  gap:7px;
+  padding:7px 9px;
+  border-radius:8px;
   color:var(--ink-soft);
   font:500 13px/1.45 var(--font);
   text-decoration:none;
 }
 .category-links i{
-  width:5px;
-  height:5px;
+  width:4px;
+  height:4px;
   flex:0 0 auto;
   border-radius:50%;
   background:currentColor;
@@ -515,7 +461,7 @@ a:focus-visible,button:focus-visible{
 .category-links a[aria-current] i{opacity:1}
 .category-links a[aria-current]:focus-visible{outline-color:var(--ivory);outline-offset:-4px}
 @keyframes nav-in{
-  from{opacity:0;transform:translateY(-6px)}
+  from{opacity:0;transform:translateY(6px)}
   to{opacity:1;transform:translateY(0)}
 }
 
@@ -548,19 +494,7 @@ a:focus-visible,button:focus-visible{
 .foot a:focus-visible{outline-color:var(--ivory)}
 
 @media (max-width:420px){
-  :root{
-    --gutter:10px;
-    --bar-h:56px;
-  }
-  .bar{gap:5px;padding-block:5px}
-  .bar-back{font-size:12px}
-  .bar-nav{min-width:64px;padding-inline:10px;font-size:12px}
-  .bar img{height:27px}
-  #menu{padding-top:8px}
-  .menu-opening{min-height:122px}
-  .menu-opening-frame--one{width:39%;top:-16%;left:-8%}
-  .menu-opening-frame--two{width:32%;top:-22%;left:18%}
-  .menu-opening-frame--three{width:35%;top:22%;left:30%}
+  :root{--gutter:10px}
   .cat{padding-top:22px;padding-bottom:34px}
   .cat-head{
     grid-template-columns:minmax(104px,.76fr) minmax(0,1.24fr);
@@ -572,13 +506,10 @@ a:focus-visible,button:focus-visible{
   .item-photo{margin-bottom:8px;border-radius:var(--radius)}
   .item h3{font-size:clamp(14px,4.5vw,15.5px)}
   .item p{font-size:12px}
-  .category-nav{right:10px;width:calc(100vw - 20px)}
+  .category-trigger{right:10px;bottom:10px}
+  .category-nav{right:10px;bottom:64px;width:calc(100vw - 20px)}
 }
 @media (min-width:760px){
-  :root{--bar-h:64px}
-  .bar{padding-block:9px}
-  .bar img{height:34px}
-  .menu-opening{margin-top:6px}
   .cat-head{grid-template-columns:220px minmax(0,1fr)}
 }
 @media (prefers-reduced-motion:reduce){
@@ -586,7 +517,7 @@ a:focus-visible,button:focus-visible{
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .bar{background:rgba(var(--scarlet-rgb),.99)}
+  .category-trigger{background:rgba(var(--ivory-rgb),.99)}
   .category-nav{background:rgba(var(--ivory-rgb),.98)}
 }
 </style>
@@ -597,24 +528,14 @@ a:focus-visible,button:focus-visible{
 <a class="skip" href="#menu">رفتن به منو</a>
 
 
-<header class="bar">
-<a class="bar-back" href="index.html">بازگشت</a>
-<span class="bar-cat" aria-hidden="true"></span>
-<button class="bar-nav" type="button" aria-expanded="false" aria-controls="category-nav">دسته‌ها</button>
-<img src="uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
-</header>
+<button class="category-trigger" type="button" aria-expanded="false" aria-controls="category-nav">
+<span class="category-trigger-label">دسته‌ها</span>
+<span class="category-trigger-current" aria-hidden="true"></span>
+</button>
 
 <main id="menu">
 
-<div class="menu-opening">
-  <figure class="menu-opening-frame menu-opening-frame--one"><img src="assets/menu/opt/rf-01.webp" alt="" width="600" height="600" decoding="async"></figure>
-  <figure class="menu-opening-frame menu-opening-frame--two"><img src="assets/menu/opt/cl-01.webp" alt="" width="600" height="600" decoding="async"></figure>
-  <figure class="menu-opening-frame menu-opening-frame--three"><img src="assets/menu/opt/fr-01.webp" alt="" width="600" height="600" decoding="async"></figure>
-  <div class="menu-opening-copy">
-    <h1>منوی ال کافه</h1>
-    <p>محصول‌ها را ببینید یا از دسته‌ها مستقیم انتخاب کنید.</p>
-  </div>
-</div>
+<h1 class="sr-only">منوی ال کافه</h1>
 
 <section class="cat" aria-labelledby="cat-routine">
 <div class="cat-head">
@@ -1551,7 +1472,7 @@ a:focus-visible,button:focus-visible{
 (function () {
   function setup() {
     var nav = document.querySelector(".category-nav:not([data-wired])");
-    var trigger = document.querySelector(".bar-nav");
+    var trigger = document.querySelector(".category-trigger");
     var links = nav ? [].slice.call(nav.querySelectorAll("a[href^='#']")) : [];
     var sections = [].slice.call(document.querySelectorAll("section.cat"));
     if (!nav || !trigger || !links.length || !sections.length) return false;
@@ -1559,7 +1480,7 @@ a:focus-visible,button:focus-visible{
     nav.setAttribute("data-wired", "");
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     var closeButton = nav.querySelector(".nav-close");
-    var barCat = document.querySelector(".bar-cat");
+    var triggerCurrent = document.querySelector(".category-trigger-current");
     var current = null;
     var navigationTarget = null;
 
@@ -1594,7 +1515,7 @@ a:focus-visible,button:focus-visible{
         current = link;
         var heading = document.getElementById(id);
         var label = heading ? heading.textContent.trim() : link.textContent.trim();
-        if (barCat && barCat.textContent !== label) barCat.textContent = label;
+        if (triggerCurrent && triggerCurrent.textContent !== label) triggerCurrent.textContent = label;
 
         if (isOpen()) {
           var navBox = nav.getBoundingClientRect();
