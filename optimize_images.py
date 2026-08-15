@@ -6,10 +6,9 @@ copies of each into assets/menu/opt and the pages point at those. Keeping both
 means a re-crop or a bigger layout can be re-derived from the source instead of
 from an already-downscaled file.
 
-The landing's one photo is derived here too, by landing(). Same reason, one
-extra problem: it is the only image on either page whose FRAME changes shape
-between phone and desktop, so it needs a second crop and not just a second
-width. See that function.
+The landing's one photo is derived here too, by landing(). The approved PNG is
+kept as the source of truth; the page serves a responsive WebP set and link
+previews use a high-quality JPEG derived from that same file.
 
 Run after adding or replacing a photo:  py optimize_images.py
 """
@@ -43,23 +42,27 @@ def variant(stem, edge):
 
 # --- the landing photo ------------------------------------------------------
 
-LANDING_SRC = os.path.join(HERE, "assets", "cafe-interior.webp")
+LANDING_SRC = os.path.join(HERE, "assets", "l-cafe-sculptural-light.png")
+LANDING_STEM = os.path.join(HERE, "assets", "l-cafe-sculptural-light")
+LANDING_SOCIAL = "%s.jpg" % LANDING_STEM
+LANDING_QUALITY = 88
+LANDING_SOCIAL_QUALITY = 92
 
 # One picture, several widths. There used to be two shapes here — a 3:4 crop
 # for the phone and the full landscape above 640 — because the frame took its
 # height from the viewport and cropped whatever did not fit. The frame now
-# takes the photograph's own 1920x1220 ratio, so nothing crops at any width and
+# takes the photograph's own 1586x992 ratio, so nothing crops at any width and
 # there is only one shape left to serve.
 #
 # The phone comes out ahead on bytes, not behind: a 760-wide full frame is
-# 760x483, where the 3:4 crop at the same width was 760x1013. Same width, 52%
+# 760x475, where the old 3:4 crop at the same width was 760x1013. Same width, 53%
 # fewer pixels to send and to decode — and now they are all of the room instead
 # of the middle half of it.
 #
 # 760 covers a 375px phone at 2x (needs 750) and a 430px phone at ~1.8x. 480
-# covers the 1x phones. 1280 is the desktop tier; without it every desktop took
-# the 1920, which stays as the source of truth and the top of the set.
-LANDING_EDGES = (1280, 760, 480)
+# covers the 1x phones. 1280 is the desktop tier; 1586 keeps every pixel of the
+# approved source for wide/high-density displays.
+LANDING_EDGES = (1586, 1280, 760, 480)
 
 # Derivatives of a crop that no longer exists. Removed on the next run so they
 # stop shipping: 143KB of a picture the page does not reference.
@@ -67,16 +70,15 @@ LANDING_STALE = ("cafe-interior-portrait-480.webp", "cafe-interior-portrait-760.
 
 
 def landing():
-    """Derive the landing photo's responsive set from the one full-size file.
+    """Derive the landing photo's responsive set from the approved PNG.
 
-    assets/cafe-interior.webp stays the source of truth and is never rewritten
-    — it is what the desktop still serves and what a future re-crop comes from.
+    The PNG stays untouched as the source of truth. WebP/JPEG files are delivery
+    derivatives and can be recreated without editing the approved photograph.
     """
     if not os.path.isfile(LANDING_SRC):
         print("landing: %s missing, skipped" % os.path.basename(LANDING_SRC))
         return 0
 
-    stem = os.path.splitext(LANDING_SRC)[0]
     folder = os.path.dirname(LANDING_SRC)
 
     for name in LANDING_STALE:
@@ -87,7 +89,8 @@ def landing():
 
     written = 0
     for edge in LANDING_EDGES:
-        dst = "%s-%d.webp" % (stem, edge)
+        dst = ("%s.webp" % LANDING_STEM if edge == max(LANDING_EDGES)
+               else "%s-%d.webp" % (LANDING_STEM, edge))
         # Same idempotence rule as the menu loop above.
         if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(LANDING_SRC):
             continue
@@ -100,12 +103,27 @@ def landing():
             im.thumbnail((edge, edge), Image.LANCZOS)
             size = im.size
             buf = io.BytesIO()
-            im.save(buf, "WEBP", quality=QUALITY, method=6)
+            im.save(buf, "WEBP", quality=LANDING_QUALITY, method=6)
 
         with open(dst, "wb") as fh:
             fh.write(buf.getvalue())
         print("  landing: %s  %dx%d  %d KB"
               % (os.path.basename(dst), size[0], size[1], len(buf.getvalue()) // 1024))
+        written += 1
+
+    if (not os.path.exists(LANDING_SOCIAL)
+            or os.path.getmtime(LANDING_SOCIAL) < os.path.getmtime(LANDING_SRC)):
+        with Image.open(LANDING_SRC) as im:
+            im = im.convert("RGB")
+            im.save(
+                LANDING_SOCIAL,
+                "JPEG",
+                quality=LANDING_SOCIAL_QUALITY,
+                optimize=True,
+                progressive=True,
+            )
+        print("  landing: %s  %d KB"
+              % (os.path.basename(LANDING_SOCIAL), os.path.getsize(LANDING_SOCIAL) // 1024))
         written += 1
     return written
 

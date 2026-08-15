@@ -41,7 +41,7 @@
      which the preload scanner finds at parse time on its own — and it gets to
      drop the fetchpriority="high" with it, which was putting 277KB of a photo
      1.45 viewports down the page in front of the two fonts that are not. -->
-<link rel="preload" href="assets/cafe-interior.webp" as="image" fetchpriority="high">
+<link rel="preload" href="assets/l-cafe-sculptural-light.webp" as="image" fetchpriority="high">
 
 <!-- Link preview. The page is shared by hand — Instagram bio, a WhatsApp
      message to a friend already sitting down — so this card IS the first
@@ -55,10 +55,10 @@
 <meta property="og:title" content="ال کافه — چهارباغ بالا، اصفهان">
 <meta property="og:description" content="کافه‌ای در چهارباغ بالای اصفهان. احترام، سلامت و کیفیت، اساس هر تجربه.">
 <meta property="og:url" content="https://lcafe-esf.ir/">
-<meta property="og:image" content="https://lcafe-esf.ir/assets/cafe-interior.jpg">
-<meta property="og:image:width" content="1800">
-<meta property="og:image:height" content="1013">
-<meta property="og:image:alt" content="فضای داخلی ال کافه">
+<meta property="og:image" content="https://lcafe-esf.ir/assets/l-cafe-sculptural-light.jpg">
+<meta property="og:image:width" content="1586">
+<meta property="og:image:height" content="992">
+<meta property="og:image:alt" content="چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده">
 <meta name="twitter:card" content="summary_large_image">
 
 <!-- Only facts confirmed by the owner and already visible on the page. No
@@ -74,7 +74,7 @@
   "name": "ال کافه",
   "alternateName": "L Cafe",
   "url": "https://lcafe-esf.ir/",
-  "image": "https://lcafe-esf.ir/assets/cafe-interior.jpg",
+  "image": "https://lcafe-esf.ir/assets/l-cafe-sculptural-light.jpg",
   "telephone": "+989130005768",
   "openingHours": "Mo-Su 07:00-23:00",
   "address": {
@@ -217,7 +217,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
    With the ratio matched, object-fit:cover is a no-op and stays only as a
    guard — contain would letterbox on the maroon and read as a bug. */
-.photo{aspect-ratio:1920/1220;background:var(--ink);overflow:hidden;
+.photo{aspect-ratio:1586/992;background:var(--ink);overflow:hidden;
   margin-block-start:var(--flow);margin-block-end:clamp(112px,11vw,156px);
   margin-inline-start:clamp(0px,8vw,140px)}
 
@@ -310,7 +310,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    is what keeps the frame filled instead of letterboxed — and the aspect-ratio
    on .photo is what has to be updated to match. */
 .t-skel-content>picture{display:block;width:100%;height:100%}
-.t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover}
+.t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover;object-position:46% 48%}
 .t-skel-skeleton{
   z-index:1;
   opacity:1;
@@ -456,8 +456,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      here in the source with the rest of the copy. It does not reach the canvas
      preview — image-slot hard-codes alt="" in its shadow root and cannot be
      told otherwise — build.py puts it on the published <img>. Describing what
-     is in the frame, not interpreting it: the room, the seating, the mural. -->
-<image-slot id="landing-about-photo" shape="rect" placeholder="تصویر فول‌ساید فضای کافه" src="assets/cafe-interior.webp" data-alt="سالن ال کافه؛ میزهای سفید با صندلی‌های چوبی، مبل‌های زرشکی و دیوارکوبی از منظره‌ای کوهستانی"></image-slot>
+     is in the frame, not interpreting it: the hanging light, birds, mural and plant. -->
+<image-slot id="landing-about-photo" shape="rect" placeholder="تصویر فول‌ساید فضای کافه" src="assets/l-cafe-sculptural-light.webp" data-alt="چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده، مقابل دیوارنگاره و گیاهان سالن"></image-slot>
 </div>
 </div>
 

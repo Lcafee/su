@@ -222,13 +222,13 @@ def strip_slot_machinery(html, src):
 # art direction. The frame used to take its height from the viewport and let
 # object-fit resolve the mismatch, which meant a 3:4 crop for the phone and a
 # sixth of the height gone on a wide desktop; it now takes the photograph's own
-# 1920x1220 and nothing is cut anywhere. <picture> stays as the wrapper because
+# 1586x992 and nothing is cut anywhere. <picture> stays as the wrapper because
 # the skeleton's CSS selects through it, but it carries a single source.
 LANDING_SET = (
-    ("assets/cafe-interior-480.webp", 480),
-    ("assets/cafe-interior-760.webp", 760),
-    ("assets/cafe-interior-1280.webp", 1280),
-    ("assets/cafe-interior.webp", 1920),
+    ("assets/l-cafe-sculptural-light-480.webp", 480),
+    ("assets/l-cafe-sculptural-light-760.webp", 760),
+    ("assets/l-cafe-sculptural-light-1280.webp", 1280),
+    ("assets/l-cafe-sculptural-light.webp", 1586),
 )
 # Full width below 640, where the start-side inset is dropped. Above it the
 # frame is the viewport minus that inset, which is 8vw until the clamp caps it
@@ -291,7 +291,7 @@ def publish_landing_photo(html, src):
             # through it.
             '<picture>'
             # width/height are the file's real ratio, and now the frame's too —
-            # .photo carries aspect-ratio:1920/1220, so these describe the box
+            # .photo carries aspect-ratio:1586/992, so these describe the box
             # the browser reserves rather than contradicting it.
             # No loading="lazy". It looks right for something 1.45 viewports
             # down, and it is wrong here: the skeleton above this frame reveals
@@ -302,7 +302,7 @@ def publish_landing_photo(html, src):
             # without breaking that contract, which is all the finding asked
             # for; what had to go was the fetchpriority="high" on the preload.
             '<img src="%s" srcset="%s" sizes="%s"'
-            ' width="1920" height="1220" alt="%s" decoding="async">'
+            ' width="1586" height="992" alt="%s" decoding="async">'
             "</picture>"
         ) % (
             # The fallback for anything that cannot read a srcset — a mid tier,
@@ -327,7 +327,7 @@ def publish_landing_photo(html, src):
     # a published page can never be left explaining a hint it does not carry.
     html, dropped = re.subn(
         r"[ \t]*<!--(?:(?!-->).)*?-->\s*"
-        r'<link\b[^>]*\brel="preload"[^>]*\bhref="assets/cafe-interior\.webp"[^>]*>\n?',
+        r'<link\b[^>]*\brel="preload"[^>]*\bhref="assets/l-cafe-sculptural-light\.webp"[^>]*>\n?',
         "",
         html,
         flags=re.S,

@@ -75,23 +75,19 @@ TREES = (
     ("uploads", (".svg",)),
 )
 
-# Loose files in assets/. cafe-interior.jpg is not in any src attribute - it is
+# Loose files in assets/. l-cafe-sculptural-light.jpg is not in any src attribute - it is
 # the og:image, fetched by Telegram and WhatsApp when the link is shared - so a
 # reference scan alone misses it.
 #
-# The three derived cafe-interior files are the landing photo's responsive set,
-# written by optimize_images.py. They used to be two shapes - a portrait crop
-# for the phone and the landscape above 640 - because the frame took its height
-# from the viewport and cropped the difference. The frame now carries the
-# photograph's own ratio, so these are plain widths of one picture and the
-# portrait pair is gone. The 1920 stays: it is both the widest tier and the
-# source the other three are derived from.
+# The four WebPs are the landing photo's responsive delivery set, written by
+# optimize_images.py from the preserved approved PNG. The frame carries the
+# photograph's own ratio, so every tier is a plain width of one composition.
 ASSET_FILES = (
-    "assets/cafe-interior.jpg",
-    "assets/cafe-interior.webp",
-    "assets/cafe-interior-1280.webp",
-    "assets/cafe-interior-760.webp",
-    "assets/cafe-interior-480.webp",
+    "assets/l-cafe-sculptural-light.jpg",
+    "assets/l-cafe-sculptural-light.webp",
+    "assets/l-cafe-sculptural-light-1280.webp",
+    "assets/l-cafe-sculptural-light-760.webp",
+    "assets/l-cafe-sculptural-light-480.webp",
     "assets/favicon.svg",
     "assets/icon-180.png",
     "assets/icon-512.png",
