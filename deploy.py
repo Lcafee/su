@@ -14,12 +14,12 @@ and a cPanel FTP account is usually the cPanel account - the same credential
 that owns everything else on the host.
 
 Only changed files are sent, compared by SHA-256 against .deploy-state.json.
-The first run therefore uploads all 84; later ones usually upload one. Nothing
+The first run therefore uploads the full Vite output; later ones usually upload one. Nothing
 is ever deleted from the host: a sync that prunes is a sync that can empty
 public_html on a bad day, and the served set only ever grows.
 
 Setup:  copy .deploy.ini.example to .deploy.ini and fill it in
-Run after py build.py:  py deploy.py [--all] [--dry-run]
+Run after npm run build:  py deploy.py [--all] [--dry-run]
 """
 
 import argparse
@@ -40,13 +40,20 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CONF = os.path.join(HERE, ".deploy.ini")
 STATE = os.path.join(HERE, ".deploy-state.json")
 
-# A published page older than the file it is generated from means build.py has
-# not been run since the last edit, and the upload would ship the previous
-# version of a page the user believes they just fixed.
-GENERATED = {
-    "index.html": ("Landing Hero Background.dc.html",),
-    "menu.html": ("Menu.dc.html", "menu.json"),
-}
+BUILD_OUTPUTS = ("index.html", "menu.html")
+BUILD_INPUTS = (
+    ".htaccess",
+    "404.html",
+    "index.html",
+    "menu.html",
+    "menu.json",
+    "package.json",
+    "package-lock.json",
+    "robots.txt",
+    "sitemap.xml",
+    "vite.config.js",
+)
+BUILD_INPUT_DIRS = ("src", "assets", "uploads")
 
 
 def fail(message):
@@ -99,19 +106,24 @@ def guard_untracked():
 
 
 def guard_build_fresh():
-    stale = []
-    for out, sources in GENERATED.items():
-        target = os.path.join(HERE, out)
-        if not os.path.isfile(target):
-            continue
-        built = os.path.getmtime(target)
-        for src in sources:
-            path = os.path.join(HERE, src)
-            if os.path.isfile(path) and os.path.getmtime(path) > built:
-                stale.append("%s is newer than %s" % (src, out))
+    targets = [package.source_path(name) for name in BUILD_OUTPUTS]
+    if any(not os.path.isfile(path) for path in targets):
+        fail("Vite output is missing. Run: npm run build")
+
+    built = min(os.path.getmtime(path) for path in targets)
+    sources = [os.path.join(HERE, name) for name in BUILD_INPUTS]
+    for input_dir in BUILD_INPUT_DIRS:
+        for directory, _, filenames in os.walk(os.path.join(HERE, input_dir)):
+            sources.extend(os.path.join(directory, filename) for filename in filenames)
+
+    stale = [
+        os.path.relpath(path, HERE)
+        for path in sources
+        if os.path.isfile(path) and os.path.getmtime(path) > built
+    ]
     if stale:
         fail("build is stale, refusing to upload:\n  " + "\n  ".join(stale) +
-             "\n        Run:  py build.py")
+             "\n        Run:  npm run build")
 
 
 def digest(path):
@@ -260,13 +272,12 @@ def main():
     guard_build_fresh()
 
     names = package.collect()
-    missing = [n for n in names
-               if not os.path.isfile(os.path.join(HERE, n.replace("/", os.sep)))]
+    missing = [n for n in names if not os.path.isfile(package.source_path(n))]
     if missing:
         fail("missing locally, refusing to upload:\n  " + "\n  ".join(missing))
 
     state = {} if args.all else load_state()
-    local = {n: digest(os.path.join(HERE, n.replace("/", os.sep))) for n in names}
+    local = {n: digest(package.source_path(n)) for n in names}
     changed = [n for n in names if state.get(n) != local[n]]
 
     if not changed:
@@ -299,7 +310,7 @@ def main():
         # site root, and a chrooted FTP account cannot name its own absolute one.
         ensure_dirs(ftp, changed)
         for name in changed:
-            path = os.path.join(HERE, name.replace("/", os.sep))
+            path = package.source_path(name)
             remote = name
             with open(path, "rb") as fh:
                 ftp.storbinary("STOR " + remote, fh)
@@ -320,7 +331,7 @@ def main():
             print("  [%d/%d] %s" % (sent, len(changed), name))
     finally:
         # Written even on failure, so an interrupted run resumes rather than
-        # starting the 2.6 MB over.
+        # restarting the complete upload.
         save_state(state)
         try:
             ftp.quit()

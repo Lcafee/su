@@ -1,0 +1,320 @@
+:root{
+  --font:'Vazirmatn',system-ui,sans-serif;
+  --display:'Sahel','Vazirmatn',system-ui,sans-serif;
+  --bg:#471019;
+  --ink:#F3F1EC;
+  --ink-strong:rgba(243,241,236,.82);
+  --ink-soft:rgba(243,241,236,.72);
+  --line:rgba(243,241,236,.35);
+  --gutter:clamp(20px,6vw,80px);
+  /* The landing now moves as one editorial sequence. This single shared gap
+     keeps adjacent moments connected without reintroducing section-sized voids. */
+  --flow:clamp(52px,7vw,80px);
+  --tile:clamp(200px,46vw,346px);
+
+  /* One restrained motion voice for copy, image arrival and page handoff. */
+  --motion-dur:400ms;
+  --motion-ease:cubic-bezier(0.22, 1, 0.36, 1);
+  /* transitions.dev — texts reveal (18) */
+  --stagger-dur:var(--motion-dur);
+  --stagger-distance:8px;
+  --stagger-stagger:40ms;
+  --stagger-blur:1.5px;
+  --stagger-ease:var(--motion-ease);
+  /* transitions.dev — skeleton loader and reveal (14) */
+  --pulse-dur:1000ms;
+  --pulse-count:infinite;
+  --pulse-min:0.5;
+  --reveal-dur:var(--motion-dur);
+  --reveal-blur:1.5px;
+  --reveal-ease:var(--motion-ease);
+  /* transitions.dev — page side-by-side (08) */
+  --page-slide-dur:var(--motion-dur);
+  --page-slide-distance:6px;
+  --page-blur:1.5px;
+  --page-slide-ease:var(--motion-ease);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{overflow-x:hidden}
+html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
+a{color:var(--ink)}
+a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
+.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
+.skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
+
+/* The L field. One continuous fixed plane for the whole document, so a panel
+   edge slices the marks mid-glyph instead of restarting the pattern. */
+.field{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-color:var(--bg);
+  background-image:url('/assets/l-cafe-pattern-inverted-tight.svg');
+  background-repeat:repeat;
+  background-size:var(--tile) calc(var(--tile) * 0.983)}
+
+/* The signature. Absent during the hero, then it takes the phrase's place at
+   dead centre as that fades — the two never share the screen. */
+.mark{position:fixed;top:-21vh;left:50%;z-index:1;display:none;pointer-events:none;
+  height:142vh;width:auto;opacity:0;will-change:transform,opacity}
+.giant-mark-enabled .mark{display:block}
+.mark[hidden]{display:none}
+.mark path{fill:#E6E5E1}
+
+.page{position:relative;z-index:2}
+
+.hero{position:relative;margin:0;width:100%;height:100vh;height:100svh;
+  display:flex;align-items:center;justify-content:center}
+.hero-phrase{display:block;transform:translateY(-2svh);
+  width:min(88vw,1080px);max-width:11.5ch;
+  font:600 clamp(40px,10vw,96px)/.96 var(--font);
+  letter-spacing:clamp(.045em,.18vw,.085em);color:var(--ink);
+  text-align:center;text-wrap:balance;white-space:normal}
+.scroll-cue{position:absolute;bottom:clamp(22px,4svh,36px);left:50%;
+  width:2px;height:clamp(94px,14svh,136px);transform:translateX(-50%);
+  opacity:.74;overflow:hidden;pointer-events:none}
+.scroll-cue-line{display:block;position:absolute;inset:0;background:rgba(243,241,236,.38)}
+.scroll-cue-line::after{content:"";position:absolute;top:0;left:0;width:2px;height:42%;
+  background:var(--ink);transform:translate3d(0,-110%,0);
+  animation:scroll-cue 2.5s var(--motion-ease) infinite}
+@keyframes scroll-cue{
+  0%,20%{transform:translate3d(0,-110%,0)}
+  72%,100%{transform:translate3d(0,250%,0)}
+}
+
+.body{margin:0;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
+
+/* The introduction is composed as headline plus reading column on wide screens,
+   and folds back to one measured column on mobile. */
+.about{padding:clamp(72px,11vw,124px) var(--gutter) 0;max-width:1180px;margin:0 auto}
+.about .inner{max-width:1060px;text-align:right;display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(260px,.72fr);
+  gap:clamp(32px,6vw,88px);align-items:end}
+.about-headline{max-width:18ch;margin:0;font-family:var(--display);
+  font-weight:700;font-size:clamp(34px,4.4vw,56px);line-height:1.34;
+  color:var(--ink);text-wrap:balance}
+.about-body{width:min(100%,40ch);margin:0;font-family:var(--font);font-weight:400;
+  font-size:clamp(15px,calc(.65vw + 12.6px),17px);line-height:2.05;color:var(--ink-strong)}
+
+/* The photo is the page's single light moment. Inset on the start side — the
+   right, in RTL — so a strip of the field survives at the reading origin and
+   the photo's edge cuts the marks mid-glyph.
+
+   The frame takes the photograph's own shape and nothing else. It used to take
+   a height from the viewport, which meant the frame was some ratio and the
+   picture was another and object-fit resolved the difference the only way it
+   can — by cutting. At 1920 the frame came out at 1.87 against the file's 1.57
+   and lost a sixth of the height; on the phone the mismatch was answered by
+   shipping a 3:4 crop that threw away half the width before the browser saw
+   it. Neither was visible as damage, which is what made it worth fixing: the
+   room in this picture is the whole point of it, and a third of the room was
+   never on screen.
+
+   With the ratio matched, object-fit:cover is a no-op and stays only as a
+   guard — contain would letterbox on the maroon and read as a bug. */
+.photo{aspect-ratio:1586/992;background:var(--ink);overflow:hidden;
+  margin-block-start:var(--flow);margin-block-end:clamp(72px,9vw,112px);
+  margin-inline-start:clamp(0px,8vw,140px)}
+
+/* The menu entry is a quiet handoff, not another display-heading moment. Its
+   copy and the page's one primary action form one centred editorial unit. */
+.menu{padding:0 var(--gutter);margin:0 auto clamp(64px,8.5vw,100px);max-width:1180px;text-align:center}
+.menu .inner{width:min(100%,36ch);margin-inline:auto}
+.menu-support{max-width:none}
+.cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(20px,3vw,28px);
+  padding:0 30px;background:var(--ink);color:var(--bg);
+  font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
+
+/* One compact closing composition: the heading introduces a single body that
+   holds location, hours and actions together rather than splitting utilities
+   into a second footer band. */
+.contact{position:relative;z-index:2;padding:0 var(--gutter)
+  calc(clamp(18px,2.6vw,28px) + env(safe-area-inset-bottom,0px))}
+.contact .inner{width:min(100%,1180px);margin:0 auto;padding-top:clamp(18px,2.6vw,26px);
+  border-top:1px solid rgba(243,241,236,.15);text-align:right;display:grid;
+  grid-template-columns:minmax(120px,.42fr) minmax(0,1.58fr);
+  gap:clamp(20px,3vw,44px);align-items:start}
+.contact-title{max-width:12ch;margin:0;font-family:var(--display);
+  font-weight:700;font-size:clamp(20px,2.2vw,24px);line-height:1.35;
+  letter-spacing:-.005em;color:var(--ink);text-wrap:balance}
+.contact-body{min-width:0;display:grid;grid-template-columns:minmax(240px,1fr) auto;
+  gap:clamp(16px,3vw,36px);align-items:start}
+.contact-location{min-width:0}
+.contact-address{max-width:34ch;margin:0;color:var(--ink-strong);
+  font:400 clamp(13px,1.2vw,14px)/1.85 var(--font)}
+.contact-hours{margin:4px 0 0;color:var(--ink-soft);
+  font:400 clamp(12px,1.1vw,13.5px)/1.65 var(--font)}
+.contact-links{display:flex;flex-wrap:wrap;align-items:flex-start;
+  justify-content:flex-start;gap:0 clamp(12px,1.8vw,18px)}
+.contact a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-soft);
+  font:400 clamp(12px,1.1vw,13.5px)/1.5 var(--font);
+  text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line)}
+
+/* Unified landing motion */
+/* transitions.dev — texts reveal (18). Each copy block's lines rise out of a
+   blur when the block reaches the viewport. Exit is decoupled from the
+   entrance so a block leaving never replays the stagger backwards.
+
+   The hidden start state is gated on data-armed, which only the reveal script
+   sets. Un-gated, this is copy that exists but is invisible until JS says
+   otherwise — and any failure on that path (blocked script, an observer that
+   never fires, an old browser) silently empties the page of its text. Default
+   to readable; animate only once something is there to un-hide it.
+
+   State lives in data-* rather than classes because the runtime rewrites
+   className from its template on every render: a class set from outside is
+   either wiped or baked in permanently, and both break this gate. Attributes
+   it doesn't own survive. */
+.t-stagger-line{
+  display:block;
+}
+.t-stagger[data-armed] .t-stagger-line{
+  opacity:0;
+  transform:translateY(var(--stagger-distance));
+  filter:blur(var(--stagger-blur));
+  transition:
+    opacity   var(--stagger-dur) var(--stagger-ease),
+    transform var(--stagger-dur) var(--stagger-ease),
+    filter    var(--stagger-dur) var(--stagger-ease);
+  will-change:transform,opacity,filter;
+}
+.t-stagger-line--2{transition-delay:var(--stagger-stagger)}
+.t-stagger-line--3{transition-delay:calc(var(--stagger-stagger) * 2)}
+.t-stagger[data-shown] .t-stagger-line{
+  opacity:1;
+  transform:translateY(0);
+  filter:blur(0);
+}
+.t-stagger[data-hiding] .t-stagger-line{
+  opacity:0;
+  transform:translateY(0);
+  filter:blur(0);
+  transition:
+    opacity 200ms var(--motion-ease),
+    transform 0s linear,
+    filter 0s linear;
+  transition-delay:0s;
+}
+
+/* transitions.dev — skeleton loader and reveal (14). The photo is the page's
+   one image; it now pulses in place and cross-blurs into the real frame
+   instead of snapping in when the file lands. */
+.t-skel{position:relative}
+.t-skel-skeleton,
+.t-skel-content{
+  position:absolute;
+  inset:0;
+}
+.t-skel-content>image-slot{display:block;width:100%;height:100%}
+/* React renders a responsive <picture> here. object-fit stays on the rule as a
+   guard rather than as a
+   mechanism: the frame carries the photograph's own ratio, so there is nothing
+   left for cover to trim. If a future re-crop changes the file's shape, this
+   is what keeps the frame filled instead of letterboxed — and the aspect-ratio
+   on .photo is what has to be updated to match. */
+.t-skel-content>picture{display:block;width:100%;height:100%}
+.t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover;object-position:46% 48%}
+.t-skel-skeleton{
+  z-index:1;
+  opacity:1;
+  filter:blur(0);
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease),
+    filter  var(--reveal-dur) var(--reveal-ease);
+}
+/* Same gate as the text above: unarmed, the content layer is simply visible
+   and the skeleton sits unseen behind it. Otherwise a script that never runs
+   leaves the photo permanently hidden behind its own placeholder. */
+.t-skel-content{
+  z-index:2;
+}
+.t-skel[data-armed] .t-skel-content{
+  opacity:0;
+  filter:blur(var(--reveal-blur));
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease),
+    filter  var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel[data-revealed] .t-skel-skeleton{opacity:0;filter:blur(var(--reveal-blur))}
+.t-skel[data-revealed] .t-skel-content{opacity:1;filter:blur(0)}
+.t-skel[data-resetting] .t-skel-skeleton,
+.t-skel[data-resetting] .t-skel-content{transition:none!important}
+/* Dark on light: this frame's own background is the near-white ink colour, so
+   a light placeholder would pulse invisibly against it. */
+.t-skel-skeleton>*{
+  position:absolute;
+  inset:0;
+  background:rgba(71,16,25,.07);
+}
+.t-skel-skeleton.is-pulsing>*{
+  animation:t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+}
+@keyframes t-skel-pulse{
+  0%,100%{opacity:1}
+  50%    {opacity:var(--pulse-min)}
+}
+
+/* transitions.dev — page side-by-side (08), adapted for real navigation. The
+   preset slides two <section>s inside one document; these are two documents,
+   so the same four tokens drive a cross-document view transition instead.
+   Both pages sit on the same maroon, so what reads is the copy crossing over
+   a background that never moves.
+
+   Direction is RTL-correct: the page you are leaving withdraws to the right,
+   the page you are going to arrives from the left, which is forward here.
+
+   This is also why the runtime had to go first. A view transition snapshots
+   the incoming document at its first paint, and under the runtime that was a
+   blank rectangle - it would have cross-faded into nothing.
+
+   No fallback to write: a browser without view transitions performs exactly
+   the navigation it performs today. */
+@view-transition{navigation:auto}
+::view-transition-group(root){
+  animation-duration:var(--page-slide-dur);
+  animation-timing-function:var(--page-slide-ease);
+}
+::view-transition-old(root){animation-name:t-page-out}
+::view-transition-new(root){animation-name:t-page-in}
+@keyframes t-page-out{
+  to{opacity:0;transform:translateX(var(--page-slide-distance));filter:blur(var(--page-blur))}
+}
+@keyframes t-page-in{
+  from{opacity:0;transform:translateX(calc(var(--page-slide-distance) * -1));filter:blur(var(--page-blur))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  /* The whole feature off, not just its animations - a zeroed view transition
+     still holds the old page on screen while the new one loads. */
+  @view-transition{navigation:none}
+  .mark{transform:translate3d(-50%,0,0) !important}
+  .scroll-cue-line::after{display:none}
+  .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
+  .t-skel-skeleton,.t-skel-content{transition:none!important}
+  .t-skel-skeleton.is-pulsing>*{animation:none!important}
+}
+@media (max-width:640px){
+  .about .inner{display:block}
+  .about-headline{margin-bottom:clamp(20px,6vw,26px)}
+  /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
+     margin, which reads as a mistake rather than as the strip of pattern field
+     it is on a wide screen. Full-bleed is the decision on the phone. DESIGN.md
+     records it; do not "restore consistency" here.
+
+     The 62vh height that used to sit here is gone. It was chosen because a
+     width-derived frame collapsed to something too thin to read as the page's
+     one image — but the way it bought that height was by cropping to a 3:4
+     portrait, and half the room went with it. Full-bleed at the photograph's
+     own ratio is 238px on a 375px phone: shorter than 62vh and the whole
+     picture. If it needs to be taller than that, it needs a taller photograph,
+     not a narrower crop of this one. */
+  .photo{margin-block-start:var(--flow);
+    margin-block-end:clamp(72px,20vw,84px);margin-inline-start:0}
+  .menu{margin-bottom:clamp(64px,18vw,76px)}
+  .contact{padding-top:0}
+  .contact .inner{grid-template-columns:minmax(84px,.42fr) minmax(0,1fr);
+    gap:clamp(12px,3.6vw,16px) clamp(14px,4vw,18px);
+    padding-top:clamp(18px,5.5vw,22px)}
+  .contact-body{display:block}
+  .contact-title{font-size:clamp(19px,5.5vw,22px);line-height:1.35}
+  .contact-address{font-size:clamp(12.5px,3.5vw,13.5px);line-height:1.8}
+  .contact-links{margin-top:2px;column-gap:clamp(8px,2vw,10px)}
+  .mark{height:108vh;top:-4vh}
+}

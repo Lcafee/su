@@ -2,14 +2,13 @@
 .claude/
 graphify-out/
 .thumbnail
-
-# .image-slots.state.json is deliberately NOT ignored: image-slot.js fetches it
-# on every page load, so its absence is a 404 on the live site.
+node_modules/
+dist/
 
 # Unused source photo, 3.5 MB, referenced by no page.
 uploads/IMG_7751.jpeg
 
-# Python bytecode from build.py / menu_render.py
+# Python bytecode from the packaging, deployment, export, and image utilities.
 __pycache__/
 
 # Upload archive, rebuilt by package.py from files already tracked here.
