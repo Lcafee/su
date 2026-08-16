@@ -12,7 +12,7 @@ import { MetalFx } from "metal-fx";
 import { sitePath } from "../sitePath";
 
 const PLACEHOLDER_PHOTO = "item-placeholder.webp";
-const SUMMER_IMAGES_ENABLED = false;
+const SUMMER_IMAGES_ENABLED = true;
 const SUMMER_PHOTO_PREFIXES = ["cl-", "fr-", "it-", "rf-"];
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const MOBILE_MENU_QUERY = "(max-width: 759px)";
