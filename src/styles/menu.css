@@ -65,8 +65,8 @@ body{
   z-index:0;
   pointer-events:none;
   background:var(--scarlet);
-  -webkit-mask:url('../../assets/l-cafe-pattern-inverted-tight.svg') center top/150px auto repeat;
-  mask:url('../../assets/l-cafe-pattern-inverted-tight.svg') center top/150px auto repeat;
+  -webkit-mask:url('../../assets/l-cafe-pattern-mask.svg') center top/150px auto repeat;
+  mask:url('../../assets/l-cafe-pattern-mask.svg') center top/150px auto repeat;
   opacity:.015;
 }
 a{color:inherit}
