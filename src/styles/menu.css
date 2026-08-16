@@ -591,13 +591,13 @@ a:focus-visible,button:focus-visible{
   .category-rule-fx.metal-fx-root::after{display:none}
   .category-rule canvas,
   .category-trigger-metal canvas{
-    filter:sepia(.82) saturate(3.15) hue-rotate(306deg) contrast(1.82) brightness(.96);
-    mix-blend-mode:normal;
+    filter:sepia(.72) saturate(2.1) hue-rotate(304deg) contrast(1.25) brightness(.78);
+    mix-blend-mode:multiply;
   }
   .category-rule .metal-fx-glow-svg,
   .category-trigger-metal .metal-fx-glow-svg{
-    opacity:.18!important;
-    filter:sepia(.9) saturate(2.4) hue-rotate(306deg) contrast(1.35) brightness(.88);
+    opacity:.06!important;
+    filter:sepia(.72) saturate(1.8) hue-rotate(304deg) contrast(1.15) brightness(.78);
   }
   .cat-head h2{
     max-width:100%;
