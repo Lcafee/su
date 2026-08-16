@@ -14,9 +14,13 @@ and a cPanel FTP account is usually the cPanel account - the same credential
 that owns everything else on the host.
 
 Only changed files are sent, compared by SHA-256 against .deploy-state.json.
-The first run therefore uploads the full Vite output; later ones usually upload one. Nothing
-is ever deleted from the host: a sync that prunes is a sync that can empty
-public_html on a bad day, and the served set only ever grows.
+The first run therefore uploads the full Vite output; later ones usually upload one.
+Changed files are fully staged and size-checked under temporary remote names
+before any live path is replaced. Promotion is dependency-safe: assets and
+configuration are switched first and HTML entry points last, so a new page
+never references a bundle that has not arrived yet. Nothing is ever deleted
+from the host except deploy-owned temporary files: a pruning sync can empty
+public_html on a bad day, and the served set otherwise only grows.
 
 Setup:  copy .deploy.ini.example to .deploy.ini and fill it in
 Run after npm run build:  py deploy.py [--all] [--dry-run]
@@ -29,6 +33,7 @@ import hashlib
 import io
 import json
 import os
+import posixpath
 import socket
 import ssl
 import subprocess
@@ -124,6 +129,74 @@ def guard_build_fresh():
     if stale:
         fail("build is stale, refusing to upload:\n  " + "\n  ".join(stale) +
              "\n        Run:  npm run build")
+
+
+HTML_ENTRY_POINTS = {"index.html", "menu.html", "404.html"}
+STAGING_SUFFIX = ".lcafe-uploading"
+
+
+def deploy_order_key(name):
+    """Promote dependencies before the HTML files that reference them."""
+    if name.startswith(("assets/", "uploads/")):
+        phase = 0
+    elif name in HTML_ENTRY_POINTS or name.endswith(".html"):
+        phase = 2
+    else:
+        phase = 1
+    return (phase, name)
+
+
+def staging_name(name):
+    """Keep a deploy-owned temporary file beside its final destination."""
+    directory, filename = posixpath.split(name)
+    staged = ".%s%s" % (filename, STAGING_SUFFIX)
+    return posixpath.join(directory, staged) if directory else staged
+
+
+def remove_if_present(ftp, remote):
+    try:
+        ftp.delete(remote)
+    except ftplib.error_perm:
+        pass
+
+
+def stage_file(ftp, name):
+    """Upload one complete file without touching its live path."""
+    path = package.source_path(name)
+    staged = staging_name(name)
+    remove_if_present(ftp, staged)
+
+    with open(path, "rb") as fh:
+        ftp.storbinary("STOR " + staged, fh)
+
+    expected = os.path.getsize(path)
+    try:
+        actual = ftp.size(staged)
+    except (ftplib.Error, OSError):
+        actual = None
+    if actual is not None and actual != expected:
+        remove_if_present(ftp, staged)
+        fail("%s staged short: %d of %d bytes" % (name, actual, expected))
+    return staged
+
+
+def promote_staged(ftp, name):
+    """Atomically replace a live path with its fully uploaded staged file.
+
+    RNFR/RNTO on the cPanel/POSIX FTP target is the atomic boundary. If the
+    server refuses replacement, stop rather than deleting the live file and
+    opening a broken-site window.
+    """
+    staged = staging_name(name)
+    try:
+        ftp.rename(staged, name)
+    except ftplib.error_perm as e:
+        remove_if_present(ftp, staged)
+        fail(
+            "cannot atomically replace %s on the host: %s\n"
+            "        The live file was left untouched. The FTP server must "
+            "support RNFR/RNTO replacement for safe deploys." % (name, e)
+        )
 
 
 def digest(path):
@@ -278,7 +351,10 @@ def main():
 
     state = {} if args.all else load_state()
     local = {n: digest(package.source_path(n)) for n in names}
-    changed = [n for n in names if state.get(n) != local[n]]
+    changed = sorted(
+        (n for n in names if state.get(n) != local[n]),
+        key=deploy_order_key,
+    )
 
     if not changed:
         print("deploy: nothing changed since the last upload")
@@ -309,26 +385,21 @@ def main():
         # Paths are relative from here on: the working directory is already the
         # site root, and a chrooted FTP account cannot name its own absolute one.
         ensure_dirs(ftp, changed)
+
+        # Phase 1: transfer and verify every changed byte under a temporary name.
+        # A dropped data connection cannot corrupt a live file in this phase.
+        for index, name in enumerate(changed, 1):
+            stage_file(ftp, name)
+            print("  staged [%d/%d] %s" % (index, len(changed), name))
+
+        # Phase 2: short RNFR/RNTO promotions only. Dependencies are already on
+        # the server and are promoted before HTML, preserving referential safety
+        # even if the control connection fails partway through promotion.
         for name in changed:
-            path = package.source_path(name)
-            remote = name
-            with open(path, "rb") as fh:
-                ftp.storbinary("STOR " + remote, fh)
-
-            # A transfer that dies midway still leaves a file behind, and the
-            # state record would then call it uploaded. Comparing sizes catches
-            # the truncation while the connection is still open to retry.
-            expected = os.path.getsize(path)
-            try:
-                actual = ftp.size(remote)
-            except (ftplib.Error, OSError):
-                actual = None  # server without SIZE; upload stands unverified
-            if actual is not None and actual != expected:
-                fail("%s uploaded short: %d of %d bytes" % (name, actual, expected))
-
+            promote_staged(ftp, name)
             state[name] = local[name]
             sent += 1
-            print("  [%d/%d] %s" % (sent, len(changed), name))
+            print("  promoted [%d/%d] %s" % (sent, len(changed), name))
     finally:
         # Written even on failure, so an interrupted run resumes rather than
         # restarting the complete upload.

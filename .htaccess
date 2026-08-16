@@ -35,26 +35,34 @@ Options -Indexes
 
 <IfModule mod_expires.c>
   ExpiresActive On
-  # Fonts and images are content-addressed by name and never change in place,
-  # so they can be cached hard.
+  # Menu/landing images keep stable filenames and may be replaced in place.
+  # Force revalidation so returning visitors cannot be pinned to an old photo.
+  ExpiresByType image/webp "access plus 0 seconds"
+  ExpiresByType image/svg+xml "access plus 0 seconds"
+  ExpiresByType image/png "access plus 0 seconds"
   ExpiresByType font/woff2 "access plus 1 year"
-  ExpiresByType image/webp "access plus 1 year"
-  ExpiresByType image/svg+xml "access plus 1 year"
-  ExpiresByType image/png "access plus 1 year"
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
-  # The pages themselves are what a redeploy changes; keep them short.
   ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
-# image-slot.js is the exception to the month above, and the reason the rule
-# reads "content-addressed by name": this one keeps its name and changes in
-# place. A month of caching therefore pins every returning visitor to whichever
-# copy they happened to fetch first - a fix to this file would not reach them
-# until the cache aged out. Revalidating costs a 304 and no body.
-# ExpiresByType (not ExpiresDefault) because a by-type rule outranks a default
-# one, so it takes a by-type rule in this narrower context to override the one
-# above it.
+<IfModule mod_headers.c>
+  # Stable-name images may change on any deploy. no-cache still permits a local
+  # copy, but requires validation before it is reused.
+  <FilesMatch "\.(?:webp|svg|png)$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+
+  # Vite-generated files carry a content hash. They cannot change in place and
+  # are safe to cache immutably; this later rule overrides the generic image
+  # policy for hashed SVG/PNG output as well.
+  <FilesMatch "-[A-Za-z0-9_-]{8,}\.(?:css|js|svg|png|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# Legacy stable-name helper, if served by an older host layout, must also
+# revalidate rather than being pinned in a browser cache.
 <FilesMatch "^image-slot\.js$">
   <IfModule mod_expires.c>
     ExpiresByType application/javascript "access plus 0 seconds"

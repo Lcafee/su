@@ -1,4 +1,5 @@
 import {
+  Component,
   memo,
   useCallback,
   useEffect,
@@ -30,6 +31,61 @@ const METAL_TRIGGER_STYLE = {
   height: "100%",
   pointerEvents: "none",
 };
+
+let metalFxCapability;
+
+function supportsMetalFx() {
+  if (metalFxCapability !== undefined) return metalFxCapability;
+
+  try {
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) ||
+      canvas.getContext("experimental-webgl", {
+        failIfMajorPerformanceCaveat: true,
+      });
+
+    metalFxCapability = Boolean(gl);
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+  } catch {
+    metalFxCapability = false;
+  }
+
+  return metalFxCapability;
+}
+
+class MetalFxBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { failed: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error) {
+    metalFxCapability = false;
+    if (import.meta.env.DEV) {
+      console.warn("Metal-FX disabled after initialization failure.", error);
+    }
+  }
+
+  render() {
+    if (this.state.failed) return null;
+    return this.props.children;
+  }
+}
+
+function SafeMetalFx(props) {
+  if (!supportsMetalFx()) return null;
+
+  return (
+    <MetalFxBoundary>
+      <MetalFx {...props} />
+    </MetalFxBoundary>
+  );
+}
 
 let sharedDescriptionObserver;
 const descriptionMeasurements = new Map();
@@ -108,7 +164,7 @@ const CategoryMetalRule = memo(function CategoryMetalRule({
       aria-hidden="true"
     >
       <span className="category-rule-base" />
-      <MetalFx
+      <SafeMetalFx
         variant="button"
         preset="silver"
         theme="light"
@@ -123,7 +179,7 @@ const CategoryMetalRule = memo(function CategoryMetalRule({
         style={METAL_RULE_STYLE}
       >
         <span className="category-rule-metal-host" />
-      </MetalFx>
+      </SafeMetalFx>
     </div>
   );
 });
@@ -418,7 +474,7 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
         </span>
       </button>
       {enhancedMetalFx ? (
-        <MetalFx
+        <SafeMetalFx
           variant="button"
           preset="silver"
           theme="light"
@@ -433,7 +489,7 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
           aria-hidden="true"
         >
           <span className="category-trigger-metal-host" />
-        </MetalFx>
+        </SafeMetalFx>
       ) : null}
     </div>
   );
