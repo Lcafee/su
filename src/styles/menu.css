@@ -102,13 +102,18 @@ a:focus-visible,button:focus-visible{
   z-index:50;
 }
 
-.category-trigger{
+.category-trigger-anchor{
   position:fixed;
   right:max(12px,env(safe-area-inset-right,0px));
   bottom:calc(12px + env(safe-area-inset-bottom,0px));
   z-index:40;
-  min-height:44px;
   max-width:min(176px,calc(100% - 24px));
+}
+.category-trigger{
+  position:relative;
+  z-index:1;
+  min-height:44px;
+  max-width:100%;
   display:grid;
   grid-template-columns:auto minmax(0,1fr);
   align-items:center;
@@ -122,6 +127,20 @@ a:focus-visible,button:focus-visible{
   -webkit-backdrop-filter:blur(6px);
   cursor:pointer;
   text-align:right;
+}
+.category-trigger-metal.metal-fx-root{
+  z-index:2;
+  overflow:visible;
+  background:transparent!important;
+}
+.category-trigger-metal.metal-fx-root::before,
+.category-trigger-metal.metal-fx-root::after{display:none}
+.category-trigger-metal-host{
+  display:block;
+  width:100%;
+  height:100%;
+  border-radius:2px;
+  background:transparent;
 }
 .category-trigger-label{font:600 12.5px/1 var(--font)}
 .category-trigger-current{
@@ -218,15 +237,27 @@ a:focus-visible,button:focus-visible{
   margin:0 0 2px;
   isolation:isolate;
 }
-.category-rule-fx{
-  display:flex!important;
-  width:100%!important;
-  height:2px;
-}
-.category-rule-track{
+.category-rule-base{
+  position:absolute;
+  inset:0;
+  z-index:0;
   display:block;
   width:100%;
   height:2px;
+  border-radius:999px;
+  background:var(--line-strong);
+}
+.category-rule-fx.metal-fx-root{
+  z-index:1;
+  display:flex!important;
+  width:100%!important;
+  height:100%;
+  overflow:visible;
+}
+.category-rule-metal-host{
+  display:block;
+  width:100%;
+  height:100%;
   border-radius:999px;
   background:var(--line-strong);
 }
@@ -555,6 +586,19 @@ a:focus-visible,button:focus-visible{
     background:transparent;
   }
   .category-rule{height:2px;margin:0 0 16px}
+  .category-rule-fx.metal-fx-root{background:transparent!important}
+  .category-rule-fx.metal-fx-root::before,
+  .category-rule-fx.metal-fx-root::after{display:none}
+  .category-rule canvas,
+  .category-trigger-metal canvas{
+    filter:sepia(.82) saturate(3.15) hue-rotate(306deg) contrast(1.82) brightness(.96);
+    mix-blend-mode:normal;
+  }
+  .category-rule .metal-fx-glow-svg,
+  .category-trigger-metal .metal-fx-glow-svg{
+    opacity:.18!important;
+    filter:sepia(.9) saturate(2.4) hue-rotate(306deg) contrast(1.35) brightness(.88);
+  }
   .cat-head h2{
     max-width:100%;
     font-size:28px;
@@ -640,7 +684,7 @@ a:focus-visible,button:focus-visible{
   :root{--gutter:10px}
   .cat{padding-top:22px;padding-bottom:42px}
   .item p{font-size:12px}
-  .category-trigger{
+  .category-trigger-anchor{
     right:max(10px,env(safe-area-inset-right,0px));
     bottom:calc(10px + env(safe-area-inset-bottom,0px));
   }

@@ -133,9 +133,12 @@ Every category uses the same reusable `CategoryMetalRule` treatment immediately
 above its heading:
 
 - A complete 2px scarlet-alpha base line is always present.
-- Real `metal-fx` renders a low-strength silver reflection over the line.
-- The shader canvas is filtered and multiplied into the L Cafe palette.
-- Glow is disabled; the reflection is secondary to the heading.
+- Real `metal-fx` renders a high-contrast silver reflection over the line on
+  mobile, with a tighter shader scale so local highlights visibly travel.
+- The mobile shader canvas is filtered into the L Cafe palette without the old
+  multiply blend that flattened its brightest reflections.
+- A low-opacity Metal-FX catch-light is enabled on mobile; it adds depth without
+  becoming a neon halo. Desktop keeps the previous restrained treatment.
 - The rule has no frame, box, or animated category-container border.
 - All instances share the package’s WebGL renderer. Package-level viewport
   observation suspends offscreen copying.
@@ -150,6 +153,12 @@ The only Metal-FX host is the thin rule track.
 The fixed bottom trigger is a compact, almost-square editorial control. It
 shows “فهرست” and the current category without changing document or grid
 geometry.
+
+On mobile, the same real Metal-FX silver shader draws a living perimeter over
+the trigger. The button’s ordinary 1px outline remains underneath as a complete
+fallback, while the animated layer is decorative and pointer-transparent.
+Reduced motion pauses the reflection in place. The Metal-FX overlay is not
+mounted on desktop, preserving the existing desktop trigger.
 
 The popover is a bordered ivory table of contents with one category per row on
 mobile and two columns on wider screens. Each row keeps a 44px minimum target,

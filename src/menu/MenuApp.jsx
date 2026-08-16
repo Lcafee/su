@@ -13,7 +13,23 @@ import { sitePath } from "../sitePath";
 const PLACEHOLDER_PHOTO = "item-placeholder.webp";
 const SUMMER_IMAGES_ENABLED = false;
 const SUMMER_PHOTO_PREFIXES = ["cl-", "fr-", "it-", "rf-"];
-const METAL_RULE_STYLE = { display: "flex", width: "100%" };
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const MOBILE_MENU_QUERY = "(max-width: 759px)";
+const METAL_RULE_STYLE = {
+  display: "flex",
+  position: "absolute",
+  inset: 0,
+  width: "100%",
+  height: "100%",
+  pointerEvents: "none",
+};
+const METAL_TRIGGER_STYLE = {
+  position: "absolute",
+  inset: 0,
+  width: "100%",
+  height: "100%",
+  pointerEvents: "none",
+};
 
 let sharedDescriptionObserver;
 const descriptionMeasurements = new Map();
@@ -65,53 +81,64 @@ function responsivePhoto(photo) {
   };
 }
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+function useMediaQuery(queryText) {
+  const [matches, setMatches] = useState(
+    () => window.matchMedia?.(queryText).matches ?? false,
   );
 
   useEffect(() => {
-    const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    const query = window.matchMedia?.(queryText);
     if (!query) return undefined;
-    const update = () => setReduced(query.matches);
+    const update = () => setMatches(query.matches);
     query.addEventListener?.("change", update);
     return () => query.removeEventListener?.("change", update);
-  }, []);
+  }, [queryText]);
 
-  return reduced;
+  return matches;
 }
 
-const CategoryMetalRule = memo(function CategoryMetalRule({ reducedMotion }) {
+const CategoryMetalRule = memo(function CategoryMetalRule({
+  enhancedMetalFx,
+  reducedMotion,
+}) {
   return (
     <div
       className="category-rule"
       data-metal-fx-package="metal-fx"
       aria-hidden="true"
     >
+      <span className="category-rule-base" />
       <MetalFx
         variant="button"
         preset="silver"
         theme="light"
-        strength={0.58}
+        strength={enhancedMetalFx ? 0.96 : 0.58}
         paused={reducedMotion}
         borderRadius={999}
-        ringCssPx={0.75}
-        shaderScale={2.4}
-        disableGlow
+        ringCssPx={enhancedMetalFx ? 1.2 : 0.75}
+        shaderScale={enhancedMetalFx ? 1.2 : 2.4}
+        disableGlow={!enhancedMetalFx}
         normalizeHostStyles={false}
         className="category-rule-fx"
         style={METAL_RULE_STYLE}
       >
-        <span className="category-rule-track" />
+        <span className="category-rule-metal-host" />
       </MetalFx>
     </div>
   );
 });
 
-const CategoryHeader = memo(function CategoryHeader({ category, reducedMotion }) {
+const CategoryHeader = memo(function CategoryHeader({
+  category,
+  enhancedMetalFx,
+  reducedMotion,
+}) {
   return (
     <div className="cat-head">
-      <CategoryMetalRule reducedMotion={reducedMotion} />
+      <CategoryMetalRule
+        enhancedMetalFx={enhancedMetalFx}
+        reducedMotion={reducedMotion}
+      />
       <h2 id={category.id} tabIndex="-1">
         {category.title}
       </h2>
@@ -254,6 +281,7 @@ const AddOnList = memo(function AddOnList({ items }) {
 
 const CategorySection = memo(function CategorySection({
   category,
+  enhancedMetalFx,
   firstCategory,
   reducedMotion,
   registerSection,
@@ -264,7 +292,11 @@ const CategorySection = memo(function CategorySection({
       className="cat"
       aria-labelledby={category.id}
     >
-      <CategoryHeader category={category} reducedMotion={reducedMotion} />
+      <CategoryHeader
+        category={category}
+        enhancedMetalFx={enhancedMetalFx}
+        reducedMotion={reducedMotion}
+      />
       {category.layout === "addons" ? (
         <AddOnList items={category.items} />
       ) : (
@@ -362,8 +394,54 @@ const MenuMasthead = memo(function MenuMasthead() {
   );
 });
 
+const MenuIndexTrigger = memo(function MenuIndexTrigger({
+  activeTitle,
+  enhancedMetalFx,
+  navOpen,
+  onToggle,
+  reducedMotion,
+  triggerRef,
+}) {
+  return (
+    <div className="category-trigger-anchor">
+      <button
+        ref={triggerRef}
+        className="category-trigger"
+        type="button"
+        aria-expanded={navOpen}
+        aria-controls="category-nav"
+        onClick={onToggle}
+      >
+        <span className="category-trigger-label">فهرست</span>
+        <span className="category-trigger-current" aria-hidden="true">
+          {activeTitle}
+        </span>
+      </button>
+      {enhancedMetalFx ? (
+        <MetalFx
+          variant="button"
+          preset="silver"
+          theme="light"
+          strength={0.94}
+          paused={reducedMotion}
+          borderRadius={2}
+          ringCssPx={1.15}
+          shaderScale={1.25}
+          normalizeHostStyles={false}
+          className="category-trigger-metal"
+          style={METAL_TRIGGER_STYLE}
+          aria-hidden="true"
+        >
+          <span className="category-trigger-metal-host" />
+        </MetalFx>
+      ) : null}
+    </div>
+  );
+});
+
 export function MenuApp({ categories }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
+  const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
   const [activeId, setActiveId] = useState(() => {
     const hashId = decodeURIComponent(window.location.hash.slice(1));
     return categories.some((category) => category.id === hashId)
@@ -454,31 +532,30 @@ export function MenuApp({ categories }) {
 
   const activeTitle =
     categories.find((category) => category.id === activeId)?.title ?? "";
+  const toggleNavigation = useCallback(() => {
+    setNavOpen((current) => !current);
+  }, []);
 
   return (
     <>
       <a className="skip" href="#menu">
         رفتن به منو
       </a>
-      <button
-        ref={triggerRef}
-        className="category-trigger"
-        type="button"
-        aria-expanded={navOpen}
-        aria-controls="category-nav"
-        onClick={() => setNavOpen((current) => !current)}
-      >
-        <span className="category-trigger-label">فهرست</span>
-        <span className="category-trigger-current" aria-hidden="true">
-          {activeTitle}
-        </span>
-      </button>
+      <MenuIndexTrigger
+        activeTitle={activeTitle}
+        enhancedMetalFx={enhancedMetalFx}
+        navOpen={navOpen}
+        onToggle={toggleNavigation}
+        reducedMotion={reducedMotion}
+        triggerRef={triggerRef}
+      />
       <main id="menu">
         <MenuMasthead />
         {categories.map((category, index) => (
           <CategorySection
             key={category.id}
             category={category}
+            enhancedMetalFx={enhancedMetalFx}
             firstCategory={index === 0}
             reducedMotion={reducedMotion}
             registerSection={registerSection}
