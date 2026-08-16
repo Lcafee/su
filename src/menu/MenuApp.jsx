@@ -196,30 +196,19 @@ function ProductDescription({ description, itemName, slotId }) {
   );
 }
 
-function VariantSelector({ item }) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
+function VariantList({ item }) {
   return (
-    <div className="opts" role="radiogroup" aria-label={`انتخاب ${item.name}`}>
-      {item.options.map((option, index) => (
-        <label
+    <dl className="opts" aria-label={`گزینه‌های ${item.name}`}>
+      {item.options.map((option) => (
+        <div
           key={`${option.label}-${option.code}`}
           className="opts-option"
-          data-selected={selectedIndex === index}
         >
-          <input
-            className="sr-only"
-            type="radio"
-            name={`variant-${item.slotId}`}
-            value={option.code}
-            checked={selectedIndex === index}
-            onChange={() => setSelectedIndex(index)}
-          />
-          <span className="opts-option-label">{option.label}</span>
-          <span className="opts-option-price">{option.price}</span>
-        </label>
+          <dt className="opts-option-label">{option.label}</dt>
+          <dd className="opts-option-price">{option.price}</dd>
+        </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
@@ -233,7 +222,7 @@ const ProductCard = memo(function ProductCard({ eager, item, priority }) {
         itemName={item.name}
         slotId={item.slotId}
       />
-      {item.options ? <VariantSelector item={item} /> : <strong>{item.price}</strong>}
+      {item.options ? <VariantList item={item} /> : <strong>{item.price}</strong>}
     </article>
   );
 });
