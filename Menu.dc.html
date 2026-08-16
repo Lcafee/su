@@ -218,6 +218,10 @@ a:focus-visible,button:focus-visible{
   background:var(--fill);
   text-align:right;
 }
+/* Routine keeps a complete native border; Metal-FX only adds reflected light. */
+.cat[aria-labelledby="cat-routine"]>.cat-head{
+  border-inline-end:1px solid var(--line-strong);
+}
 .cat-head[data-metal-fx]{isolation:isolate}
 .cat-head[data-metal-fx]>:not(.category-metal-fx-canvas){
   position:relative;
@@ -231,6 +235,8 @@ a:focus-visible,button:focus-visible{
   width:auto;
   height:auto;
   border-radius:inherit;
+  opacity:.86;
+  mix-blend-mode:screen;
   pointer-events:none;
 }
 .cat-head>*{min-width:0;overflow-wrap:anywhere}
@@ -2174,7 +2180,9 @@ a:focus-visible,button:focus-visible{
     ctx.closePath();
   }
 
-  function punchInnerHole(inst) {
+  // Shapes only the highlight canvas into a full perimeter band. The complete
+  // native CSS border is a separate layer and is never masked or erased here.
+  function clipHighlightToBorderBand(inst) {
     var stroke = RING_CSS_PX * inst.dpr;
     var width = inst.canvas.width;
     var height = inst.canvas.height;
@@ -2230,7 +2238,7 @@ a:focus-visible,button:focus-visible{
       width,
       height
     );
-    punchInnerHole(inst);
+    clipHighlightToBorderBand(inst);
   }
 
   function paintFallback(inst) {
@@ -2245,7 +2253,7 @@ a:focus-visible,button:focus-visible{
     inst.ctx.clearRect(0, 0, width, height);
     inst.ctx.fillStyle = gradient;
     inst.ctx.fillRect(0, 0, width, height);
-    punchInnerHole(inst);
+    clipHighlightToBorderBand(inst);
   }
 
   function sizeInstance(inst) {
