@@ -1,15 +1,13 @@
 *,*::before,*::after{box-sizing:border-box}
 :root{
-  color-scheme:only light;
   --font:'Vazirmatn',system-ui,sans-serif;
   --display:'Sahel','Vazirmatn',system-ui,sans-serif;
   --scarlet:#681F2D;
   --scarlet-rgb:104,31,45;
-  --bitter-ivory:#F5F0E6;
   --ivory:#F3F1EC;
   --ivory-rgb:243,241,236;
   --ivory-deep:#E6E5E1;
-  --bg:var(--bitter-ivory);
+  --bg:var(--ivory);
   --ink:var(--scarlet);
   --ink-strong:rgba(var(--scarlet-rgb),.88);
   --ink-soft:rgba(var(--scarlet-rgb),.76);
@@ -32,7 +30,7 @@ html{
   overflow-x:hidden;
   overflow-x:clip;
   scroll-behavior:smooth;
-  background:var(--bg);
+  background:var(--ivory);
 }
 html,body{
   width:100%;
@@ -50,24 +48,23 @@ body{
   overflow-x:hidden;
   overflow-x:clip;
   color:var(--ink);
-  background:var(--bg);
+  background:var(--ivory);
 }
 #menu-root{
   position:relative;
   min-height:100vh;
   min-height:100dvh;
-  background:var(--bg);
 }
-#menu-root::before{
+body::before{
   content:"";
   position:fixed;
   inset:0;
   z-index:0;
   pointer-events:none;
   background:var(--scarlet);
-  -webkit-mask:url('../../assets/l-cafe-pattern-mask.svg') center top/150px auto repeat;
-  mask:url('../../assets/l-cafe-pattern-mask.svg') center top/150px auto repeat;
-  opacity:.015;
+  -webkit-mask:url('../../assets/l-cafe-pattern-inverted-tight.svg') center top/150px auto repeat;
+  mask:url('../../assets/l-cafe-pattern-inverted-tight.svg') center top/150px auto repeat;
+  opacity:.025;
 }
 a{color:inherit}
 button{font:inherit}
