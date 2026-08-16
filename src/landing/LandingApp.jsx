@@ -1,6 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 
+import { sitePath } from "../sitePath";
+
 const REVEAL_TIMEOUT_MS = 6000;
+const FEATURE_PHOTO_SRC_SET = [
+  [480, "assets/l-cafe-sculptural-light-480.webp"],
+  [760, "assets/l-cafe-sculptural-light-760.webp"],
+  [1280, "assets/l-cafe-sculptural-light-1280.webp"],
+  [1586, "assets/l-cafe-sculptural-light.webp"],
+]
+  .map(([width, path]) => `${sitePath(path)} ${width}w`)
+  .join(", ");
+const FEATURE_PHOTO_FALLBACK = sitePath(
+  "assets/l-cafe-sculptural-light-1280.webp",
+);
+const MENU_HREF = sitePath("menu.html");
 
 function RevealBlock({ children, className }) {
   const blockRef = useRef(null);
@@ -214,13 +228,13 @@ function FeaturePhoto({ photoRef }) {
       <div className="t-skel-content">
         <picture>
           <source
-            srcSet="/assets/l-cafe-sculptural-light-480.webp 480w, /assets/l-cafe-sculptural-light-760.webp 760w, /assets/l-cafe-sculptural-light-1280.webp 1280w, /assets/l-cafe-sculptural-light.webp 1586w"
+            srcSet={FEATURE_PHOTO_SRC_SET}
             sizes="(max-width: 640px) 100vw, (min-width: 1750px) calc(100vw - 140px), 92vw"
             type="image/webp"
           />
           <img
             ref={imageRef}
-            src="/assets/l-cafe-sculptural-light-1280.webp"
+            src={FEATURE_PHOTO_FALLBACK}
             width="1586"
             height="992"
             alt="چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده، مقابل دیوارنگاره و گیاهان سالن"
@@ -243,7 +257,7 @@ function MenuEntry({ sectionRef }) {
             انتخاب‌هایی سالم و باکیفیت، با دقت آماده شده‌اند تا برای هر لحظه از
             روز، طعمی شایسته شما بسازند.
           </p>
-          <a className="cta" href="menu.html">
+          <a className="cta" href={MENU_HREF}>
             مشاهده منو
           </a>
         </div>

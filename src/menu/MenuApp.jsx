@@ -8,6 +8,8 @@ import {
 } from "react";
 import { MetalFx } from "metal-fx";
 
+import { sitePath } from "../sitePath";
+
 const METAL_FX_CATEGORY_ID = "cat-routine";
 const PLACEHOLDER_PHOTO = "item-placeholder.webp";
 const SUMMER_IMAGES_ENABLED = false;
@@ -55,8 +57,11 @@ function responsivePhoto(photo) {
   const name = publishedPhotoName(photo);
   const smaller = name.replace(/\.webp$/i, "-300.webp");
   return {
-    src: `/assets/menu/opt/${name}`,
-    srcSet: `/assets/menu/opt/${smaller} 300w, /assets/menu/opt/${name} 600w`,
+    src: sitePath(`assets/menu/opt/${name}`),
+    srcSet: [
+      `${sitePath(`assets/menu/opt/${smaller}`)} 300w`,
+      `${sitePath(`assets/menu/opt/${name}`)} 600w`,
+    ].join(", "),
   };
 }
 
@@ -336,7 +341,10 @@ function CategoryNavigation({
 const MenuFooter = memo(function MenuFooter() {
   return (
     <footer className="foot">
-      <img src="/uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه" />
+      <img
+        src={sitePath("uploads/L_Cafe_Full_NoTagline_White.svg")}
+        alt="ال کافه"
+      />
       <a href="tel:+989130005768">
         <bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi>
       </a>
@@ -348,7 +356,7 @@ const MenuFooter = memo(function MenuFooter() {
       >
         <bdi>@lcafe.esf</bdi>
       </a>
-      <a className="foot-back" href="index.html">
+      <a className="foot-back" href={sitePath("index.html")}>
         بازگشت به صفحه اصلی
       </a>
     </footer>

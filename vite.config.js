@@ -7,6 +7,16 @@ import { defineConfig } from "vite";
 
 const root = dirname(fileURLToPath(import.meta.url));
 
+function normalizeBasePath(value) {
+  const path = value?.trim() || "/";
+  const withLeadingSlash = path.startsWith("/") ? path : `/${path}`;
+  return withLeadingSlash.endsWith("/")
+    ? withLeadingSlash
+    : `${withLeadingSlash}/`;
+}
+
+const base = normalizeBasePath(process.env.VITE_BASE_PATH);
+
 const staticTrees = ["assets/fonts", "assets/menu/opt"];
 
 const staticFiles = [
@@ -49,6 +59,8 @@ function copyStaticSiteAssets() {
 }
 
 export default defineConfig({
+  appType: "mpa",
+  base,
   plugins: [react(), copyStaticSiteAssets()],
   publicDir: false,
   build: {

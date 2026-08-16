@@ -13,6 +13,10 @@ npm run build
 `npm run build` writes the deployable site to `dist/`. No Node server is needed
 in production.
 
+`VITE_BASE_PATH` controls the public base and defaults to `/` for the custom
+domain. The GitHub Pages workflow sets it to `/su/` and deploys `dist/` through
+the official Pages artifact flow.
+
 ## Public routes
 
 - `/` and `/index.html` — Landing
