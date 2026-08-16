@@ -415,7 +415,7 @@ a:focus-visible,button:focus-visible{
   max-height:calc(100vh - 92px);
   max-height:calc(100dvh - 92px);
   overflow:auto;
-  overscroll-behavior:contain;
+  overscroll-behavior:auto;
   padding:10px;
   border:1px solid var(--line-strong);
   border-radius:var(--radius);
@@ -1408,22 +1408,7 @@ a:focus-visible,button:focus-visible{
 <h2 id="category-nav-title">دسته‌های منو</h2>
 <button class="nav-close" type="button">بستن</button>
 </div>
-<div class="category-links">
-<a href="#cat-routine"><i aria-hidden="true"></i><span>روتین</span></a>
-<a href="#cat-hot-coffee"><i aria-hidden="true"></i><span>قهوه گرم</span></a>
-<a href="#cat-cold-coffee"><i aria-hidden="true"></i><span>قهوه سرد</span></a>
-<a href="#cat-frappe"><i aria-hidden="true"></i><span>فراپه</span></a>
-<a href="#cat-cloudy"><i aria-hidden="true"></i><span>کلودی</span></a>
-<a href="#cat-hot-drinks"><i aria-hidden="true"></i><span>نوشیدنی گرم</span></a>
-<a href="#cat-cold-drinks"><i aria-hidden="true"></i><span>نوشیدنی سرد</span></a>
-<a href="#cat-herbal-tea"><i aria-hidden="true"></i><span>هربال‌تی</span></a>
-<a href="#cat-refresher"><i aria-hidden="true"></i><span>رفرشر</span></a>
-<a href="#cat-matcha"><i aria-hidden="true"></i><span>ماچا</span></a>
-<a href="#cat-icecream"><i aria-hidden="true"></i><span>بستنی</span></a>
-<a href="#cat-dessert"><i aria-hidden="true"></i><span>دسر</span></a>
-<a href="#cat-food"><i aria-hidden="true"></i><span>ساندویچ</span></a>
-<a href="#cat-addons"><i aria-hidden="true"></i><span>افزودنی</span></a>
-</div>
+<div class="category-links"></div>
 </nav>
 
 <footer class="foot">
@@ -1443,9 +1428,31 @@ a:focus-visible,button:focus-visible{
   function setup() {
     var nav = document.querySelector(".category-nav:not([data-wired])");
     var trigger = document.querySelector(".category-trigger");
-    var links = nav ? [].slice.call(nav.querySelectorAll("a[href^='#']")) : [];
     var sections = [].slice.call(document.querySelectorAll("section.cat"));
-    if (!nav || !trigger || !links.length || !sections.length) return false;
+    var linkHost = nav ? nav.querySelector(".category-links") : null;
+    if (!nav || !trigger || !linkHost || !sections.length) return false;
+
+    // The section headings are rendered from menu.json. Building this list
+    // from those headings keeps navigation ids, labels, and order on that same
+    // source of truth instead of maintaining a second category list here.
+    linkHost.textContent = "";
+    sections.forEach(function (section) {
+      var id = section.getAttribute("aria-labelledby");
+      var heading = id && document.getElementById(id);
+      if (!id || !heading) return;
+
+      var link = document.createElement("a");
+      var marker = document.createElement("i");
+      var label = document.createElement("span");
+      link.setAttribute("href", "#" + id);
+      marker.setAttribute("aria-hidden", "true");
+      label.textContent = heading.textContent.trim();
+      link.appendChild(marker);
+      link.appendChild(label);
+      linkHost.appendChild(link);
+    });
+    var links = [].slice.call(linkHost.querySelectorAll("a[href^='#']"));
+    if (!links.length) return false;
 
     nav.setAttribute("data-wired", "");
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
