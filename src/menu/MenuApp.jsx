@@ -10,10 +10,10 @@ import { MetalFx } from "metal-fx";
 
 import { sitePath } from "../sitePath";
 
-const METAL_FX_CATEGORY_ID = "cat-routine";
 const PLACEHOLDER_PHOTO = "item-placeholder.webp";
 const SUMMER_IMAGES_ENABLED = false;
 const SUMMER_PHOTO_PREFIXES = ["cl-", "fr-", "it-", "rf-"];
+const METAL_RULE_STYLE = { display: "flex", width: "100%" };
 
 let sharedDescriptionObserver;
 const descriptionMeasurements = new Map();
@@ -81,46 +81,43 @@ function useReducedMotion() {
   return reduced;
 }
 
-const MetalCategoryFrame = memo(function MetalCategoryFrame({ children }) {
-  const reducedMotion = useReducedMotion();
-
+const CategoryMetalRule = memo(function CategoryMetalRule({ reducedMotion }) {
   return (
     <div
-      className="category-metal-frame"
-      data-metal-fx-prototype="true"
+      className="category-rule"
       data-metal-fx-package="metal-fx"
+      aria-hidden="true"
     >
       <MetalFx
         variant="button"
-        preset="chromatic"
+        preset="silver"
         theme="light"
-        strength={1}
+        strength={0.58}
         paused={reducedMotion}
-        borderRadius={14}
-        ringCssPx={3}
-        shaderScale={1.45}
+        borderRadius={999}
+        ringCssPx={0.75}
+        shaderScale={2.4}
+        disableGlow
         normalizeHostStyles={false}
-        style={{ display: "flex", width: "100%" }}
+        className="category-rule-fx"
+        style={METAL_RULE_STYLE}
       >
-        {children}
+        <span className="category-rule-track" />
       </MetalFx>
     </div>
   );
 });
 
-const CategoryHeader = memo(function CategoryHeader({ category, prototype }) {
-  const content = (
-    <div className={`cat-head${prototype ? " cat-head--metal" : ""}`}>
+const CategoryHeader = memo(function CategoryHeader({ category, reducedMotion }) {
+  return (
+    <div className="cat-head">
+      <CategoryMetalRule reducedMotion={reducedMotion} />
       <h2 id={category.id} tabIndex="-1">
         {category.title}
       </h2>
       <p>{category.intro}</p>
     </div>
   );
-
-  if (!prototype) return content;
-
-  return <MetalCategoryFrame>{content}</MetalCategoryFrame>;
 });
 
 const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
@@ -258,6 +255,7 @@ const AddOnList = memo(function AddOnList({ items }) {
 const CategorySection = memo(function CategorySection({
   category,
   firstCategory,
+  reducedMotion,
   registerSection,
 }) {
   return (
@@ -266,10 +264,7 @@ const CategorySection = memo(function CategorySection({
       className="cat"
       aria-labelledby={category.id}
     >
-      <CategoryHeader
-        category={category}
-        prototype={category.id === METAL_FX_CATEGORY_ID}
-      />
+      <CategoryHeader category={category} reducedMotion={reducedMotion} />
       {category.layout === "addons" ? (
         <AddOnList items={category.items} />
       ) : (
@@ -297,7 +292,7 @@ function CategoryNavigation({
       hidden={!open}
     >
       <div className="category-nav-head">
-        <h2 id="category-nav-title">دسته‌های منو</h2>
+        <h2 id="category-nav-title">فهرست منو</h2>
         <button className="nav-close" type="button" onClick={() => onClose(true)}>
           بستن
         </button>
@@ -330,29 +325,45 @@ function CategoryNavigation({
 const MenuFooter = memo(function MenuFooter() {
   return (
     <footer className="foot">
-      <img
-        src={sitePath("uploads/L_Cafe_Full_NoTagline_White.svg")}
-        alt="ال کافه"
-      />
-      <a href="tel:+989130005768">
-        <bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi>
-      </a>
-      <a
-        href="https://www.instagram.com/lcafe.esf/"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="اینستاگرام ال کافه"
-      >
-        <bdi>@lcafe.esf</bdi>
-      </a>
-      <a className="foot-back" href={sitePath("index.html")}>
-        بازگشت به صفحه اصلی
-      </a>
+      <div className="foot-inner">
+        <img
+          src={sitePath("uploads/L_Cafe_Full_NoTagline_White.svg")}
+          alt="ال کافه"
+        />
+        <div className="foot-contact">
+          <a href="tel:+989130005768">
+            <bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi>
+          </a>
+          <a
+            href="https://www.instagram.com/lcafe.esf/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="اینستاگرام ال کافه"
+          >
+            <bdi>@lcafe.esf</bdi>
+          </a>
+        </div>
+        <a className="foot-back" href={sitePath("index.html")}>
+          بازگشت به صفحه اصلی
+        </a>
+      </div>
     </footer>
   );
 });
 
+const MenuMasthead = memo(function MenuMasthead() {
+  return (
+    <header className="menu-masthead">
+      <span className="menu-brand-mark" aria-hidden="true">
+        L CAFE
+      </span>
+      <h1>منوی ال کافه</h1>
+    </header>
+  );
+});
+
 export function MenuApp({ categories }) {
+  const reducedMotion = useReducedMotion();
   const [activeId, setActiveId] = useState(() => {
     const hashId = decodeURIComponent(window.location.hash.slice(1));
     return categories.some((category) => category.id === hashId)
@@ -457,18 +468,19 @@ export function MenuApp({ categories }) {
         aria-controls="category-nav"
         onClick={() => setNavOpen((current) => !current)}
       >
-        <span className="category-trigger-label">دسته‌ها</span>
+        <span className="category-trigger-label">فهرست</span>
         <span className="category-trigger-current" aria-hidden="true">
           {activeTitle}
         </span>
       </button>
       <main id="menu">
-        <h1 className="sr-only">منوی ال کافه</h1>
+        <MenuMasthead />
         {categories.map((category, index) => (
           <CategorySection
             key={category.id}
             category={category}
             firstCategory={index === 0}
+            reducedMotion={reducedMotion}
             registerSection={registerSection}
           />
         ))}
