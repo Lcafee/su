@@ -5,10 +5,11 @@
   --display:'Sahel','Vazirmatn',system-ui,sans-serif;
   --scarlet:#681F2D;
   --scarlet-rgb:104,31,45;
+  --bitter-ivory:#F5F0E6;
   --ivory:#F3F1EC;
   --ivory-rgb:243,241,236;
   --ivory-deep:#E6E5E1;
-  --bg:var(--ivory);
+  --bg:var(--bitter-ivory);
   --ink:var(--scarlet);
   --ink-strong:rgba(var(--scarlet-rgb),.88);
   --ink-soft:rgba(var(--scarlet-rgb),.76);
@@ -31,7 +32,7 @@ html{
   overflow-x:hidden;
   overflow-x:clip;
   scroll-behavior:smooth;
-  background:var(--ivory);
+  background:var(--bg);
 }
 html,body{
   width:100%;
@@ -49,13 +50,13 @@ body{
   overflow-x:hidden;
   overflow-x:clip;
   color:var(--ink);
-  background:var(--ivory);
+  background:var(--bg);
 }
 #menu-root{
   position:relative;
   min-height:100vh;
   min-height:100dvh;
-  background:var(--ivory);
+  background:var(--bg);
 }
 #menu-root::before{
   content:"";
@@ -66,7 +67,7 @@ body{
   background:var(--scarlet);
   -webkit-mask:url('../../assets/l-cafe-pattern-inverted-tight.svg') center top/150px auto repeat;
   mask:url('../../assets/l-cafe-pattern-inverted-tight.svg') center top/150px auto repeat;
-  opacity:.025;
+  opacity:.015;
 }
 a{color:inherit}
 button{font:inherit}
