@@ -218,12 +218,12 @@ a:focus-visible,button:focus-visible{
   background:var(--fill);
   text-align:right;
 }
-.cat-head[data-metal-prototype]{isolation:isolate}
-.cat-head[data-metal-prototype]>:not(.category-metal-ring){
+.cat-head[data-metal-fx]{isolation:isolate}
+.cat-head[data-metal-fx]>:not(.category-metal-fx-canvas){
   position:relative;
   z-index:1;
 }
-.category-metal-ring{
+.category-metal-fx-canvas{
   position:absolute;
   inset:-1px -1px -1px 0;
   z-index:0;
@@ -1756,139 +1756,409 @@ a:focus-visible,button:focus-visible{
   });
 })();
 
-// Native liquid-metal border prototype — Routine category only.
-//
-// Adapted from metal-fx's rendering architecture rather than its React API:
-// one tiny shared WebGL plasma is copied into a host-sized 2D canvas, then the
-// middle is punched out so only a thin radius-following ring remains. Geometry
-// is read only at mount/resize; the frame loop only touches cached canvas data.
+// Native port of metal-fx v1.0.4's real Plasma renderer (MIT, Jakub Antalik),
+// pinned to upstream commit be1bf89c63056521a4e8224f368768314c9006f7.
+// React's lifecycle/JSX shell is intentionally omitted; the shader, canonical
+// crop, shared 96px GL surface, 15fps loop and punched-ring composite are kept.
 (function () {
   var TARGET_HEADING_ID = "cat-routine";
-  var FRAME_INTERVAL = 66;
-  var GL_SIZE = 96;
-  var RING_CSS_PX = 1.25;
-  var instances = [];
-  var shared = null;
-  var raf = 0;
-  var lastFrame = 0;
-  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var FRAME_INTERVAL_MS = 66;
+  var CANONICAL_GL_SIZE = 96;
+  var GL_DPR_CAP = 2;
+  var CANONICAL_PILL_W = 140;
+  var CANONICAL_PILL_H = 40;
+  var PILL_SHADER_SCALE = 1.6;
+  var RING_CSS_PX = 2;
+  var STATIC_TIME_SECONDS = 1.8;
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var shared;
+  var instance = null;
+  var rafId = 0;
+  var lastFrameMs = 0;
 
-  var vertexSource = [
-    "attribute vec2 a_position;",
-    "void main(){gl_Position=vec4(a_position,0.0,1.0);}"
-  ].join("\n");
+  // Spatial and motion values stay on the official chromatic.dark preset. Only the
+  // seven color stops are adapted to L Cafe's wine, scarlet, ivory and white.
+  var preset = {
+    colors: ["#1B0307", "#E58A9C", "#F3F1EC", "#B32140", "#0D0204", "#FFFFFF", "#681F2D"],
+    alphas: [1, 1, 1, 1, 1, 1, 1],
+    direction: 80,
+    speed: 1.2,
+    intensity: 2,
+    scale: 1.6,
+    softness: 0.18,
+    distortion: 0.3,
+    complexity: 0.68,
+    shape: 1,
+    blur: 1,
+    vignette: 0.26,
+    vigOpacity: 0.6,
+    shaderOpacity: 1
+  };
 
-  // A compact plasma in the existing scarlet/ivory family. The field borrows
-  // metal-fx's warped sine-band idea, but uses an L Cafe-specific two-hue
-  // palette and a much slower clock instead of any bundled preset.
-  var fragmentSource = [
-    "precision mediump float;",
-    "uniform vec2 u_resolution;",
-    "uniform float u_time;",
-    "float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}",
-    "float noise(vec2 p){",
-    "  vec2 i=floor(p),f=fract(p);",
-    "  f=f*f*(3.0-2.0*f);",
-    "  return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),",
-    "             mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y);",
-    "}",
-    "float fbm(vec2 p){",
-    "  float v=0.0;",
-    "  v+=noise(p)*0.57;p=p*2.03+7.1;",
-    "  v+=noise(p)*0.28;p=p*2.01+3.7;",
-    "  v+=noise(p)*0.15;",
-    "  return v;",
-    "}",
-    "void main(){",
-    "  vec2 uv=gl_FragCoord.xy/u_resolution.xy;",
-    "  vec2 p=uv-0.5;",
-    "  p.x*=u_resolution.x/u_resolution.y;",
-    "  float t=u_time;",
-    "  float warp=(fbm(p*3.1+vec2(t*0.09,-t*0.05))-0.5)*1.45;",
-    "  float bands=sin(p.x*6.1+p.y*2.7+warp+t*0.42);",
-    "  bands+=0.62*sin((p.x-p.y)*4.4-warp*0.8-t*0.31);",
-    "  float field=0.5+0.5*(bands/1.62);",
-    "  vec3 deep=vec3(71.0,16.0,25.0)/255.0;",
-    "  vec3 scarlet=vec3(104.0,31.0,45.0)/255.0;",
-    "  vec3 ivory=vec3(243.0,241.0,236.0)/255.0;",
-    "  vec3 warm=mix(scarlet,ivory,0.42);",
-    "  vec3 color=mix(deep,scarlet,smoothstep(0.04,0.48,field));",
-    "  color=mix(color,warm,smoothstep(0.42,0.7,field)*0.5);",
-    "  float catchlight=pow(max(0.0,1.0-abs(field-0.78)*5.2),7.0);",
-    "  color=mix(color,ivory,catchlight*0.78);",
-    "  gl_FragColor=vec4(color,1.0);",
-    "}"
-  ].join("\n");
+  var vertexSource = `
+    attribute vec2 a_position;
+    void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
+  `;
 
-  function compile(gl, type, source) {
+  // Direct port of src/engine/shaders.ts. This is the upstream Plasma effect,
+  // including simplex FBM warp, five-stop palette, gamma punch and vignette.
+  var fragmentSource = `
+    precision highp float;
+
+    uniform vec2 u_resolution;
+    uniform float u_time;
+    uniform vec3 u_color1, u_color2, u_color3, u_color4, u_color5, u_color6, u_color7;
+    uniform float u_alpha1, u_alpha2, u_alpha3, u_alpha4, u_alpha5, u_alpha6, u_alpha7;
+    uniform float u_intensity, u_scale, u_direction;
+    uniform float u_softness, u_distortion, u_complexity, u_shape;
+    uniform float u_vignette, u_vigOpacity, u_blur, u_shaderOpacity;
+
+    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec2 mod289v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec3 permute(vec3 x) { return mod289((x * 34.0 + 1.0) * x); }
+
+    float snoise(vec2 v) {
+      const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                          -0.577350269189626, 0.024390243902439);
+      vec2 i = floor(v + dot(v, C.yy));
+      vec2 x0 = v - i + dot(i, C.xx);
+      vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+      vec4 x12 = x0.xyxy + C.xxzz;
+      x12.xy -= i1;
+      i = mod289v2(i);
+      vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+      vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+      m = m * m; m = m * m;
+      vec3 x_ = 2.0 * fract(p * C.www) - 1.0;
+      vec3 h = abs(x_) - 0.5;
+      vec3 ox = floor(x_ + 0.5);
+      vec3 a0 = x_ - ox;
+      m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+      vec3 g;
+      g.x = a0.x * x0.x + h.x * x0.y;
+      g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+      return 130.0 * dot(m, g);
+    }
+
+    float fbm(vec2 p, float oct) {
+      float val = 0.0, amp = 0.5;
+      int n = int(oct);
+      for (int i = 0; i < 7; i++) {
+        if (i >= n) break;
+        val += amp * snoise(p);
+        p *= 2.0;
+        amp *= 0.5;
+      }
+      return val;
+    }
+
+    float nfbm(vec2 p) { return fbm(p, 3.0 + u_complexity * 4.0); }
+
+    vec3 palette(float t) {
+      t = clamp(t, 0.0, 1.0);
+      t = t * t * (3.0 - 2.0 * t);
+      float k = 64.0;
+      float w1 = u_alpha1 * exp(-k * t * t);
+      float w2 = u_alpha2 * exp(-k * (t - 0.25) * (t - 0.25));
+      float w3 = u_alpha3 * exp(-k * (t - 0.5) * (t - 0.5));
+      float w4 = u_alpha4 * exp(-k * (t - 0.75) * (t - 0.75));
+      float w5 = u_alpha5 * exp(-k * (t - 1.0) * (t - 1.0));
+      float total = w1 + w2 + w3 + w4 + w5 + 0.0001;
+      return (u_color1 * w1 + u_color2 * w2 + u_color3 * w3 +
+              u_color4 * w4 + u_color5 * w5) / total;
+    }
+
+    float paletteAlpha(float t) {
+      t = clamp(t, 0.0, 1.0);
+      t = t * t * (3.0 - 2.0 * t);
+      float k = 64.0;
+      float w1 = u_alpha1 * exp(-k * t * t);
+      float w2 = u_alpha2 * exp(-k * (t - 0.25) * (t - 0.25));
+      float w3 = u_alpha3 * exp(-k * (t - 0.5) * (t - 0.5));
+      float w4 = u_alpha4 * exp(-k * (t - 0.75) * (t - 0.75));
+      float w5 = u_alpha5 * exp(-k * (t - 1.0) * (t - 1.0));
+      float totalW = w1 + w2 + w3 + w4 + w5 + 0.0001;
+      float rawW = exp(-k * t * t)
+                 + exp(-k * (t - 0.25) * (t - 0.25))
+                 + exp(-k * (t - 0.5) * (t - 0.5))
+                 + exp(-k * (t - 0.75) * (t - 0.75))
+                 + exp(-k * (t - 1.0) * (t - 1.0))
+                 + 0.0001;
+      return totalW / rawW;
+    }
+
+    vec2 warp(vec2 p, float t) {
+      float str = u_distortion * 2.0;
+      return vec2(
+        nfbm(p + vec2(t * 0.1, 0.0)),
+        nfbm(p + vec2(0.0, t * 0.12) + 5.0)
+      ) * str;
+    }
+
+    vec3 computeEffect(vec2 uv, float aspect, float t, float dist, float cpx) {
+      vec2 p = (uv - 0.5) * u_scale;
+      p.x *= aspect;
+      p += vec2(cos(u_direction), sin(u_direction)) * t * 0.15;
+
+      float freq = 3.0 + cpx * 8.0;
+      float val = 0.0;
+      val += sin(p.x * freq + t);
+      val += sin(p.y * freq + t * 1.3);
+      val += sin((p.x + p.y) * freq * 0.7 + t * 0.7);
+      val += sin(length(p) * freq * 0.8 - t * 1.5);
+      vec2 w = warp(p, t);
+      val += (w.x + w.y) * dist;
+      val = val * 0.2 * u_intensity + 0.5;
+
+      return palette(clamp(val, 0.0, 1.0));
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_resolution;
+      float aspect = u_resolution.x / u_resolution.y;
+      float t = u_time;
+      float dist = u_distortion;
+      float cpx = u_complexity;
+
+      vec3 col;
+      if (u_blur < 0.01) {
+        col = computeEffect(uv, aspect, t, dist, cpx);
+      } else {
+        float r = u_blur * 0.02;
+        col  = computeEffect(uv,                 aspect, t, dist, cpx) * 0.4;
+        col += computeEffect(uv + vec2( r, 0.0), aspect, t, dist, cpx) * 0.15;
+        col += computeEffect(uv + vec2(-r, 0.0), aspect, t, dist, cpx) * 0.15;
+        col += computeEffect(uv + vec2(0.0,  r), aspect, t, dist, cpx) * 0.15;
+        col += computeEffect(uv + vec2(0.0, -r), aspect, t, dist, cpx) * 0.15;
+      }
+
+      col = pow(col, vec3(1.3));
+
+      float edgeDist = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
+      float vigPx = 40.0 / min(u_resolution.x, u_resolution.y);
+      float vigRange = vigPx * (1.0 + u_vignette * 3.0);
+      float vig = edgeDist * edgeDist / (vigRange * vigRange);
+      vig = smoothstep(0.0, 1.0, vig);
+      col *= mix(1.0, vig, u_vignette * u_vigOpacity);
+
+      float colorAlpha = (u_alpha1 + u_alpha2 + u_alpha3 + u_alpha4 + u_alpha5) / 5.0;
+      if (colorAlpha < 0.999) {
+        vec3 c1d = col - u_color1, c2d = col - u_color2, c3d = col - u_color3,
+             c4d = col - u_color4, c5d = col - u_color5;
+        float prox1 = exp(-8.0 * dot(c1d, c1d));
+        float prox2 = exp(-8.0 * dot(c2d, c2d));
+        float prox3 = exp(-8.0 * dot(c3d, c3d));
+        float prox4 = exp(-8.0 * dot(c4d, c4d));
+        float prox5 = exp(-8.0 * dot(c5d, c5d));
+        float pTotal = prox1 + prox2 + prox3 + prox4 + prox5 + 0.0001;
+        colorAlpha = (prox1 * u_alpha1 + prox2 * u_alpha2 + prox3 * u_alpha3 +
+                      prox4 * u_alpha4 + prox5 * u_alpha5) / pTotal;
+      }
+      float alpha = colorAlpha;
+      alpha += 0.0 * (u_softness + u_shape +
+                      u_alpha6 + u_alpha7 +
+                      u_color6.x + u_color7.x);
+
+      gl_FragColor = vec4(col, alpha * u_shaderOpacity);
+    }
+  `;
+
+  var uniformNames = [
+    "u_resolution", "u_time",
+    "u_color1", "u_color2", "u_color3", "u_color4", "u_color5", "u_color6", "u_color7",
+    "u_alpha1", "u_alpha2", "u_alpha3", "u_alpha4", "u_alpha5", "u_alpha6", "u_alpha7",
+    "u_intensity", "u_scale", "u_direction", "u_softness",
+    "u_distortion", "u_complexity", "u_shape",
+    "u_vignette", "u_vigOpacity", "u_blur", "u_shaderOpacity"
+  ];
+
+  function compileShader(gl, type, source) {
     var shader = gl.createShader(type);
-    if (!shader) return null;
+    if (!shader) throw new Error("gl.createShader returned null");
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      var info = gl.getShaderInfoLog(shader) || "no shader info log";
       gl.deleteShader(shader);
-      return null;
+      throw new Error(info);
     }
     return shader;
   }
 
-  function createSharedRenderer() {
-    var canvas = document.createElement("canvas");
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.round(GL_SIZE * dpr);
-    canvas.height = Math.round(GL_SIZE * dpr);
-    var gl = canvas.getContext("webgl", {
-      alpha: true,
-      antialias: false,
-      premultipliedAlpha: false,
-      preserveDrawingBuffer: true
-    });
-    if (!gl) return null;
-
-    var vertex = compile(gl, gl.VERTEX_SHADER, vertexSource);
-    var fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource);
-    if (!vertex || !fragment) return null;
+  function buildPipeline(gl) {
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    var vertex = compileShader(gl, gl.VERTEX_SHADER, vertexSource);
+    var fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
     var program = gl.createProgram();
-    if (!program) return null;
+    if (!program) throw new Error("gl.createProgram returned null");
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
     gl.deleteShader(vertex);
     gl.deleteShader(fragment);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) || "no program info log");
+    }
     gl.useProgram(program);
 
     var buffer = gl.createBuffer();
+    if (!buffer) throw new Error("gl.createBuffer returned null");
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(
       gl.ARRAY_BUFFER,
-      new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),
+      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
       gl.STATIC_DRAW
     );
     var position = gl.getAttribLocation(program, "a_position");
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-    return {
-      canvas: canvas,
-      gl: gl,
-      program: program,
-      buffer: buffer,
-      resolution: gl.getUniformLocation(program, "u_resolution"),
-      time: gl.getUniformLocation(program, "u_time")
+    var uniforms = {};
+    for (var i = 0; i < uniformNames.length; i++) {
+      uniforms[uniformNames[i]] = gl.getUniformLocation(program, uniformNames[i]);
+    }
+    return { program: program, buffer: buffer, uniforms: uniforms };
+  }
+
+  function createSharedRenderer() {
+    var dpr = Math.min(GL_DPR_CAP, window.devicePixelRatio || 1);
+    var size = Math.round(CANONICAL_GL_SIZE * dpr);
+    var useOffscreen = typeof OffscreenCanvas !== "undefined";
+    var glCanvas = useOffscreen ? new OffscreenCanvas(size, size) : document.createElement("canvas");
+    glCanvas.width = size;
+    glCanvas.height = size;
+    var options = {
+      alpha: true,
+      premultipliedAlpha: false,
+      antialias: false,
+      preserveDrawingBuffer: !useOffscreen
     };
+    var gl = glCanvas.getContext("webgl", options);
+    if (!gl && !useOffscreen) gl = glCanvas.getContext("experimental-webgl", options);
+    if (!gl) throw new Error("WebGL not supported");
+
+    var pipeline = buildPipeline(gl);
+    var renderer = {
+      glCanvas: glCanvas,
+      gl: gl,
+      program: pipeline.program,
+      buffer: pipeline.buffer,
+      uniforms: pipeline.uniforms,
+      useOffscreen: useOffscreen,
+      frameBitmap: null,
+      startMs: performance.now(),
+      presetDirty: true,
+      contextLost: false
+    };
+
+    glCanvas.addEventListener("webglcontextlost", function (event) {
+      event.preventDefault();
+      renderer.contextLost = true;
+      stopLoop();
+      if (instance) {
+        paintFallback(instance);
+        instance.host.setAttribute("data-metal-fx-renderer", "fallback");
+      }
+    });
+    glCanvas.addEventListener("webglcontextrestored", function () {
+      try {
+        var rebuilt = buildPipeline(gl);
+        renderer.program = rebuilt.program;
+        renderer.buffer = rebuilt.buffer;
+        renderer.uniforms = rebuilt.uniforms;
+        renderer.presetDirty = true;
+        renderer.contextLost = false;
+        if (instance) {
+          instance.host.setAttribute("data-metal-fx-renderer", "webgl");
+          sizeInstance(instance);
+        }
+        startLoop();
+      } catch (error) {
+        renderer.contextLost = true;
+      }
+    });
+    return renderer;
   }
 
-  function ensureShared() {
-    if (shared !== null) return shared || null;
-    shared = createSharedRenderer() || false;
-    return shared || null;
+  function ensureSharedRenderer() {
+    if (shared !== undefined) return shared;
+    try {
+      shared = createSharedRenderer();
+    } catch (error) {
+      shared = null;
+    }
+    return shared;
   }
 
-  function roundedRect(ctx, x, y, width, height, radius) {
-    var source = Array.isArray(radius) ? radius : [radius, radius, radius, radius];
+  function hexToRgb(hex) {
+    var value = parseInt(hex.slice(1), 16);
+    return [
+      ((value >> 16) & 255) / 255,
+      ((value >> 8) & 255) / 255,
+      (value & 255) / 255
+    ];
+  }
+
+  function uploadPresetUniforms(renderer) {
+    var gl = renderer.gl;
+    var uniforms = renderer.uniforms;
+    if (uniforms.u_resolution !== null) {
+      gl.uniform2f(uniforms.u_resolution, renderer.glCanvas.width, renderer.glCanvas.height);
+    }
+    for (var i = 0; i < 7; i++) {
+      var color = hexToRgb(preset.colors[i]);
+      var colorLocation = uniforms["u_color" + (i + 1)];
+      var alphaLocation = uniforms["u_alpha" + (i + 1)];
+      if (colorLocation !== null) gl.uniform3f(colorLocation, color[0], color[1], color[2]);
+      if (alphaLocation !== null) gl.uniform1f(alphaLocation, preset.alphas[i]);
+    }
+    var values = {
+      u_intensity: preset.intensity,
+      u_scale: preset.scale,
+      u_direction: preset.direction * Math.PI / 180,
+      u_softness: preset.softness,
+      u_distortion: preset.distortion,
+      u_complexity: preset.complexity,
+      u_shape: preset.shape,
+      u_vignette: preset.vignette,
+      u_vigOpacity: preset.vigOpacity,
+      u_blur: preset.blur,
+      u_shaderOpacity: preset.shaderOpacity
+    };
+    Object.keys(values).forEach(function (name) {
+      if (uniforms[name] !== null) gl.uniform1f(uniforms[name], values[name]);
+    });
+    renderer.presetDirty = false;
+  }
+
+  function renderSharedFrame(nowMs, fixedSeconds) {
+    var renderer = ensureSharedRenderer();
+    if (!renderer || renderer.contextLost) return false;
+    var gl = renderer.gl;
+    gl.viewport(0, 0, renderer.glCanvas.width, renderer.glCanvas.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.useProgram(renderer.program);
+    if (renderer.presetDirty) uploadPresetUniforms(renderer);
+    var seconds = fixedSeconds === undefined
+      ? (nowMs - renderer.startMs) / 1000
+      : fixedSeconds;
+    if (renderer.uniforms.u_time !== null) {
+      gl.uniform1f(renderer.uniforms.u_time, seconds * preset.speed);
+    }
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    if (renderer.useOffscreen) {
+      if (renderer.frameBitmap) renderer.frameBitmap.close();
+      renderer.frameBitmap = renderer.glCanvas.transferToImageBitmap();
+    }
+    return true;
+  }
+
+  function roundedRectPath(ctx, x, y, width, height, radii) {
     var limit = Math.max(0, Math.min(width / 2, height / 2));
-    var r = source.map(function (value) {
+    var r = radii.map(function (value) {
       return Math.max(0, Math.min(value, limit));
     });
     ctx.beginPath();
@@ -1904,223 +2174,224 @@ a:focus-visible,button:focus-visible{
     ctx.closePath();
   }
 
-  function paintFallback(inst) {
-    var ctx = inst.ctx;
-    var dpr = inst.dpr;
-    var width = inst.width * dpr;
-    var height = inst.height * dpr;
-    var inset = RING_CSS_PX * dpr / 2;
-    ctx.clearRect(0, 0, width, height);
-    var gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "rgba(71,16,25,.92)");
-    gradient.addColorStop(0.38, "rgba(243,241,236,.7)");
-    gradient.addColorStop(0.55, "rgba(104,31,45,.82)");
-    gradient.addColorStop(0.82, "rgba(243,241,236,.48)");
-    gradient.addColorStop(1, "rgba(71,16,25,.92)");
-    roundedRect(
-      ctx,
-      inset,
-      inset,
-      width - inset * 2,
-      height - inset * 2,
-      inst.radii.map(function (radius) { return radius * dpr - inset; })
-    );
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = RING_CSS_PX * dpr;
-    ctx.stroke();
-  }
-
-  function paintInstance(inst) {
-    if (!inst.width || !inst.height) return;
-    var renderer = ensureShared();
-    if (!renderer) {
-      paintFallback(inst);
-      return;
-    }
-    var ctx = inst.ctx;
+  function punchInnerHole(inst) {
+    var stroke = RING_CSS_PX * inst.dpr;
     var width = inst.canvas.width;
     var height = inst.canvas.height;
-    var stroke = RING_CSS_PX * inst.dpr;
-    ctx.clearRect(0, 0, width, height);
-    ctx.globalAlpha = 0.74;
-    ctx.drawImage(renderer.canvas, 0, 0, width, height);
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "destination-out";
-    roundedRect(
-      ctx,
+    var innerWidth = Math.max(0, width - stroke * 2);
+    var innerHeight = Math.max(0, height - stroke * 2);
+    if (!innerWidth || !innerHeight) return;
+    inst.ctx.save();
+    inst.ctx.globalCompositeOperation = "destination-out";
+    roundedRectPath(
+      inst.ctx,
       stroke,
       stroke,
-      Math.max(0, width - stroke * 2),
-      Math.max(0, height - stroke * 2),
+      innerWidth,
+      innerHeight,
       inst.radii.map(function (radius) {
         return Math.max(0, radius * inst.dpr - stroke);
       })
     );
-    ctx.fillStyle = "#000";
-    ctx.fill();
-    ctx.globalCompositeOperation = "source-over";
+    inst.ctx.fillStyle = "#000";
+    inst.ctx.fill();
+    inst.ctx.restore();
   }
 
-  function renderShared(time) {
-    var renderer = ensureShared();
-    if (!renderer) return;
-    var gl = renderer.gl;
-    gl.viewport(0, 0, renderer.canvas.width, renderer.canvas.height);
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(renderer.program);
-    gl.uniform2f(renderer.resolution, renderer.canvas.width, renderer.canvas.height);
-    gl.uniform1f(renderer.time, time);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-
-  function hasVisibleWork() {
-    if (document.hidden || reduced.matches) return false;
-    for (var i = 0; i < instances.length; i++) {
-      if (instances[i].visible && instances[i].host.isConnected) return true;
-    }
-    return false;
-  }
-
-  function stopLoop() {
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
-  }
-
-  function tick(now) {
-    if (!hasVisibleWork()) {
-      raf = 0;
+  function copyShaderToInstance(inst) {
+    var renderer = ensureSharedRenderer();
+    if (!renderer || renderer.contextLost) {
+      paintFallback(inst);
       return;
     }
-    raf = requestAnimationFrame(tick);
-    if (now - lastFrame < FRAME_INTERVAL) return;
-    lastFrame = now;
-    renderShared((now / 1000) * 0.11);
-    for (var i = 0; i < instances.length; i++) {
-      if (instances[i].visible) paintInstance(instances[i]);
-    }
+    var source = renderer.frameBitmap || renderer.glCanvas;
+    var width = inst.canvas.width;
+    var height = inst.canvas.height;
+    var canvasWidth = renderer.glCanvas.width;
+    var canvasHeight = renderer.glCanvas.height;
+    var baseWidth = CANONICAL_PILL_W * inst.dpr;
+    var baseHeight = CANONICAL_PILL_H * inst.dpr;
+    var sourceWidth = (width * (canvasWidth / baseWidth)) / PILL_SHADER_SCALE;
+    var sourceHeight = (height * (canvasHeight / baseHeight)) / PILL_SHADER_SCALE;
+    if (sourceWidth > canvasWidth) sourceWidth = canvasWidth;
+    if (sourceHeight > canvasHeight) sourceHeight = canvasHeight;
+    var sourceX = Math.max(0, (canvasWidth - sourceWidth) / 2);
+    var sourceY = Math.max(0, (canvasHeight - sourceHeight) / 2);
+
+    inst.ctx.clearRect(0, 0, width, height);
+    inst.ctx.drawImage(
+      source,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      width,
+      height
+    );
+    punchInnerHole(inst);
   }
 
-  function startLoop() {
-    if (!raf && hasVisibleWork()) raf = requestAnimationFrame(tick);
+  function paintFallback(inst) {
+    var width = inst.canvas.width;
+    var height = inst.canvas.height;
+    var gradient = inst.ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#1B0307");
+    gradient.addColorStop(0.24, "#E58A9C");
+    gradient.addColorStop(0.5, "#F3F1EC");
+    gradient.addColorStop(0.76, "#B32140");
+    gradient.addColorStop(1, "#0D0204");
+    inst.ctx.clearRect(0, 0, width, height);
+    inst.ctx.fillStyle = gradient;
+    inst.ctx.fillRect(0, 0, width, height);
+    punchInnerHole(inst);
   }
 
   function sizeInstance(inst) {
     var rect = inst.host.getBoundingClientRect();
-    var width = Math.max(1, Math.round(rect.width));
-    var height = Math.max(1, Math.round(rect.height));
-    var computed = getComputedStyle(inst.host);
-    var radii = [
-      parseFloat(computed.borderTopLeftRadius),
-      parseFloat(computed.borderTopRightRadius),
-      parseFloat(computed.borderBottomRightRadius),
-      parseFloat(computed.borderBottomLeftRadius)
-    ].map(function (radius) { return Number.isFinite(radius) ? radius : 0; });
-    inst.width = width;
-    inst.height = height;
-    inst.radii = radii;
+    inst.cssWidth = Math.max(1, Math.round(rect.width));
+    inst.cssHeight = Math.max(1, Math.round(rect.height));
     inst.dpr = window.devicePixelRatio || 1;
-    var pixelWidth = Math.max(1, Math.round(width * inst.dpr));
-    var pixelHeight = Math.max(1, Math.round(height * inst.dpr));
+    var computed = getComputedStyle(inst.host);
+    inst.radii = [
+      computed.borderTopLeftRadius,
+      computed.borderTopRightRadius,
+      computed.borderBottomRightRadius,
+      computed.borderBottomLeftRadius
+    ].map(function (value) {
+      var radius = parseFloat(value);
+      return Number.isFinite(radius) ? radius : 0;
+    });
+    var pixelWidth = Math.max(1, Math.round(inst.cssWidth * inst.dpr));
+    var pixelHeight = Math.max(1, Math.round(inst.cssHeight * inst.dpr));
     if (inst.canvas.width !== pixelWidth) inst.canvas.width = pixelWidth;
     if (inst.canvas.height !== pixelHeight) inst.canvas.height = pixelHeight;
-    renderShared(reduced.matches ? 1.8 : performance.now() / 1000 * 0.11);
-    paintInstance(inst);
+
+    var renderer = ensureSharedRenderer();
+    if (renderer && !renderer.contextLost) {
+      inst.host.setAttribute("data-metal-fx-renderer", "webgl");
+      renderSharedFrame(
+        performance.now(),
+        reducedMotion.matches ? STATIC_TIME_SECONDS : undefined
+      );
+      copyShaderToInstance(inst);
+    } else {
+      inst.host.setAttribute("data-metal-fx-renderer", "fallback");
+      paintFallback(inst);
+    }
   }
 
-  function detach(inst) {
-    inst.resizeObserver.disconnect();
-    if (inst.intersectionObserver) inst.intersectionObserver.disconnect();
-    var index = instances.indexOf(inst);
-    if (index !== -1) instances.splice(index, 1);
+  function hasVisibleWork() {
+    return Boolean(
+      instance &&
+      instance.visible &&
+      instance.host.isConnected &&
+      !document.hidden &&
+      !reducedMotion.matches &&
+      shared &&
+      !shared.contextLost
+    );
   }
 
-  function mount(host) {
-    if (host.hasAttribute("data-metal-prototype")) return;
-    host.setAttribute("data-metal-prototype", "");
+  function stopLoop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+
+  function tick(nowMs) {
+    if (!hasVisibleWork()) {
+      rafId = 0;
+      return;
+    }
+    rafId = requestAnimationFrame(tick);
+    if (nowMs - lastFrameMs < FRAME_INTERVAL_MS) return;
+    lastFrameMs = nowMs;
+    if (renderSharedFrame(nowMs)) copyShaderToInstance(instance);
+  }
+
+  function startLoop() {
+    if (!rafId && hasVisibleWork()) rafId = requestAnimationFrame(tick);
+  }
+
+  function mount() {
+    var heading = document.getElementById(TARGET_HEADING_ID);
+    var host = heading && heading.closest(".cat-head");
+    if (!host || host.hasAttribute("data-metal-fx")) return;
+
     var canvas = document.createElement("canvas");
-    canvas.className = "category-metal-ring";
+    canvas.className = "category-metal-fx-canvas";
     canvas.setAttribute("aria-hidden", "true");
-    host.insertBefore(canvas, host.firstChild);
     var ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
+    host.setAttribute("data-metal-fx", "native");
+    host.insertBefore(canvas, host.firstChild);
 
-    var inst = {
+    instance = {
       host: host,
       canvas: canvas,
       ctx: ctx,
-      width: 0,
-      height: 0,
+      cssWidth: 0,
+      cssHeight: 0,
       radii: [0, 0, 0, 0],
       dpr: 1,
       visible: true,
       resizeObserver: null,
       intersectionObserver: null
     };
-    var resizeQueued = false;
-    inst.resizeObserver = new ResizeObserver(function () {
-      if (resizeQueued) return;
-      resizeQueued = true;
-      requestAnimationFrame(function () {
-        resizeQueued = false;
-        if (host.isConnected) sizeInstance(inst);
+
+    var resizeRaf = 0;
+    instance.resizeObserver = new ResizeObserver(function () {
+      if (resizeRaf) return;
+      resizeRaf = requestAnimationFrame(function () {
+        resizeRaf = 0;
+        if (instance && instance.host.isConnected) sizeInstance(instance);
       });
     });
-    inst.resizeObserver.observe(host);
+    instance.resizeObserver.observe(host);
 
     if ("IntersectionObserver" in window) {
-      inst.intersectionObserver = new IntersectionObserver(function (entries) {
+      instance.intersectionObserver = new IntersectionObserver(function (entries) {
         for (var i = 0; i < entries.length; i++) {
-          inst.visible = entries[i].isIntersecting;
+          instance.visible = entries[i].isIntersecting;
         }
-        if (inst.visible) startLoop();
-        else if (!hasVisibleWork()) stopLoop();
-      }, { rootMargin: "80px" });
-      inst.intersectionObserver.observe(host);
+        if (instance.visible) startLoop();
+        else stopLoop();
+      }, { rootMargin: "64px" });
+      instance.intersectionObserver.observe(host);
     }
 
-    instances.push(inst);
-    sizeInstance(inst);
+    sizeInstance(instance);
     startLoop();
   }
 
-  function reconcile() {
-    for (var i = instances.length - 1; i >= 0; i--) {
-      if (!instances[i].host.isConnected) detach(instances[i]);
-    }
-    var heading = document.getElementById(TARGET_HEADING_ID);
-    var host = heading && heading.closest(".cat-head");
-    if (host) mount(host);
-  }
-
-  reduced.addEventListener("change", function () {
-    if (reduced.matches) {
+  reducedMotion.addEventListener("change", function () {
+    if (!instance) return;
+    if (reducedMotion.matches) {
       stopLoop();
-      renderShared(1.8);
-      for (var i = 0; i < instances.length; i++) paintInstance(instances[i]);
+      if (renderSharedFrame(performance.now(), STATIC_TIME_SECONDS)) {
+        copyShaderToInstance(instance);
+      } else {
+        paintFallback(instance);
+      }
     } else {
+      if (shared) {
+        shared.startMs = performance.now() - STATIC_TIME_SECONDS * 1000;
+      }
       startLoop();
     }
   });
+
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) stopLoop();
     else startLoop();
   });
 
-  var reconcileQueued = false;
-  function scheduleReconcile() {
-    if (reconcileQueued) return;
-    reconcileQueued = true;
-    requestAnimationFrame(function () {
-      reconcileQueued = false;
-      reconcile();
-    });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mount, { once: true });
+  } else {
+    mount();
   }
-  reconcile();
-  new MutationObserver(scheduleReconcile).observe(document.documentElement, {
-    childList: true,
-    subtree: true
-  });
 })();
 
 // Product imagery stays still; the border above is the menu's sole ambient motion.
