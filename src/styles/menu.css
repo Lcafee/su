@@ -1,5 +1,6 @@
 *,*::before,*::after{box-sizing:border-box}
 :root{
+  color-scheme:only light;
   --font:'Vazirmatn',system-ui,sans-serif;
   --display:'Sahel','Vazirmatn',system-ui,sans-serif;
   --scarlet:#681F2D;
@@ -54,8 +55,9 @@ body{
   position:relative;
   min-height:100vh;
   min-height:100dvh;
+  background:var(--ivory);
 }
-body::before{
+#menu-root::before{
   content:"";
   position:fixed;
   inset:0;
