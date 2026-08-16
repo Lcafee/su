@@ -1,7 +1,7 @@
 # ال کافه — static site. Apache/LiteSpeed shared hosting.
 
-# One origin. The certificate covers the apex, www and mail, and both hostnames
-# resolve, so without this the same page answers on four addresses. The
+# One public origin. HTTP, www, retired domains and hosting aliases are redirected
+# to the HTTPS apex so the same page is not published under multiple addresses. The
 # <link rel=canonical> in each page keeps search engines pointed at one of them
 # and does nothing for the visitor: over plaintext the phone number and the map
 # link travel unencrypted and the browser labels the page "not secure".
@@ -16,10 +16,12 @@
 
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
-  RewriteRule ^ https://lcafe-esf.ir%{REQUEST_URI} [R=301,L]
+  RewriteRule ^ https://l-cafe.ir%{REQUEST_URI} [R=301,L]
 
-  RewriteCond %{HTTP_HOST} ^www\.lcafe-esf\.ir$ [NC]
-  RewriteRule ^ https://lcafe-esf.ir%{REQUEST_URI} [R=301,L]
+  # Canonical host: redirect www, the retired domain, and any hosting alias
+  # to the public apex domain.
+  RewriteCond %{HTTP_HOST} !^l-cafe\.ir$ [NC]
+  RewriteRule ^ https://l-cafe.ir%{REQUEST_URI} [R=301,L]
 </IfModule>
 
 ErrorDocument 404 /404.html
