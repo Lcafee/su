@@ -311,16 +311,6 @@ a:focus-visible,button:focus-visible{
   -webkit-line-clamp:unset;
   line-clamp:unset;
 }
-.item p[data-measuring]{
-  position:absolute;
-  visibility:hidden;
-  display:block;
-  width:var(--measure-width);
-  height:auto;
-  overflow:visible;
-  -webkit-line-clamp:unset;
-  line-clamp:unset;
-}
 .item .more{
   position:relative;
   align-self:flex-start;
@@ -1653,56 +1643,59 @@ a:focus-visible,button:focus-visible{
 // The clamp is visual only. The full text stays in the document, so a screen
 // reader reads every description in full whether or not anyone opens it.
 (function () {
+  // Every write here is guarded by a read of what is already there. A pass that
+  // changes nothing must touch nothing: the observer at the foot of this block
+  // hears child-list changes, and an unconditional textContent assignment — even
+  // one writing the identical string — is a child-list change, which scheduled
+  // the next pass, which wrote again, one full measurement per animation frame
+  // for as long as the page was open.
   function label(btn, open) {
     var item = btn.closest(".item");
     var name = item ? item.querySelector("h3") : null;
-    btn.textContent = open ? "کمتر" : "بیشتر";
-    if (name) {
-      btn.setAttribute(
-        "aria-label",
-        (open ? "بستن توضیح " : "توضیح کامل ") + name.textContent.trim()
-      );
-    }
+    var text = open ? "کمتر" : "بیشتر";
+    if (btn.textContent !== text) btn.textContent = text;
+    if (!name) return;
+    var described = (open ? "بستن توضیح " : "توضیح کامل ") + name.textContent.trim();
+    if (btn.getAttribute("aria-label") !== described) btn.setAttribute("aria-label", described);
   }
 
   function sync() {
     var btns = [].slice.call(document.querySelectorAll(".item .more"));
-    // Collect the measurements first; writes are batched below so eighty
-    // controls do not force eighty separate layouts on a resize.
+    // A clamped paragraph already carries its own answer: the clamp bounds what
+    // is visible to clientHeight while scrollHeight keeps the full text, so the
+    // overflow test needs no second copy and no second geometry.
+    //
+    // The measurement this replaced pulled every paragraph out of flow at once
+    // to read its unclamped height. Eighty-seven of them leaving the flow in the
+    // same frame shortened the document by about 1700px, and near the foot of
+    // the menu the browser clamped the scroll offset to that shorter document —
+    // a ceiling that landed on ساندویچ و سالاد and put افزودنی and the footer
+    // out of reach on any engine that does not restore the offset afterwards.
+    // Reading in place cannot move the document at all.
+    //
+    // Reads still come first and writes second, so eighty-seven controls settle
+    // on one layout rather than eighty-seven of them.
     var state = btns.map(function (btn, index) {
       var p = btn.parentNode.querySelector("p");
       if (!p) return null;
       var open = p.hasAttribute("data-open");
-      // An open paragraph never overflows, so asking whether it still needs a
-      // button would always answer no and the control would delete itself the
-      // moment anyone used it.
-      var rect = p.getBoundingClientRect();
       return {
         btn: btn,
         p: p,
         id: p.id || "item-description-" + (index + 1),
         open: open,
-        closedHeight: rect.height,
-        width: rect.width
+        // An open paragraph never overflows, so asking whether it still needs a
+        // button would always answer no and the control would delete itself the
+        // moment anyone used it.
+        fits: !open && p.scrollHeight <= p.clientHeight + 1
       };
     });
     state.forEach(function (s) {
       if (!s) return;
-      s.p.id = s.id;
-      s.btn.setAttribute("aria-controls", s.id);
-      if (s.open) return;
-      s.p.style.setProperty("--measure-width", s.width + "px");
-      s.p.setAttribute("data-measuring", "");
-    });
-    state.forEach(function (s) {
-      if (!s) return;
-      s.fits = !s.open && s.p.getBoundingClientRect().height <= s.closedHeight + 1;
-    });
-    state.forEach(function (s) {
-      if (!s) return;
-      s.p.removeAttribute("data-measuring");
-      s.p.style.removeProperty("--measure-width");
-      s.btn.hidden = !s.open && s.fits;
+      var hide = !s.open && s.fits;
+      if (s.p.id !== s.id) s.p.id = s.id;
+      if (s.btn.getAttribute("aria-controls") !== s.id) s.btn.setAttribute("aria-controls", s.id);
+      if (s.btn.hidden !== hide) s.btn.hidden = hide;
       label(s.btn, s.open);
     });
   }
@@ -1729,7 +1722,20 @@ a:focus-visible,button:focus-visible{
   window.addEventListener("resize", schedule);
   window.addEventListener("load", schedule);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
-  new MutationObserver(schedule).observe(document.documentElement, {
+
+  // Only new descriptions can change the answer, and only the body can deliver
+  // them — the canvas runtime mounts its copy of the markup there. Watching the
+  // document element instead swept in every stylesheet and font the head loads,
+  // and watching without a filter swept in this block's own disclosure writes.
+  // Both are answers we already have.
+  new MutationObserver(function (records) {
+    for (var i = 0; i < records.length; i++) {
+      var target = records[i].target;
+      if (target.closest && target.closest(".item .more")) continue;
+      schedule();
+      return;
+    }
+  }).observe(document.body, {
     childList: true,
     subtree: true
   });
