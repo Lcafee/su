@@ -146,7 +146,8 @@ above its heading:
   line and a static reflection frame.
 
 Do not wrap `.cat`, `.cat-head`, or any product-grid container in Metal-FX.
-The only Metal-FX host is the thin rule track.
+The only Metal-FX hosts are the thin category rule tracks and, on mobile, the
+fixed category trigger described below.
 
 ## Category table of contents
 
@@ -228,8 +229,9 @@ geometry. No measured benefit currently outweighs those interaction risks.
 - Do not change `menu.json` to solve layout problems.
 - Do not collapse or restructure the two-column product grid on mobile.
 - Do not turn the Menu masthead into a hero.
-- Do not place Metal-FX around a category, header, card, grid, or navigation
-  control.
+- Do not place Metal-FX around a category, header, card, grid, navigation
+  popover, or navigation-list row. The mobile trigger itself is the deliberate
+  exception documented above.
 - Do not allow an animated reflection to replace the category rule’s complete
   static base line.
 - Do not hide text pending animation or font loading.

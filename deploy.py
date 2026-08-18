@@ -24,6 +24,8 @@ public_html on a bad day, and the served set otherwise only grows.
 
 Setup:  copy .deploy.ini.example to .deploy.ini and fill it in
 Run after npm run build:  py deploy.py [--all] [--dry-run]
+First deploy from an older .htaccess: confirm the target, then use
+                              py deploy.py --bootstrap-htaccess
 """
 
 import argparse
@@ -44,21 +46,7 @@ import package
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONF = os.path.join(HERE, ".deploy.ini")
 STATE = os.path.join(HERE, ".deploy-state.json")
-
-BUILD_OUTPUTS = ("index.html", "menu.html")
-BUILD_INPUTS = (
-    ".htaccess",
-    "404.html",
-    "index.html",
-    "menu.html",
-    "menu.json",
-    "package.json",
-    "package-lock.json",
-    "robots.txt",
-    "sitemap.xml",
-    "vite.config.js",
-)
-BUILD_INPUT_DIRS = ("src", "assets", "uploads")
+BUILD_MANIFEST = os.path.join(HERE, "dist", ".lcafe-build.json")
 
 
 def fail(message):
@@ -111,28 +99,50 @@ def guard_untracked():
 
 
 def guard_build_fresh():
-    targets = [package.source_path(name) for name in BUILD_OUTPUTS]
-    if any(not os.path.isfile(path) for path in targets):
-        fail("Vite output is missing. Run: npm run build")
+    if not os.path.isfile(BUILD_MANIFEST):
+        fail("build manifest is missing. Run: npm run build")
 
-    built = min(os.path.getmtime(path) for path in targets)
-    sources = [os.path.join(HERE, name) for name in BUILD_INPUTS]
-    for input_dir in BUILD_INPUT_DIRS:
-        for directory, _, filenames in os.walk(os.path.join(HERE, input_dir)):
-            sources.extend(os.path.join(directory, filename) for filename in filenames)
+    try:
+        with io.open(BUILD_MANIFEST, encoding="utf-8") as fh:
+            manifest = json.load(fh)
+        if manifest.get("version") != 1:
+            raise ValueError("unsupported manifest version")
+        roots = manifest["roots"]
+        recorded = manifest["inputs"]
+    except (KeyError, TypeError, ValueError, OSError) as e:
+        fail("build manifest is invalid (%s). Run: npm run build" % e)
 
-    stale = [
-        os.path.relpath(path, HERE)
-        for path in sources
-        if os.path.isfile(path) and os.path.getmtime(path) > built
-    ]
+    current_paths = set(roots.get("files", []))
+    for input_dir in roots.get("trees", []):
+        directory_root = os.path.join(HERE, input_dir)
+        for directory, dirnames, filenames in os.walk(directory_root):
+            dirnames.sort()
+            for filename in sorted(filenames):
+                current_paths.add(
+                    os.path.relpath(os.path.join(directory, filename), HERE).replace(os.sep, "/")
+                )
+
+    recorded_paths = set(recorded)
+    added = sorted(current_paths - recorded_paths)
+    removed = sorted(recorded_paths - current_paths)
+    changed = []
+    for name in sorted(current_paths & recorded_paths):
+        path = os.path.join(HERE, name.replace("/", os.sep))
+        if not os.path.isfile(path) or digest(path) != recorded[name]:
+            changed.append(name)
+
+    stale = added + removed + changed
     if stale:
-        fail("build is stale, refusing to upload:\n  " + "\n  ".join(stale) +
-             "\n        Run:  npm run build")
+        fail(
+            "build is stale, refusing to upload:\n  "
+            + "\n  ".join(stale)
+            + "\n        Run: npm run build"
+        )
 
 
 HTML_ENTRY_POINTS = {"index.html", "menu.html", "404.html"}
 STAGING_SUFFIX = ".lcafe-uploading"
+STAGING_DENY_MARKER = b"LCAFE-DEPLOY-STAGING-DENY"
 
 
 def deploy_order_key(name):
@@ -160,6 +170,96 @@ def remove_if_present(ftp, remote):
         pass
 
 
+def read_remote_file(ftp, remote):
+    """Return remote bytes, or None when the path does not exist/is unreadable."""
+    chunks = []
+    try:
+        ftp.retrbinary("RETR " + remote, chunks.append)
+    except ftplib.error_perm:
+        return None
+    return b"".join(chunks)
+
+
+def remote_staging_protected(ftp):
+    """Prove the live .htaccess denies deploy-owned temporary files."""
+    current = read_remote_file(ftp, ".htaccess")
+    if current is None:
+        return False
+    return all(
+        token in current
+        for token in (
+            STAGING_DENY_MARKER,
+            b'<FilesMatch "\\.lcafe-uploading$">',
+            b"Require all denied",
+        )
+    )
+
+
+def install_staging_protection(ftp):
+    """One-time live .htaccess bootstrap before any temporary file is staged.
+
+    This intentionally writes the final .htaccess path directly rather than
+    creating a public temporary file before the deny rule exists. It is only
+    used when the operator explicitly requests --bootstrap-htaccess (or --new).
+    The previous file is kept in memory and restored on a verified failure while
+    the control connection is still available.
+    """
+    path = package.source_path(".htaccess")
+    with open(path, "rb") as fh:
+        payload = fh.read()
+    if STAGING_DENY_MARKER not in payload:
+        fail("local dist/.htaccess is missing the staging deny rule; rebuild first")
+
+    previous = read_remote_file(ftp, ".htaccess")
+    try:
+        ftp.storbinary("STOR .htaccess", io.BytesIO(payload))
+        actual = ftp.size(".htaccess")
+        if actual != len(payload):
+            raise RuntimeError("remote .htaccess is %r bytes; expected %d" % (actual, len(payload)))
+        installed = read_remote_file(ftp, ".htaccess")
+        if installed is None or STAGING_DENY_MARKER not in installed:
+            raise RuntimeError("remote .htaccess does not contain the staging deny marker")
+    except (ftplib.Error, OSError, RuntimeError) as e:
+        try:
+            if previous is None:
+                remove_if_present(ftp, ".htaccess")
+            else:
+                ftp.storbinary("STOR .htaccess", io.BytesIO(previous))
+        except (ftplib.Error, OSError):
+            pass
+        fail("could not bootstrap staging protection: %s" % e)
+
+
+def ensure_staging_protection(ftp, allow_bootstrap):
+    """Never create a .lcafe-uploading file until HTTP denial is live."""
+    if remote_staging_protected(ftp):
+        return False
+    if not allow_bootstrap:
+        fail(
+            "remote .htaccess does not yet deny *.lcafe-uploading files.\n"
+            "        Run once with --bootstrap-htaccess (after confirming the target "
+            "directory), then normal deploys will verify the protection automatically."
+        )
+    install_staging_protection(ftp)
+    if not remote_staging_protected(ftp):
+        fail("staging protection bootstrap did not verify on the remote host")
+    return True
+
+
+def cleanup_staging_files(ftp, names):
+    """Best-effort removal of abandoned deploy-owned temporary files."""
+    leftover = []
+    for name in sorted(set(names)):
+        remote = staging_name(name)
+        try:
+            ftp.delete(remote)
+        except ftplib.error_perm:
+            continue
+        except (ftplib.Error, OSError):
+            leftover.append(remote)
+    return leftover
+
+
 def stage_file(ftp, name):
     """Upload one complete file without touching its live path."""
     path = package.source_path(name)
@@ -172,9 +272,14 @@ def stage_file(ftp, name):
     expected = os.path.getsize(path)
     try:
         actual = ftp.size(staged)
-    except (ftplib.Error, OSError):
-        actual = None
-    if actual is not None and actual != expected:
+    except (ftplib.Error, OSError) as e:
+        remove_if_present(ftp, staged)
+        fail(
+            "%s staged, but the server could not verify its size (%s).\n"
+            "        Safe deploys require FTP SIZE support so a short upload "
+            "cannot be promoted live." % (name, e)
+        )
+    if actual != expected:
         remove_if_present(ftp, staged)
         fail("%s staged short: %d of %d bytes" % (name, actual, expected))
     return staged
@@ -262,14 +367,13 @@ def connect(conf):
         # self-signed one, rather than one issued for the customer's domain.
         # The connection is encrypted either way; verification is what fails.
         fail("the host's TLS certificate did not verify: %s\n"
-             "        This is normal on shared hosting. Set verify = no in "
-             ".deploy.ini to accept it.\n"
-             "        The password stays encrypted in transit; what is given up "
-             "is proof that the server is the right one." % e.verify_message)
+             "        Prefer the hosting provider's FTPS hostname whose certificate "
+             "matches. Only use verify = no as an explicit last-resort exception."
+             % e.verify_message)
     except ftplib.error_perm as e:
         fail("the host rejected the login: %s\n"
              "        The username usually has to include the domain, as in "
-             "name@lcafe-esf.ir, not just name." % e)
+             "name@l-cafe.ir, not just name." % e)
     except OSError as e:
         fail("the connection dropped during login: %s" % e)
 
@@ -339,6 +443,14 @@ def main():
                     help="show what would be uploaded and stop")
     ap.add_argument("--new", action="store_true",
                     help="allow uploading into a directory the site is not in yet")
+    ap.add_argument(
+        "--bootstrap-htaccess",
+        action="store_true",
+        help=(
+            "one-time install of the staging-deny .htaccess before any temporary "
+            "upload; use only after confirming the remote document root"
+        ),
+    )
     args = ap.parse_args()
 
     guard_untracked()
@@ -370,6 +482,11 @@ def main():
     # Read last, so --dry-run answers "what would go up" before any credentials
     # exist - which is the run you want available while still setting this up.
     conf = load_config()
+    if not conf["verify"]:
+        print(
+            "deploy: WARNING: TLS certificate verification is disabled; "
+            "the transfer is encrypted but the server identity is not verified."
+        )
     ftp = connect(conf)
     sent = 0
     try:
@@ -386,10 +503,32 @@ def main():
         # site root, and a chrooted FTP account cannot name its own absolute one.
         ensure_dirs(ftp, changed)
 
+        # Security boundary: no deploy-owned temporary file may exist until the
+        # live .htaccess is proven to deny direct HTTP requests for the suffix.
+        # A first/new deployment can bootstrap the rule explicitly; otherwise an
+        # unprotected remote configuration is a hard stop before staging begins.
+        bootstrapped = ensure_staging_protection(
+            ftp, args.bootstrap_htaccess or args.new
+        )
+        if bootstrapped:
+            state[".htaccess"] = local[".htaccess"]
+            if ".htaccess" in changed:
+                changed.remove(".htaccess")
+                sent += 1
+            print("  installed and verified staging protection (.htaccess)")
+
+        # Remove leftovers from interrupted earlier attempts before creating any
+        # new staging file. State keys cover files that may have since left dist/.
+        leftovers = cleanup_staging_files(ftp, set(names) | set(state))
+        if leftovers:
+            fail("could not clean abandoned staging files:\n  " + "\n  ".join(leftovers))
+
         # Phase 1: transfer and verify every changed byte under a temporary name.
         # A dropped data connection cannot corrupt a live file in this phase.
+        pending_staged = set()
         for index, name in enumerate(changed, 1):
-            stage_file(ftp, name)
+            staged = stage_file(ftp, name)
+            pending_staged.add(name)
             print("  staged [%d/%d] %s" % (index, len(changed), name))
 
         # Phase 2: short RNFR/RNTO promotions only. Dependencies are already on
@@ -397,10 +536,23 @@ def main():
         # even if the control connection fails partway through promotion.
         for name in changed:
             promote_staged(ftp, name)
+            pending_staged.discard(name)
             state[name] = local[name]
             sent += 1
             print("  promoted [%d/%d] %s" % (sent, len(changed), name))
     finally:
+        # Remove verified-but-unpromoted files after failures. If the control
+        # connection itself died, the next run performs the same cleanup before
+        # it stages anything new.
+        if "pending_staged" in locals() and pending_staged:
+            leftovers = cleanup_staging_files(ftp, pending_staged)
+            if leftovers:
+                print(
+                    "deploy: WARNING: could not remove staging files; the next run "
+                    "will retry cleanup:\n  " + "\n  ".join(leftovers),
+                    file=sys.stderr,
+                )
+
         # Written even on failure, so an interrupted run resumes rather than
         # restarting the complete upload.
         save_state(state)

@@ -11,6 +11,7 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(HERE, "dist")
 OUT = os.path.join(HERE, "lcafe-site.zip")
+INTERNAL_DIST_FILES = {".lcafe-build.json"}
 
 
 def collect():
@@ -23,7 +24,10 @@ def collect():
         dirnames.sort()
         for filename in sorted(filenames):
             path = os.path.join(directory, filename)
-            names.append(os.path.relpath(path, DIST).replace(os.sep, "/"))
+            relative = os.path.relpath(path, DIST).replace(os.sep, "/")
+            if relative in INTERNAL_DIST_FILES:
+                continue
+            names.append(relative)
     return names
 
 

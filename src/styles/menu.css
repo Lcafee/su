@@ -11,7 +11,8 @@
   --ink:var(--scarlet);
   --ink-strong:rgba(var(--scarlet-rgb),.88);
   --ink-soft:rgba(var(--scarlet-rgb),.76);
-  --ink-dim:rgba(var(--scarlet-rgb),.66);
+  /* 0.70 keeps normal-size secondary copy above WCAG AA on --ivory. */
+  --ink-dim:rgba(var(--scarlet-rgb),.70);
   --line:rgba(var(--scarlet-rgb),.14);
   --line-strong:rgba(var(--scarlet-rgb),.24);
   --fill:rgba(var(--scarlet-rgb),.04);
@@ -536,7 +537,8 @@ a:focus-visible,button:focus-visible{
   margin-top:clamp(20px,5vw,40px);
   padding-top:clamp(28px,6vw,44px);
   padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  padding-bottom:calc(clamp(26px,6vw,42px) + env(safe-area-inset-bottom,0px));
+  /* Keep the fixed category trigger clear of the final footer link at every width. */
+  padding-bottom:calc(68px + env(safe-area-inset-bottom,0px));
   padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
   color:var(--on-dark);
   background:var(--scarlet);

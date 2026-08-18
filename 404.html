@@ -14,8 +14,8 @@
 <meta name="theme-color" content="#471019">
 <title>صفحه پیدا نشد — ال کافه</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/assets/icon-180.png">
+<link rel="icon" href="__BASE_PATH__assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="__BASE_PATH__assets/icon-180.png">
 
 <!-- The faces are discovered two hops in (page, then the CSS below), which on
      a phone is a round trip of blank text before the swap. Preload only the
@@ -23,11 +23,11 @@
      down the page and does not earn a connection this early. crossorigin is
      not optional even same-origin - fonts fetch in CORS mode, and a preload
      without it is a second, separate download rather than a warm cache hit. -->
-<link rel="preload" href="/assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="__BASE_PATH__assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="__BASE_PATH__assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/assets/fonts/vazirmatn.css">
-<link rel="stylesheet" href="/assets/fonts/sahel.css">
+<link rel="stylesheet" href="__BASE_PATH__assets/fonts/vazirmatn.css">
+<link rel="stylesheet" href="__BASE_PATH__assets/fonts/sahel.css">
 <style>
 :root{
   --font:'Vazirmatn',system-ui,sans-serif;
@@ -46,7 +46,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-text-size-adjust:100%}
    lands the reader inside the same room. */
 .field{position:fixed;inset:0;z-index:0;pointer-events:none;
   background-color:var(--bg);
-  background-image:url('/assets/l-cafe-pattern-inverted-tight.svg');
+  background-image:url('__BASE_PATH__assets/l-cafe-pattern-inverted-tight.svg');
   background-repeat:repeat;
   background-size:var(--tile) calc(var(--tile) * 0.983)}
 
@@ -67,10 +67,10 @@ a.cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 <body>
 <div class="field" aria-hidden="true"></div>
 <main>
-<img class="mark" src="/uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
+<img class="mark" src="__BASE_PATH__uploads/L_Cafe_Full_NoTagline_White.svg" alt="ال کافه">
 <h1>این صفحه پیدا نشد</h1>
 <p>شاید نشانی اشتباه تایپ شده یا صفحه‌ای که دنبالش بودید جابه‌جا شده است.</p>
-<a class="cta" href="/menu.html">رفتن به منو</a>
+<a class="cta" href="__BASE_PATH__menu.html">رفتن به منو</a>
 </main>
 </body>
 </html>

@@ -6,7 +6,7 @@
 # it loses a website rather than the whole account.
 
 [host]
-host = ftp.lcafe-esf.ir
+host = ftp.l-cafe.ir
 user = REPLACE_ME
 password = REPLACE_ME
 
@@ -16,10 +16,10 @@ password = REPLACE_ME
 # directory: such an account is chrooted into it, so the absolute path shown in
 # cPanel does not exist from the account's own point of view and setting it here
 # only produces "cannot enter". This is the common case, and this host serves
-# the domain from ~/lcafe-esf.ir rather than from public_html anyway.
+# the domain from ~/l-cafe.ir rather than from public_html anyway.
 #
 # Set an actual path only when using the main cPanel login, which lands in the
-# home directory and has to descend - "lcafe-esf.ir" on this host.
+# home directory and has to descend - "l-cafe.ir" on this host.
 #
 # Either way deploy.py checks: it asks the server where it ended up and refuses
 # to upload unless the site's own pages are already there.

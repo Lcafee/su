@@ -30,10 +30,56 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate release source
+        run: npm run validate:release
+
       - name: Build GitHub Pages artifact
         run: npm run build
         env:
           VITE_BASE_PATH: /su/
+
+      - name: Validate built artifact
+        run: npm run validate:dist
+
+      - name: Browser smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/lcafe-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "$PREVIEW_PID" 2>/dev/null || true' EXIT
+
+          for _ in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/su/menu.html >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/su/menu.html >/dev/null
+
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME" ]; then
+            echo "Chrome/Chromium is unavailable on this runner" >&2
+            exit 1
+          fi
+
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-webgl \
+            --virtual-time-budget=3000 \
+            --dump-dom 'http://127.0.0.1:4173/su/menu.html#%' > /tmp/menu-malformed-hash.html
+          grep -q 'روتین' /tmp/menu-malformed-hash.html
+
+          "$CHROME" --headless=new --no-sandbox --disable-gpu \
+            --window-size=320,900 --virtual-time-budget=3000 \
+            --dump-dom 'http://127.0.0.1:4173/su/menu.html' > /tmp/menu-320.html
+          grep -q 'فهرست' /tmp/menu-320.html
+
+          "$CHROME" --headless=new --no-sandbox --disable-gpu \
+            --window-size=1440,1000 --virtual-time-budget=3000 \
+            --dump-dom 'http://127.0.0.1:4173/su/' > /tmp/landing-1440.html
+          grep -q 'مشاهده منو' /tmp/landing-1440.html
+
+          grep -q '/su/assets/' dist/404.html
+          grep -q '/su/menu.html' dist/404.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

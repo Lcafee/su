@@ -137,6 +137,17 @@ function responsivePhoto(photo) {
   };
 }
 
+function safeHashId() {
+  const rawHash = window.location.hash.slice(1);
+  if (!rawHash) return "";
+
+  try {
+    return decodeURIComponent(rawHash);
+  } catch {
+    return "";
+  }
+}
+
 function useMediaQuery(queryText) {
   const [matches, setMatches] = useState(
     () => window.matchMedia?.(queryText).matches ?? false,
@@ -206,11 +217,20 @@ const CategoryHeader = memo(function CategoryHeader({
 const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const imageRef = useRef(null);
   const [ready, setReady] = useState(false);
-  const photo = responsivePhoto(item.photo);
+  const [fallback, setFallback] = useState(false);
+  const requestedPhoto = fallback ? PLACEHOLDER_PHOTO : item.photo;
+  const photo = responsivePhoto(requestedPhoto);
 
   useEffect(() => {
-    if (imageRef.current?.complete) setReady(true);
-  }, []);
+    setFallback(false);
+    setReady(false);
+  }, [item.photo]);
+
+  useEffect(() => {
+    if (imageRef.current?.complete && imageRef.current.naturalWidth > 0) {
+      setReady(true);
+    }
+  }, [photo.src]);
 
   return (
     <div className="item-photo t-avatar" data-ready={ready ? "" : undefined}>
@@ -218,7 +238,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
         ref={imageRef}
         src={photo.src}
         srcSet={photo.srcSet}
-        sizes="(min-width: 880px) 285px, 38vw"
+        sizes="(max-width: 420px) calc(50vw - 15px), (max-width: 759px) calc(46vw - 5px), (max-width: 899px) calc(46vw - 9px), (max-width: 1199px) calc(441px - 4vw), 393px"
         width="600"
         height="600"
         alt=""
@@ -226,7 +246,14 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
         loading={eager ? undefined : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         onLoad={() => setReady(true)}
-        onError={() => setReady(true)}
+        onError={() => {
+          if (!fallback && publishedPhotoName(item.photo) !== PLACEHOLDER_PHOTO) {
+            setReady(false);
+            setFallback(true);
+            return;
+          }
+          setReady(true);
+        }}
       />
     </div>
   );
@@ -499,7 +526,7 @@ export function MenuApp({ categories }) {
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
   const [activeId, setActiveId] = useState(() => {
-    const hashId = decodeURIComponent(window.location.hash.slice(1));
+    const hashId = safeHashId();
     return categories.some((category) => category.id === hashId)
       ? hashId
       : (categories[0]?.id ?? "");
@@ -523,6 +550,8 @@ export function MenuApp({ categories }) {
   }, []);
 
   useEffect(() => {
+    if (!("IntersectionObserver" in window)) return undefined;
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {

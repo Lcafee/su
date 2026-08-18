@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Write menu-products.xlsx from menu.json - the sheet the menu is edited in.
+"""Write L_Cafe_Menu_Content.xlsx from menu.json - a handoff/editing view.
 
 menu.json is the source; this file is a view of it. The point of the view is
 that the person who knows the prices does not have to open a JSON file to fix
@@ -21,7 +21,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "menu.json")
-OUT = os.path.join(HERE, "menu-products.xlsx")
+OUT = os.path.join(HERE, "L_Cafe_Menu_Content.xlsx")
 
 # Placeholders left in menu.json where real copy has not been written yet.
 # They ship to the page as-is, so the sheet has to show them as unfinished.

@@ -1,7 +1,7 @@
 # ال کافه — static site. Apache/LiteSpeed shared hosting.
 
-# One public origin. HTTP, www, retired domains and hosting aliases are redirected
-# to the HTTPS apex so the same page is not published under multiple addresses. The
+# One origin. The certificate covers the apex, www and mail, and both hostnames
+# resolve, so without this the same page answers on four addresses. The
 # <link rel=canonical> in each page keeps search engines pointed at one of them
 # and does nothing for the visitor: over plaintext the phone number and the map
 # link travel unencrypted and the browser labels the page "not secure".
@@ -18,8 +18,7 @@
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteRule ^ https://l-cafe.ir%{REQUEST_URI} [R=301,L]
 
-  # Canonical host: redirect www, the retired domain, and any hosting alias
-  # to the public apex domain.
+  # Canonical host: redirect www and hosting aliases to the public apex domain.
   RewriteCond %{HTTP_HOST} !^l-cafe\.ir$ [NC]
   RewriteRule ^ https://l-cafe.ir%{REQUEST_URI} [R=301,L]
 </IfModule>
@@ -30,6 +29,13 @@ DirectoryIndex index.html
 
 # The site ships no directory listings.
 Options -Indexes
+
+# LCAFE-DEPLOY-STAGING-DENY
+# deploy.py temporarily uploads changed files beside their live destination.
+# Those verified-but-not-yet-promoted files must never be retrievable over HTTP.
+<FilesMatch "\.lcafe-uploading$">
+  Require all denied
+</FilesMatch>
 
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
@@ -42,23 +48,33 @@ Options -Indexes
   ExpiresByType image/webp "access plus 0 seconds"
   ExpiresByType image/svg+xml "access plus 0 seconds"
   ExpiresByType image/png "access plus 0 seconds"
-  ExpiresByType font/woff2 "access plus 1 year"
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
+  # Font filenames are stable and can be replaced in place, so they must
+  # revalidate just like stable-name images. Hashed WOFF2 files are overridden
+  # by the immutable rule below.
+  ExpiresByType font/woff2 "access plus 0 seconds"
+  # Stable-name CSS/JS can also be replaced in place. Vite's hashed output is
+  # overridden by the immutable rule below, so the safe default is revalidation.
+  ExpiresByType text/css "access plus 0 seconds"
+  ExpiresByType application/javascript "access plus 0 seconds"
   ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 0 seconds"
+  ExpiresByType text/xml "access plus 0 seconds"
+  ExpiresByType text/plain "access plus 0 seconds"
 </IfModule>
 
 <IfModule mod_headers.c>
-  # Stable-name images may change on any deploy. no-cache still permits a local
-  # copy, but requires validation before it is reused.
-  <FilesMatch "\.(?:webp|svg|png)$">
+  # Stable-name public files may change on any deploy. Keep a local copy if the
+  # browser wants one, but require validation before it is reused. This includes
+  # HTML, robots/sitemap, copied font CSS, media and any stable helper JS.
+  <FilesMatch "\.(?:html|css|js|json|xml|txt|webp|svg|png|woff2)$">
     Header set Cache-Control "public, max-age=0, must-revalidate"
   </FilesMatch>
 
-  # Vite-generated files carry a content hash. They cannot change in place and
-  # are safe to cache immutably; this later rule overrides the generic image
-  # policy for hashed SVG/PNG output as well.
-  <FilesMatch "-[A-Za-z0-9_-]{8,}\.(?:css|js|svg|png|woff2)$">
+  # Vite-generated files use the current eight-character content hash immediately
+  # before the extension. Match exactly that shape: {8,} can accidentally classify
+  # descriptive stable names such as l-cafe-pattern-inverted-tight.svg as immutable.
+  <FilesMatch "-[A-Za-z0-9_-]{8}\.(?:css|js|svg|png|woff2)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
@@ -76,6 +92,8 @@ Options -Indexes
 
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set X-Frame-Options "SAMEORIGIN"
 </IfModule>
 
 # image-slot.js fetches this on every page load; without an explicit type some
