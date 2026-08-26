@@ -56,6 +56,26 @@ body{
   min-height:100vh;
   min-height:100dvh;
 }
+.menu-runtime-state{
+  min-height:calc(100vh - 64px);
+  min-height:calc(100dvh - 64px);
+  display:grid;
+  place-content:center;
+  justify-items:center;
+  gap:12px;
+  padding:var(--gutter);
+  text-align:center;
+}
+.menu-runtime-state p{margin:0;color:var(--ink-soft)}
+.menu-runtime-state button{
+  min-height:44px;
+  padding:9px 18px;
+  border:1px solid var(--scarlet);
+  border-radius:2px;
+  color:var(--ivory);
+  background:var(--scarlet);
+  cursor:pointer;
+}
 body::before{
   content:"";
   position:fixed;

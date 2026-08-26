@@ -1,0 +1,1757 @@
+{
+  "schemaVersion": 1,
+  "revision": 0,
+  "publishedAt": "1970-01-01T00:00:00.000000Z",
+  "categories": [
+    {
+      "id": "cat-routine",
+      "title": "روتین",
+      "intro": "شیک‌ها و میان‌وعده‌های پروتئینی، مغذی و سیرکننده.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-routine-01",
+          "name": "زون ۲",
+          "description": "شیک پروتئینی موز، ماچا و کره بادام‌زمینی با شیر نارگیل.",
+          "price": "۶۱۰",
+          "metadata": {
+            "caption": "عکس زون ۲",
+            "code": "8001",
+            "sourcePhoto": "menu-routine-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-routine-01.webp",
+            "srcSet": "assets/menu/opt/menu-routine-01-300.webp 300w, assets/menu/opt/menu-routine-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-routine-02",
+          "name": "زون ۳",
+          "description": "شیک پروتئینی موز، چغندر و کره بادام‌زمینی با شیر بادام.",
+          "price": "۵۵۰",
+          "metadata": {
+            "caption": "عکس زون ۳",
+            "code": "8002",
+            "sourcePhoto": "menu-routine-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-routine-02.webp",
+            "srcSet": "assets/menu/opt/menu-routine-02-300.webp 300w, assets/menu/opt/menu-routine-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-routine-03",
+          "name": "ماراتن",
+          "description": "شیک پروتئینی موز، اسپرولینا و کره بادام‌زمینی با شیر نارگیل.",
+          "price": "۶۹۰",
+          "metadata": {
+            "caption": "عکس ماراتن",
+            "code": "8003",
+            "sourcePhoto": "menu-routine-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-routine-03.webp",
+            "srcSet": "assets/menu/opt/menu-routine-03-300.webp 300w, assets/menu/opt/menu-routine-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-09",
+          "name": "تست آووکادو پسته",
+          "description": "دیپ آووکادو و پسته , پنیر , تخم مرغ",
+          "price": "۷۳۰",
+          "metadata": {
+            "caption": "عکس تست آووکادو پسته",
+            "code": "20014"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-routine-04",
+          "name": "کوکی رژیمی",
+          "description": "شیره انگور و کره بادام‌زمینی؛ بدون آرد و شکر سفید.",
+          "price": "۲۲۰",
+          "metadata": {
+            "caption": "عکس کوکی رژیمی",
+            "code": "3123",
+            "sourcePhoto": "menu-routine-04.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-routine-04.webp",
+            "srcSet": "assets/menu/opt/menu-routine-04-300.webp 300w, assets/menu/opt/menu-routine-04.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-routine-05",
+          "name": "ماسگرانولا",
+          "description": "ماست پروتئینی با گرانولا، موز و سس بری.",
+          "price": "۴۰۰",
+          "metadata": {
+            "caption": "عکس ماسگرانولا",
+            "code": "3109"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-routine-06",
+          "name": "ال کوچیا",
+          "description": "پوره انبه و دانه چیا با تاپینک توت فرنگی و تخم افتابگردان",
+          "price": "۳۳۰",
+          "metadata": {
+            "caption": "عکس ال کوچیا",
+            "code": "3127"
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    },
+    {
+      "id": "cat-hot-coffee",
+      "title": "گرم بر پایه قهوه",
+      "intro": "از اسپرسوی کلاسیک تا ترکیب‌های گرم و امضادار بر پایه قهوه.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-hot-coffee-01",
+          "name": "اسپرسو پریمیوم ۶۰",
+          "description": "بلندی از عربیکا و روبوستا با بادی سنگین و طعم‌یاد شکلاتی.",
+          "price": "۲۱۵",
+          "metadata": {
+            "caption": "عکس اسپرسو پریمیوم ۶۰",
+            "code": "1005",
+            "sourcePhoto": "menu-hot-coffee-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-01.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-01-300.webp 300w, assets/menu/opt/menu-hot-coffee-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-13",
+          "name": "اسپرسو پریمیوم ۱۰۰",
+          "description": "اسپرسوی عربیکا با بافت نرم، تلخی متعادل و رایحه ظریف.",
+          "price": "۲۲۵",
+          "metadata": {
+            "caption": "عکس اسپرسو پریمیوم ۱۰۰",
+            "code": "1010",
+            "sourcePhoto": "menu-hot-coffee-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-01.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-01-300.webp 300w, assets/menu/opt/menu-hot-coffee-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-05",
+          "name": "آمریکانو",
+          "description": "اسپرسو و آب داغ؛ شفاف، سبک و قهوه‌محور.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس آمریکانو",
+            "sourcePhoto": "menu-hot-coffee-05.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۲۲۰",
+              "code": "1060"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۲۳۵",
+              "code": "1065"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-05.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-05-300.webp 300w, assets/menu/opt/menu-hot-coffee-05.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-06",
+          "name": "کورتادو",
+          "description": "اسپرسو با مقدار کمی شیر گرم؛ نرم و قهوه‌محور.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس کورتادو",
+            "sourcePhoto": "menu-hot-coffee-06.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۲۹۰",
+              "code": "1030"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۱۰",
+              "code": "1035"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-06.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-06-300.webp 300w, assets/menu/opt/menu-hot-coffee-06.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-07",
+          "name": "فلت وایت",
+          "description": "ریسترتو و میکروفوم ظریف؛ غلیظ و ابریشمی.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس فلت وایت",
+            "sourcePhoto": "menu-hot-coffee-07.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۲۹۵",
+              "code": "1073"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۱۵",
+              "code": "1072"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-07.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-07-300.webp 300w, assets/menu/opt/menu-hot-coffee-07.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-04",
+          "name": "کاپوچینو",
+          "description": "اسپرسو، شیر گرم و فوم مخملی با حضور پررنگ‌تر قهوه.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس کاپوچینو",
+            "sourcePhoto": "menu-hot-coffee-04.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۲۹۰",
+              "code": "1040"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۱۰",
+              "code": "1045"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-04.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-04-300.webp 300w, assets/menu/opt/menu-hot-coffee-04.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-03",
+          "name": "لاته",
+          "description": "اسپرسو و شیر گرم با میکروفوم نرم و ابریشمی.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس لاته",
+            "sourcePhoto": "menu-hot-coffee-03.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۳۱۰",
+              "code": "1020"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۳۰",
+              "code": "1025"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-03.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-03-300.webp 300w, assets/menu/opt/menu-hot-coffee-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-08",
+          "name": "موکا",
+          "description": "اسپرسو، شکلات بلژیکی و شیر گرم.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس موکا",
+            "sourcePhoto": "menu-hot-coffee-08.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۳۵۰",
+              "code": "1050"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۷۰",
+              "code": "1055"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-08.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-08-300.webp 300w, assets/menu/opt/menu-hot-coffee-08.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-11",
+          "name": "اسپنیش لاته",
+          "description": "اسپرسو عربیکا، شیر وسس پسته یا زعفران",
+          "price": null,
+          "metadata": {
+            "caption": "عکس اسپنیش لاته پسته"
+          },
+          "options": [
+            {
+              "label": "پسته",
+              "price": "۴۲۵",
+              "code": "3002"
+            },
+            {
+              "label": "زعفران",
+              "price": "۳۹۵",
+              "code": "3001"
+            }
+          ],
+          "image": null
+        },
+        {
+          "id": "menu-hot-coffee-14",
+          "name": "لاته تیرامیسو",
+          "description": "اسپرسو، وانیل، شیر و خامه با لیدی‌فینگر و شکلات.",
+          "price": "۴۰۰",
+          "metadata": {
+            "caption": "عکس لاته تیرامیسو",
+            "code": "1070",
+            "sourcePhoto": "menu-hot-coffee-14.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-14.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-14-300.webp 300w, assets/menu/opt/menu-hot-coffee-14.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-02",
+          "name": "V60",
+          "description": "کلمبیای تک‌خاستگاه با رایحه گلی و طعم‌یادهای میوه‌ای.",
+          "price": "۵۰۰",
+          "metadata": {
+            "caption": "عکس V60",
+            "code": "5001",
+            "sourcePhoto": "menu-hot-coffee-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-02.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-02-300.webp 300w, assets/menu/opt/menu-hot-coffee-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-09",
+          "name": "قهوه ترک",
+          "description": "قهوه‌ای غلیظ با آسیاب بسیار ریز و سرو سنتی.",
+          "price": "۲۳۵",
+          "metadata": {
+            "caption": "عکس قهوه ترک",
+            "code": "1074",
+            "sourcePhoto": "menu-hot-coffee-09.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-09.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-09-300.webp 300w, assets/menu/opt/menu-hot-coffee-09.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-coffee-10",
+          "name": "پرشین کافی",
+          "description": "قهوه، شیر، هل و سس زعفران ال‌کافه.",
+          "price": "۳۹۰",
+          "metadata": {
+            "caption": "عکس پرشین کافی",
+            "code": "1075",
+            "sourcePhoto": "menu-hot-coffee-10.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-coffee-10.webp",
+            "srcSet": "assets/menu/opt/menu-hot-coffee-10-300.webp 300w, assets/menu/opt/menu-hot-coffee-10.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "cat-cold-coffee",
+      "title": "سرد بر پایه قهوه",
+      "intro": "قهوه‌های سرد و خنک؛ از آیس آمریکانو تا کلدبرو و اسپنیش لاته.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-cold-coffee-01",
+          "name": "آیس آمریکانو",
+          "description": "اسپرسوی انتخابی شما با آب سرد و یخ.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس آیس آمریکانو",
+            "sourcePhoto": "menu-cold-coffee-01.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۲۴۰",
+              "code": "26003"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۲۵۵",
+              "code": "26004"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-cold-coffee-01.webp",
+            "srcSet": "assets/menu/opt/menu-cold-coffee-01-300.webp 300w, assets/menu/opt/menu-cold-coffee-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cold-coffee-02",
+          "name": "آیس لاته",
+          "description": "اسپرسوی انتخابی شما با شیر سرد و یخ.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس آیس لاته",
+            "sourcePhoto": "menu-cold-coffee-02.webp"
+          },
+          "options": [
+            {
+              "label": "۶۰/۴۰",
+              "price": "۳۳۰",
+              "code": "26001"
+            },
+            {
+              "label": "۱۰۰",
+              "price": "۳۵۰",
+              "code": "26002"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-cold-coffee-02.webp",
+            "srcSet": "assets/menu/opt/menu-cold-coffee-02-300.webp 300w, assets/menu/opt/menu-cold-coffee-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cold-coffee-08",
+          "name": "آیس موکا",
+          "description": "قهوه و شکلات در ترکیبی سرد با یخ.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس آیس موکا"
+          },
+          "options": [
+            {
+              "label": "60",
+              "price": "۴۰۰",
+              "code": "26010"
+            },
+            {
+              "label": "100",
+              "price": "۴۲۰",
+              "code": "26011"
+            }
+          ],
+          "image": null
+        },
+        {
+          "id": "menu-cold-coffee-04",
+          "name": "آیس اسپنیش لاته پسته",
+          "description": "اسپرسو عربیکا، شیر، سس پسته ال‌کافه و یخ.",
+          "price": "۴۴۵",
+          "metadata": {
+            "caption": "عکس آیس اسپنیش لاته پسته",
+            "code": "3008",
+            "sourcePhoto": "menu-cold-coffee-04.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-cold-coffee-04.webp",
+            "srcSet": "assets/menu/opt/menu-cold-coffee-04-300.webp 300w, assets/menu/opt/menu-cold-coffee-04.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cold-coffee-05",
+          "name": "آیس اسپنیش لاته زعفران",
+          "description": "اسپرسو عربیکا، شیر، سس زعفران ال‌کافه و یخ.",
+          "price": "۴۱۵",
+          "metadata": {
+            "caption": "عکس آیس اسپنیش لاته زعفران",
+            "code": "3009"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-cold-coffee-03",
+          "name": "کلدبرو",
+          "description": "قهوه با عصاره‌گیری سرد و طولانی؛ نرم و کم‌تلخ.",
+          "price": "۳۵۰",
+          "metadata": {
+            "caption": "عکس کلدبرو",
+            "code": "5002"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-cold-coffee-06",
+          "name": "آیس پرشین کافی پسته",
+          "description": "نسخه سرد پرشین کافی با طعم پسته و یخ.",
+          "price": "۴۹۰",
+          "metadata": {
+            "caption": "عکس آیس پرشین کافی پسته",
+            "code": "26015"
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    },
+    {
+      "id": "cat-frappe",
+      "title": "فراپه و میلک شیک",
+      "intro": "نوشیدنی‌های غلیظ، یخی و کرمی با طعم‌های دسرگونه.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-frappe-03",
+          "name": "فراپه کارامل نمکی",
+          "description": "فراپه یخی و کرمی قهوه با کارامل نمکی.",
+          "price": "۳۷۰",
+          "metadata": {
+            "caption": "عکس فراپه کارامل نمکی",
+            "code": "26005",
+            "sourcePhoto": "fr-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/fr-01.webp",
+            "srcSet": "assets/menu/opt/fr-01-300.webp 300w, assets/menu/opt/fr-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-frappe-04",
+          "name": "فراپه ارده",
+          "description": "فراپه یخی و کرمی با طعم عمیق ارده.",
+          "price": "۳۷۰",
+          "metadata": {
+            "caption": "عکس فراپه ارده",
+            "code": "26006",
+            "sourcePhoto": "fr-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/fr-02.webp",
+            "srcSet": "assets/menu/opt/fr-02-300.webp 300w, assets/menu/opt/fr-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-frappe-01",
+          "name": "میلک شیک چاکلت دبی",
+          "description": "ژلاتوی وانیلی دست‌ساز با شکلات مخصوص ال‌کافه.",
+          "price": "۴۲۰",
+          "metadata": {
+            "caption": "عکس میلک شیک چاکلت دبی",
+            "code": "25001"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-frappe-02",
+          "name": "میلک شیک لوتوس",
+          "description": "ژلاتوی وانیلی دست‌ساز با کرم بیسکویت لوتوس.",
+          "price": "۴۲۰",
+          "metadata": {
+            "caption": "عکس میلک شیک لوتوس",
+            "code": "25002"
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    },
+    {
+      "id": "cat-cloudy",
+      "title": "کلودی",
+      "intro": "نوشیدنی‌های لایه‌ای و کرمی با فوم نرم و طعم‌های امضادار.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-cloudy-01",
+          "name": "کلودی پسته",
+          "description": "نوشیدنی لایه‌ای پسته با فوم نرم و کرمی.",
+          "price": "۴۳۰",
+          "metadata": {
+            "caption": "عکس کلودی پسته",
+            "code": "26020",
+            "sourcePhoto": "cl-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/cl-01.webp",
+            "srcSet": "assets/menu/opt/cl-01-300.webp 300w, assets/menu/opt/cl-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cloudy-03",
+          "name": "کلودی کوکی",
+          "description": "نوشیدنی کرمی کوکی با حضور ملایم اسپرسو.",
+          "price": "۴۳۰",
+          "metadata": {
+            "caption": "عکس کلودی کوکی",
+            "code": "26021",
+            "sourcePhoto": "cl-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/cl-03.webp",
+            "srcSet": "assets/menu/opt/cl-03-300.webp 300w, assets/menu/opt/cl-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cloudy-02",
+          "name": "کلودی زعفران",
+          "description": "نوشیدنی لایه‌ای زعفران با فوم نرم و کرمی.",
+          "price": "۴۳۰",
+          "metadata": {
+            "caption": "عکس کلودی زعفران",
+            "code": "26022",
+            "sourcePhoto": "cl-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/cl-02.webp",
+            "srcSet": "assets/menu/opt/cl-02-300.webp 300w, assets/menu/opt/cl-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "cat-hot-drinks",
+      "title": "نوشیدنی گرم",
+      "intro": "چای، دمنوش و نوشیدنی‌های گرم برای سلیقه‌های مختلف.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-hot-drinks-06",
+          "name": "چای سیاه",
+          "description": "چای سیاه با انتخاب عطر زعفران، هل یا دارچین.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس چای سیاه",
+            "sourcePhoto": "menu-hot-drinks-06.webp"
+          },
+          "options": [
+            {
+              "label": "زعفران",
+              "price": "۱۷۰",
+              "code": "7002"
+            },
+            {
+              "label": "هل",
+              "price": "۱۷۰",
+              "code": "7003"
+            },
+            {
+              "label": "دارچین",
+              "price": "۱۷۰",
+              "code": "7004"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-06.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-06-300.webp 300w, assets/menu/opt/menu-hot-drinks-06.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-07",
+          "name": "چای کرک",
+          "description": "چای با شیر و ادویه‌های گرم؛ غلیظ و معطر.",
+          "price": "۲۷۰",
+          "metadata": {
+            "caption": "عکس چای کرک",
+            "sourcePhoto": "menu-hot-drinks-07.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-07.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-07-300.webp 300w, assets/menu/opt/menu-hot-drinks-07.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-08",
+          "name": "ماسالا",
+          "description": "شیر، هل، زنجبیل، میخک و دارچین.",
+          "price": "۲۷۰",
+          "metadata": {
+            "caption": "عکس ماسالا",
+            "code": "7055",
+            "sourcePhoto": "menu-hot-drinks-08.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-08.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-08-300.webp 300w, assets/menu/opt/menu-hot-drinks-08.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-matcha-07",
+          "name": "ماچا لاته",
+          "description": "ماچای ژاپنی و شیر؛ بدون شیرینی افزوده.",
+          "price": "۳۲۰",
+          "metadata": {
+            "caption": "عکس ماچا لاته",
+            "code": "2006"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-matcha-01",
+          "name": "اسپنیش ماچا لاته",
+          "description": "ماچای ژاپنی، شیر و سسپسته یا زعفران",
+          "price": null,
+          "metadata": {
+            "caption": "عکس ماچا لاته پسته"
+          },
+          "options": [
+            {
+              "label": "پسته",
+              "price": "۴۲۰",
+              "code": "2002"
+            },
+            {
+              "label": "زعفران",
+              "price": "۳۵۰",
+              "code": "2003"
+            }
+          ],
+          "image": null
+        },
+        {
+          "id": "menu-hot-drinks-09",
+          "name": "هات چاکلت",
+          "description": "شیر گرم و ترکیب هات‌چاکلت ال‌کافه؛ غلیظ و شکلاتی.",
+          "price": "۳۴۰",
+          "metadata": {
+            "caption": "عکس هات چاکلت",
+            "code": "4009",
+            "sourcePhoto": "menu-hot-drinks-09.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-09.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-09-300.webp 300w, assets/menu/opt/menu-hot-drinks-09.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-01",
+          "name": "اپل پارادایس",
+          "description": "ترکیب گرم سیب، به و دارچین.",
+          "price": "۲۰۰",
+          "metadata": {
+            "caption": "عکس اپل پارادایس",
+            "code": "7052",
+            "sourcePhoto": "menu-hot-drinks-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-01.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-01-300.webp 300w, assets/menu/opt/menu-hot-drinks-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-04",
+          "name": "پیچ بلک تی",
+          "description": "چای سیاه پررنگ با هلو.",
+          "price": "۲۰۰",
+          "metadata": {
+            "caption": "عکس پیچ بلک تی",
+            "code": "7056",
+            "sourcePhoto": "menu-hot-drinks-04.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-04.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-04-300.webp 300w, assets/menu/opt/menu-hot-drinks-04.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-02",
+          "name": "رویال جاسمین",
+          "description": "چای سبز و گل یاس؛ سبک و گلی.",
+          "price": "۲۰۰",
+          "metadata": {
+            "caption": "عکس رویال جاسمین",
+            "code": "7053",
+            "sourcePhoto": "menu-hot-drinks-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-02.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-02-300.webp 300w, assets/menu/opt/menu-hot-drinks-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-03",
+          "name": "پینک رز",
+          "description": "بابونه، گل محمدی و لوندر؛ لطیف و گلی.",
+          "price": "۲۰۰",
+          "metadata": {
+            "caption": "عکس پینک رز",
+            "code": "7051",
+            "sourcePhoto": "menu-hot-drinks-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-03.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-03-300.webp 300w, assets/menu/opt/menu-hot-drinks-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-hot-drinks-05",
+          "name": "کاسکارا و میکس بری",
+          "description": "کاسکارا و میکس بری خشک؛ میوه‌ای و کمی ترش.",
+          "price": "۲۸۰",
+          "metadata": {
+            "caption": "عکس کاسکارا و میکس بری",
+            "code": "7054",
+            "sourcePhoto": "menu-hot-drinks-05.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-hot-drinks-05.webp",
+            "srcSet": "assets/menu/opt/menu-hot-drinks-05-300.webp 300w, assets/menu/opt/menu-hot-drinks-05.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "cat-cold-drinks",
+      "title": "نوشیدنی سرد",
+      "intro": "ترکیب‌های خنک و تازه بر پایه میوه، مرکبات و سودا.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-cold-drinks-01",
+          "name": "لیموناد",
+          "description": "لیمو و سودا روی یخ؛ ترش و تازه.",
+          "price": "۲۸۰",
+          "metadata": {
+            "caption": "عکس لیموناد",
+            "code": "24003"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-cold-drinks-02",
+          "name": "موهیتو",
+          "description": "نعناع، لیمو و سودا روی یخ.",
+          "price": "۲۸۰",
+          "metadata": {
+            "caption": "عکس موهیتو",
+            "code": "24008"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-cold-drinks-03",
+          "name": "جینجر لایم",
+          "description": "زنجبیل، لایم و سودا؛ تازه و کمی تند.",
+          "price": "۲۶۰",
+          "metadata": {
+            "caption": "عکس جینجر لایم",
+            "code": "24006"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-cold-drinks-06",
+          "name": "ال سامر",
+          "description": "توت‌فرنگی و آناناس تازه؛ یخی، غلیظ و استوایی.",
+          "price": "۳۵۰",
+          "metadata": {
+            "caption": "عکس ال سامر",
+            "code": "24013",
+            "sourcePhoto": "menu-cold-drinks-06.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-cold-drinks-06.webp",
+            "srcSet": "assets/menu/opt/menu-cold-drinks-06-300.webp 300w, assets/menu/opt/menu-cold-drinks-06.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cold-drinks-04",
+          "name": "هات شات",
+          "description": "شات عصاره زنجبیل و لیمو؛ تند و ترش.",
+          "price": "۲۶۰",
+          "metadata": {
+            "caption": "عکس هات شات",
+            "code": "24009"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-cold-drinks-05",
+          "name": "رد هات شات",
+          "description": "زنجبیل، چای ترش و توت‌فرنگی؛ تند و میوه‌ای.",
+          "price": "۲۶۰",
+          "metadata": {
+            "caption": "عکس رد هات شات",
+            "code": "24010"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-matcha-09",
+          "name": "آیس ماچا لاته",
+          "description": "ماچای ژاپنی، شیر و یخ؛ بدون شیرینی افزوده.",
+          "price": "۳۴۰",
+          "metadata": {
+            "caption": "عکس آیس ماچا لاته",
+            "code": "2007",
+            "sourcePhoto": "menu-matcha-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-matcha-02.webp",
+            "srcSet": "assets/menu/opt/menu-matcha-02-300.webp 300w, assets/menu/opt/menu-matcha-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-matcha-02",
+          "name": "آیس اسپنیش ماچا",
+          "description": "ماچای ژاپنی، شیر، سس پسته ال‌کافه و یخ.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس آیس ماچا لاته پسته",
+            "sourcePhoto": "menu-matcha-02.webp"
+          },
+          "options": [
+            {
+              "label": "پسته",
+              "price": "۴۶۰",
+              "code": "2004"
+            },
+            {
+              "label": "زعفران",
+              "price": "۳۷۰",
+              "code": "2005"
+            },
+            {
+              "label": "ردبری",
+              "price": "۳۵۰",
+              "code": "2050"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-matcha-02.webp",
+            "srcSet": "assets/menu/opt/menu-matcha-02-300.webp 300w, assets/menu/opt/menu-matcha-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-matcha-11",
+          "name": "آیس اسپرولینا لاته",
+          "description": "شیر، اسپرولینای آبی و یخ؛ بدون شیرینی افزوده.",
+          "price": "۳۳۰",
+          "metadata": {
+            "caption": "عکس آیس اسپرولینا",
+            "code": "2049",
+            "sourcePhoto": "menu-matcha-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-matcha-03.webp",
+            "srcSet": "assets/menu/opt/menu-matcha-03-300.webp 300w, assets/menu/opt/menu-matcha-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-matcha-03",
+          "name": "آیس اسپنیش اسپرولینا",
+          "description": "شیر، اسپرولینای آبی، سس پسته ال‌کافه و یخ.",
+          "price": null,
+          "metadata": {
+            "caption": "عکس آیس اسپرولینا لاته پسته",
+            "sourcePhoto": "menu-matcha-03.webp"
+          },
+          "options": [
+            {
+              "label": "پسته",
+              "price": "۴۸۰",
+              "code": "2052"
+            },
+            {
+              "label": "زعفران",
+              "price": "۴۱۰",
+              "code": "2053"
+            },
+            {
+              "label": "ردبری",
+              "price": "۳۷۰",
+              "code": "2054"
+            }
+          ],
+          "image": {
+            "src": "assets/menu/opt/menu-matcha-03.webp",
+            "srcSet": "assets/menu/opt/menu-matcha-03-300.webp 300w, assets/menu/opt/menu-matcha-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-cold-coffee-07",
+          "name": "آیس چاکلت",
+          "description": "نوشیدنی سرد شکلاتی با یخ.",
+          "price": "۳۸۰",
+          "metadata": {
+            "caption": "عکس آیس چاکلت",
+            "code": "26016"
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    },
+    {
+      "id": "cat-refresher",
+      "title": "رفرشر و هربال تی",
+      "intro": "ترکیب‌های سرد و سبک چای و میوه با طعمی شفاف و تازه. میوه تازه، سودا و کمی عسل؛ سبک، گازدار و طراوت‌بخش.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-herbal-tea-01",
+          "name": "هربال‌تی پیچ بلک",
+          "description": "چای سیاه سرد با طعم و رایحه هلو.",
+          "price": "۳۵۰",
+          "metadata": {
+            "caption": "عکس هربال‌تی پیچ بلک",
+            "code": "24021",
+            "sourcePhoto": "it-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/it-02.webp",
+            "srcSet": "assets/menu/opt/it-02-300.webp 300w, assets/menu/opt/it-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-herbal-tea-02",
+          "name": "هربال‌تی اپل پارادایس",
+          "description": "ترکیب سرد سیب، به و دارچین.",
+          "price": "۳۵۰",
+          "metadata": {
+            "caption": "عکس هربال‌تی اپل پارادایس",
+            "code": "24020",
+            "sourcePhoto": "it-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/it-01.webp",
+            "srcSet": "assets/menu/opt/it-01-300.webp 300w, assets/menu/opt/it-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-refresher-01",
+          "name": "رفرشر انبه و شاهتوت",
+          "description": "انبه و شاهتوت با سودا",
+          "price": "۳۲۰",
+          "metadata": {
+            "caption": "عکس رفرشر انبه و شاهتوت",
+            "code": "24031",
+            "sourcePhoto": "rf-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/rf-02.webp",
+            "srcSet": "assets/menu/opt/rf-02-300.webp 300w, assets/menu/opt/rf-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-refresher-02",
+          "name": "رفرشر توت‌فرنگی و گیلاس",
+          "description": "توت‌فرنگی و گیلاس با سودا",
+          "price": "۳۲۰",
+          "metadata": {
+            "caption": "عکس رفرشر توت‌فرنگی و گیلاس",
+            "code": "24033",
+            "sourcePhoto": "rf-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/rf-01.webp",
+            "srcSet": "assets/menu/opt/rf-01-300.webp 300w, assets/menu/opt/rf-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-refresher-03",
+          "name": "رفرشر جینجر بیزل",
+          "description": "زنجبیل و ریحان ایتالیایی با سودا",
+          "price": "۳۲۰",
+          "metadata": {
+            "caption": "عکس رفرشر جینجر بیزل",
+            "code": "24032",
+            "sourcePhoto": "rf-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/rf-03.webp",
+            "srcSet": "assets/menu/opt/rf-03-300.webp 300w, assets/menu/opt/rf-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "cat-icecream",
+      "title": "بستنی",
+      "intro": "ژلاتوی وانیلی دست‌ساز ال‌کافه و ترکیب‌های ویژه آن.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-icecream-01",
+          "name": "بیبی ژلاتو",
+          "description": "ژلاتوی وانیلی دست‌ساز ال‌کافه با سس کارامل.",
+          "price": "۲۰۰",
+          "metadata": {
+            "caption": "عکس بیبی ژلاتو",
+            "code": "10003",
+            "sourcePhoto": "menu-icecream-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-icecream-01.webp",
+            "srcSet": "assets/menu/opt/menu-icecream-01-300.webp 300w, assets/menu/opt/menu-icecream-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-icecream-02",
+          "name": "ژلاتو",
+          "description": "ژلاتوی وانیلی دست‌ساز ال‌کافه با سس کارامل.",
+          "price": "۳۴۰",
+          "metadata": {
+            "caption": "عکس ژلاتو",
+            "code": "10002",
+            "sourcePhoto": "menu-icecream-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-icecream-02.webp",
+            "srcSet": "assets/menu/opt/menu-icecream-02-300.webp 300w, assets/menu/opt/menu-icecream-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-icecream-03",
+          "name": "ژلاتو مخصوص ال کافه",
+          "description": "ژلاتوی وانیلی با میوه فصل و پودر پسته.",
+          "price": "۴۸۰",
+          "metadata": {
+            "caption": "عکس ژلاتو مخصوص ال کافه",
+            "code": "10001",
+            "sourcePhoto": "menu-icecream-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-icecream-03.webp",
+            "srcSet": "assets/menu/opt/menu-icecream-03-300.webp 300w, assets/menu/opt/menu-icecream-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-icecream-04",
+          "name": "آفوگاتو",
+          "description": "ژلاتوی وانیلی دست‌ساز در کنار اسپرسو عربیکا.",
+          "price": "۳۳۰",
+          "metadata": {
+            "caption": "عکس آفوگاتو",
+            "code": "10004",
+            "sourcePhoto": "menu-icecream-04.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-icecream-04.webp",
+            "srcSet": "assets/menu/opt/menu-icecream-04-300.webp 300w, assets/menu/opt/menu-icecream-04.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "cat-dessert",
+      "title": "کیک و دسر",
+      "intro": "کیک‌ها، دسرها و کروسان‌های تازه برای کنار قهوه یا به‌تنهایی.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-dessert-01",
+          "name": "کیک آلبالو",
+          "description": "کیک آلبالو با کرم پنیر و پرک بادام.",
+          "price": "۳۲۰",
+          "metadata": {
+            "caption": "عکس کیک آلبالو",
+            "code": "3110",
+            "sourcePhoto": "menu-dessert-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-01.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-01-300.webp 300w, assets/menu/opt/menu-dessert-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-02",
+          "name": "کرامبل سیب",
+          "description": "سیب، گردو و شکر قهوه‌ای با لایه کرامبل ترد.",
+          "price": "۳۴۰",
+          "metadata": {
+            "caption": "عکس کرامبل سیب",
+            "code": "3108",
+            "sourcePhoto": "menu-dessert-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-02.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-02-300.webp 300w, assets/menu/opt/menu-dessert-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-03",
+          "name": "کیک هویج",
+          "description": "کیک هویج با گردو، دارچین و جوز هندی.",
+          "price": "۳۰۰",
+          "metadata": {
+            "caption": "عکس کیک هویج",
+            "code": "3118"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-dessert-05",
+          "name": "چیزکیک سن سباستین",
+          "description": "چیزکیک نرم و کرمی با رویه کاراملی.",
+          "price": "۳۵۰",
+          "metadata": {
+            "caption": "عکس چیزکیک سن سباستین",
+            "code": "3117",
+            "sourcePhoto": "menu-dessert-05.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-05.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-05-300.webp 300w, assets/menu/opt/menu-dessert-05.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-06",
+          "name": "تارت پسته و بری",
+          "description": "تارت پسته با سس بری و خمیر ترد.",
+          "price": "۳۹۰",
+          "metadata": {
+            "caption": "عکس تارت پسته و بری",
+            "code": "3102",
+            "sourcePhoto": "menu-dessert-06.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-06.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-06-300.webp 300w, assets/menu/opt/menu-dessert-06.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-07",
+          "name": "کیک فرزیه",
+          "description": "کیک با کرم پنیر، سس بری و وانیل طبیعی.",
+          "price": "۳۸۰",
+          "metadata": {
+            "caption": "عکس کیک فرزیه",
+            "code": "3100",
+            "sourcePhoto": "menu-dessert-07.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-07.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-07-300.webp 300w, assets/menu/opt/menu-dessert-07.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-08",
+          "name": "دارک چاکلت",
+          "description": "کیک دارک‌چاکلت با کارامل و اسپرسو.",
+          "price": "۴۰۰",
+          "metadata": {
+            "caption": "عکس دارک چاکلت",
+            "code": "3107",
+            "sourcePhoto": "menu-dessert-08.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-08.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-08-300.webp 300w, assets/menu/opt/menu-dessert-08.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-09",
+          "name": "بلک فارست",
+          "description": "کیک شکلاتی لایه‌ای با خامه و آلبالو.",
+          "price": "۴۲۰",
+          "metadata": {
+            "caption": "عکس بلک فارست",
+            "code": "3105",
+            "sourcePhoto": "menu-dessert-09.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-09.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-09-300.webp 300w, assets/menu/opt/menu-dessert-09.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-10",
+          "name": "تیرامیسو",
+          "description": "لیدی‌فینگر آغشته به اسپرسو با کرم پنیر.",
+          "price": "۳۳۰",
+          "metadata": {
+            "caption": "عکس تیرامیسو",
+            "code": "3121",
+            "sourcePhoto": "menu-dessert-10.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-dessert-10.webp",
+            "srcSet": "assets/menu/opt/menu-dessert-10-300.webp 300w, assets/menu/opt/menu-dessert-10.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-dessert-12",
+          "name": "گلدن آلموند",
+          "description": "دسری لطیف با محوریت بادام و طعمی مغزی.",
+          "price": "۴۰۰",
+          "metadata": {
+            "caption": "عکس گلدن آلموند",
+            "code": "3128"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-dessert-11-01",
+          "name": "کروسان ساده",
+          "description": "کروسان کره‌ای با لایه‌های سبک و پوسته ترد.",
+          "price": "۲۴۰",
+          "metadata": {
+            "caption": "عکس کروسان ساده",
+            "code": "3115"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-dessert-11-02",
+          "name": "کروسان شکلاتی",
+          "description": "کروسان کره‌ای و لایه‌ای با مغز شکلات.",
+          "price": "۳۰۰",
+          "metadata": {
+            "caption": "عکس کروسان شکلاتی",
+            "code": "3122"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-dessert-11-03",
+          "name": "کروسان نان وپنیر",
+          "description": "کروسان لایه‌ای در کنار پنیر.",
+          "price": "۳۷۰",
+          "metadata": {
+            "caption": "عکس کروسان نان وپنیر",
+            "code": "20012"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-dessert-11-04",
+          "name": "کروسان بادام زمینی",
+          "description": "کروسان لایه‌ای با کرم بادام‌زمینی.",
+          "price": "۳۰۰",
+          "metadata": {
+            "caption": "عکس کروسان بادام زمینی",
+            "code": "3111"
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    },
+    {
+      "id": "cat-food",
+      "title": "ساندویچ و سالاد",
+      "intro": "صبحانه‌ها، ساندویچ‌های گرم و سالادهای تازه و سیرکننده.",
+      "layout": "grid",
+      "items": [
+        {
+          "id": "menu-food-01",
+          "name": "املت مخصوص ال کافه",
+          "description": "تخم‌مرغ هم‌زده، پنیر، ریحان ایتالیایی و گوجه طعم‌دار.",
+          "price": "۳۵۰",
+          "metadata": {
+            "caption": "عکس املت مخصوص ال کافه",
+            "code": "20009",
+            "sourcePhoto": "menu-food-01.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-food-01.webp",
+            "srcSet": "assets/menu/opt/menu-food-01-300.webp 300w, assets/menu/opt/menu-food-01.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-02",
+          "name": "ساندویچ املت بیکن و پنیر بلوچیز",
+          "description": "چاباتا با تخم‌مرغ، بیکن، بلوچیز و اسفناج.",
+          "price": "۷۶۰",
+          "metadata": {
+            "caption": "عکس ساندویچ املت بیکن و پنیر بلوچیز",
+            "code": "20002",
+            "sourcePhoto": "menu-food-02.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-food-02.webp",
+            "srcSet": "assets/menu/opt/menu-food-02-300.webp 300w, assets/menu/opt/menu-food-02.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-03",
+          "name": "ساندویچ تخم‌مرغ و دیپ پنیر و سبزیجات",
+          "description": "چاباتا با تخم‌مرغ، دیپ پنیر، گوجه و سبزیجات معطر.",
+          "price": "۳۳۰",
+          "metadata": {
+            "caption": "عکس ساندویچ تخم‌مرغ و دیپ پنیر و سبزیجات",
+            "code": "20003",
+            "sourcePhoto": "menu-food-03.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-food-03.webp",
+            "srcSet": "assets/menu/opt/menu-food-03-300.webp 300w, assets/menu/opt/menu-food-03.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-04",
+          "name": "لقمه صبحانه",
+          "description": "کروسان با پنیر طعم‌دار، گوجه خشک و روکولا.",
+          "price": "۳۷۰",
+          "metadata": {
+            "caption": "عکس لقمه صبحانه"
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "menu-food-05",
+          "name": "ساندویچ مرغ و دیپ پستو",
+          "description": "چاباتا با مرغ گریل‌شده و دیپ پستو.",
+          "price": "۵۸۰",
+          "metadata": {
+            "caption": "عکس ساندویچ مرغ و دیپ پستو",
+            "code": "20005",
+            "sourcePhoto": "menu-food-05.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-food-05.webp",
+            "srcSet": "assets/menu/opt/menu-food-05-300.webp 300w, assets/menu/opt/menu-food-05.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-06",
+          "name": "ساندویچ مرغ و دیپ حمص",
+          "description": "چاباتا با مرغ گریل‌شده و دیپ حمص.",
+          "price": "۵۸۰",
+          "metadata": {
+            "caption": "عکس ساندویچ مرغ و دیپ حمص",
+            "code": "20007",
+            "sourcePhoto": "menu-food-06.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-food-06.webp",
+            "srcSet": "assets/menu/opt/menu-food-06-300.webp 300w, assets/menu/opt/menu-food-06.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-07",
+          "name": "ساندویچ بوقلمون و دیپ پستو",
+          "description": "چاباتا با بوقلمون و دیپ پستو.",
+          "price": "۶۰۰",
+          "metadata": {
+            "caption": "عکس ساندویچ بوقلمون و دیپ پستو",
+            "code": "20004",
+            "sourcePhoto": "menu-food-07.webp"
+          },
+          "options": [],
+          "image": {
+            "src": "assets/menu/opt/menu-food-07.webp",
+            "srcSet": "assets/menu/opt/menu-food-07-300.webp 300w, assets/menu/opt/menu-food-07.webp 600w",
+            "width": 600,
+            "height": 600
+          }
+        },
+        {
+          "id": "menu-food-08",
+          "name": "سالاد مخصوص ال کافه",
+          "description": "کاهوی فرانسوی، مرغ گریل‌شده، سبزیجات و پارمسان.",
+          "price": "۶۳۰",
+          "metadata": {
+            "caption": "عکس سالاد مخصوص ال کافه",
+            "code": "21001"
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    },
+    {
+      "id": "cat-addons",
+      "title": "افزودنی",
+      "intro": "انتخاب‌های اضافه برای شخصی‌سازی نوشیدنی شما.",
+      "layout": "addons",
+      "items": [
+        {
+          "id": "cat-addons-item-01",
+          "name": "سیروپ",
+          "description": null,
+          "price": "۷۵",
+          "metadata": {
+            "codes": [
+              "10000000",
+              "10000001",
+              "10000002"
+            ]
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "cat-addons-item-02",
+          "name": "شیر غیرلبنی",
+          "description": null,
+          "price": "۱۳۰",
+          "metadata": {
+            "codes": [
+              "100000013",
+              "100000011",
+              "100000014"
+            ]
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "cat-addons-item-03",
+          "name": "شیر بدون لاکتوز",
+          "description": null,
+          "price": "۱۰۰",
+          "metadata": {},
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "cat-addons-item-04",
+          "name": "خامه تاپینگ",
+          "description": null,
+          "price": "۸۰",
+          "metadata": {
+            "codes": [
+              "100000090"
+            ]
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "cat-addons-item-05",
+          "name": "استویا",
+          "description": null,
+          "price": "۸۰",
+          "metadata": {
+            "codes": [
+              "100000165"
+            ]
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "cat-addons-item-06",
+          "name": "دی کف",
+          "description": null,
+          "price": "۸۰",
+          "metadata": {
+            "codes": [
+              "100000166"
+            ]
+          },
+          "options": [],
+          "image": null
+        },
+        {
+          "id": "cat-addons-item-07",
+          "name": "سس شکلات",
+          "description": null,
+          "price": "۷۵",
+          "metadata": {
+            "codes": [
+              "100000160"
+            ]
+          },
+          "options": [],
+          "image": null
+        }
+      ]
+    }
+  ]
+}

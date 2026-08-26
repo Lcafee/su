@@ -11,9 +11,15 @@ import { MetalFx } from "metal-fx";
 
 import { sitePath } from "../sitePath";
 
-const PLACEHOLDER_PHOTO = "item-placeholder.webp";
-const SUMMER_IMAGES_ENABLED = true;
-const SUMMER_PHOTO_PREFIXES = ["cl-", "fr-", "it-", "rf-"];
+const PLACEHOLDER_IMAGE = {
+  src: sitePath("assets/menu/opt/item-placeholder.webp"),
+  srcSet: [
+    `${sitePath("assets/menu/opt/item-placeholder-300.webp")} 300w`,
+    `${sitePath("assets/menu/opt/item-placeholder.webp")} 600w`,
+  ].join(", "),
+  width: 600,
+  height: 600,
+};
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const MOBILE_MENU_QUERY = "(max-width: 759px)";
 const METAL_RULE_STYLE = {
@@ -114,29 +120,6 @@ function observeDescription(element, measure) {
   };
 }
 
-function publishedPhotoName(photo) {
-  if (!photo) return PLACEHOLDER_PHOTO;
-  if (
-    !SUMMER_IMAGES_ENABLED &&
-    SUMMER_PHOTO_PREFIXES.some((prefix) => photo.startsWith(prefix))
-  ) {
-    return PLACEHOLDER_PHOTO;
-  }
-  return photo;
-}
-
-function responsivePhoto(photo) {
-  const name = publishedPhotoName(photo);
-  const smaller = name.replace(/\.webp$/i, "-300.webp");
-  return {
-    src: sitePath(`assets/menu/opt/${name}`),
-    srcSet: [
-      `${sitePath(`assets/menu/opt/${smaller}`)} 300w`,
-      `${sitePath(`assets/menu/opt/${name}`)} 600w`,
-    ].join(", "),
-  };
-}
-
 function safeHashId() {
   const rawHash = window.location.hash.slice(1);
   if (!rawHash) return "";
@@ -218,13 +201,12 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const imageRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [fallback, setFallback] = useState(false);
-  const requestedPhoto = fallback ? PLACEHOLDER_PHOTO : item.photo;
-  const photo = responsivePhoto(requestedPhoto);
+  const photo = fallback || !item.image ? PLACEHOLDER_IMAGE : item.image;
 
   useEffect(() => {
     setFallback(false);
     setReady(false);
-  }, [item.photo]);
+  }, [item.image?.src]);
 
   useEffect(() => {
     if (imageRef.current?.complete && imageRef.current.naturalWidth > 0) {
@@ -237,17 +219,17 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
       <img
         ref={imageRef}
         src={photo.src}
-        srcSet={photo.srcSet}
+        srcSet={photo.srcSet || undefined}
         sizes="(max-width: 420px) calc(50vw - 15px), (max-width: 759px) calc(46vw - 5px), (max-width: 899px) calc(46vw - 9px), (max-width: 1199px) calc(441px - 4vw), 393px"
-        width="600"
-        height="600"
+        width={photo.width || 600}
+        height={photo.height || 600}
         alt=""
         decoding="async"
         loading={eager ? undefined : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         onLoad={() => setReady(true)}
         onError={() => {
-          if (!fallback && publishedPhotoName(item.photo) !== PLACEHOLDER_PHOTO) {
+          if (!fallback && item.image) {
             setReady(false);
             setFallback(true);
             return;
@@ -325,11 +307,11 @@ const ProductCard = memo(function ProductCard({ eager, item, priority }) {
       <ProductPhoto eager={eager} item={item} priority={priority} />
       <h3>{item.name}</h3>
       <ProductDescription
-        description={item.desc}
+        description={item.description}
         itemName={item.name}
-        slotId={item.slotId}
+        slotId={item.id}
       />
-      {item.options ? <VariantList item={item} /> : <strong>{item.price}</strong>}
+      {item.options.length > 0 ? <VariantList item={item} /> : <strong>{item.price}</strong>}
     </article>
   );
 });
@@ -339,7 +321,7 @@ const ProductGrid = memo(function ProductGrid({ category, firstCategory }) {
     <div className="grid">
       {category.items.map((item, index) => (
         <ProductCard
-          key={item.slotId}
+          key={item.id}
           item={item}
           eager={firstCategory && index < 4}
           priority={firstCategory && index < 2}

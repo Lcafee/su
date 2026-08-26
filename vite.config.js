@@ -18,8 +18,9 @@ function normalizeBasePath(value) {
 }
 
 const base = normalizeBasePath(process.env.VITE_BASE_PATH);
+const menuFixturePath = resolve(root, "src/menu/fixtures/current.json");
 
-const staticTrees = ["assets/fonts", "assets/menu/opt"];
+const staticTrees = ["assets/fonts"];
 
 const staticFiles = [
   ".htaccess",
@@ -34,6 +35,8 @@ const staticFiles = [
   "assets/l-cafe-sculptural-light-1280.webp",
   "assets/l-cafe-sculptural-light-760.webp",
   "assets/l-cafe-sculptural-light-480.webp",
+  "assets/menu/opt/item-placeholder-300.webp",
+  "assets/menu/opt/item-placeholder.webp",
   "uploads/L_Cafe_Full_NoTagline_White.svg",
 ];
 
@@ -87,6 +90,53 @@ async function writeBuildManifest(outDir) {
   );
 }
 
+function serveManagedMenuFixture() {
+  const fixturePaths = new Set([
+    `${base}managed-menu/current.json`,
+    `${base}managed-menu/previous.json`,
+  ]);
+  const fixtureAssetPrefix = `${base}assets/menu/opt/`;
+  const middleware = async (request, response, next) => {
+    const pathname = new URL(request.url || "/", "http://localhost").pathname;
+    const photoName = pathname.startsWith(fixtureAssetPrefix)
+      ? pathname.slice(fixtureAssetPrefix.length)
+      : "";
+    const fixturePhoto = /^[a-z0-9-]+\.webp$/i.test(photoName)
+      ? resolve(root, "assets/menu/opt", photoName)
+      : null;
+    const fixtureJson = fixturePaths.has(pathname) ? menuFixturePath : null;
+    if (
+      (!fixtureJson && !fixturePhoto)
+      || !["GET", "HEAD"].includes(request.method || "GET")
+    ) {
+      next();
+      return;
+    }
+    try {
+      const bytes = await readFile(fixtureJson || fixturePhoto);
+      response.statusCode = 200;
+      response.setHeader(
+        "Content-Type",
+        fixtureJson ? "application/json; charset=utf-8" : "image/webp",
+      );
+      response.setHeader("Cache-Control", "no-store");
+      response.setHeader("X-Content-Type-Options", "nosniff");
+      response.end(request.method === "HEAD" ? undefined : bytes);
+    } catch (error) {
+      next(error);
+    }
+  };
+  return {
+    name: "serve-managed-menu-fixture",
+    configureServer(server) {
+      server.middlewares.use(middleware);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(middleware);
+    },
+  };
+}
+
 function copyStaticSiteAssets() {
   return {
     name: "copy-static-site-assets",
@@ -123,7 +173,7 @@ function copyStaticSiteAssets() {
 export default defineConfig({
   appType: "mpa",
   base,
-  plugins: [react(), copyStaticSiteAssets()],
+  plugins: [react(), serveManagedMenuFixture(), copyStaticSiteAssets()],
   publicDir: false,
   build: {
     rollupOptions: {

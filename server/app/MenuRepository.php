@@ -558,7 +558,7 @@ function mark_publish_failure(PDO $pdo, int $revision): void
 
 /**
  * @param array<string, mixed> $config
- * @param array{id:int,username:string} $actor
+ * @param array{id:int|null,username:string} $actor
  * @param array<string, mixed> $input
  * @return array<string, mixed>
  */

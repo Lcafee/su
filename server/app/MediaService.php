@@ -117,20 +117,10 @@ function promote_immutable_file(string $temp, string $final): void
 }
 
 /** @param array<string, mixed> $config @return array<string, mixed> */
-function upload_media(PDO $pdo, array $config): array
+function import_media_file(PDO $pdo, array $config, string $tempPath): array
 {
-    $upload = $_FILES['image'] ?? null;
-    if (!is_array($upload) || is_array($upload['tmp_name'] ?? null)) {
-        throw new ApiException(422, 'upload_required', 'A single image upload is required.');
-    }
-    $error = (int) ($upload['error'] ?? UPLOAD_ERR_NO_FILE);
-    if ($error !== UPLOAD_ERR_OK) {
-        $status = in_array($error, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? 413 : 422;
-        throw new ApiException($status, 'upload_failed', 'The image upload did not complete.');
-    }
-    $tempPath = (string) ($upload['tmp_name'] ?? '');
-    if ($tempPath === '' || !is_uploaded_file($tempPath)) {
-        throw new ApiException(422, 'upload_failed', 'The uploaded file is invalid.');
+    if ($tempPath === '' || !is_file($tempPath) || !is_readable($tempPath)) {
+        throw new ApiException(422, 'upload_failed', 'The image source is invalid.');
     }
     $byteSize = filesize($tempPath);
     $maxBytes = max(1, (int) $config['uploads']['max_bytes']);
@@ -259,4 +249,23 @@ function upload_media(PDO $pdo, array $config): array
             '600' => media_url($config, $filenames[600]),
         ],
     ];
+}
+
+/** @param array<string, mixed> $config @return array<string, mixed> */
+function upload_media(PDO $pdo, array $config): array
+{
+    $upload = $_FILES['image'] ?? null;
+    if (!is_array($upload) || is_array($upload['tmp_name'] ?? null)) {
+        throw new ApiException(422, 'upload_required', 'A single image upload is required.');
+    }
+    $error = (int) ($upload['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($error !== UPLOAD_ERR_OK) {
+        $status = in_array($error, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? 413 : 422;
+        throw new ApiException($status, 'upload_failed', 'The image upload did not complete.');
+    }
+    $tempPath = (string) ($upload['tmp_name'] ?? '');
+    if ($tempPath === '' || !is_uploaded_file($tempPath)) {
+        throw new ApiException(422, 'upload_failed', 'The uploaded file is invalid.');
+    }
+    return import_media_file($pdo, $config, $tempPath);
 }

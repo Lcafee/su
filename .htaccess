@@ -23,9 +23,9 @@
   RewriteRule ^ https://l-cafe.ir%{REQUEST_URI} [R=301,L]
 
   # Persistent menu state is data, never executable content. Temporary publish
-  # names and the recovery copy are not public API surface.
+  # names are not public API surface; current and previous are the two public
+  # static recovery pointers used by the menu runtime.
   RewriteRule ^managed-(?:menu|media)/\. - [F,L,NC]
-  RewriteRule ^managed-menu/previous\.json$ - [F,L,NC]
   RewriteRule ^managed-(?:menu|media)/.*\.(?:php|phtml|phar|cgi|pl)$ - [F,L,NC]
 </IfModule>
 
@@ -84,10 +84,11 @@ Options -Indexes
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 
-  # The stable snapshot revalidates on every navigation; a matching ETag lets
-  # unchanged visits complete as 304. Managed renditions are content-addressed.
+  # Stable current/previous snapshots revalidate on every navigation; matching
+  # ETags let unchanged visits complete as 304. Managed renditions are
+  # content-addressed.
   <IfModule mod_setenvif.c>
-    SetEnvIf Request_URI "^/managed-menu/current\.json$" lcafe_managed_menu
+    SetEnvIf Request_URI "^/managed-menu/(?:current|previous)\.json$" lcafe_managed_menu
     SetEnvIf Request_URI "^/managed-media/[a-f0-9]{64}-(?:300|600)\.webp$" lcafe_managed_media
     Header set Cache-Control "public, no-cache" env=lcafe_managed_menu
     Header set Cache-Control "public, max-age=31536000, immutable" env=lcafe_managed_media

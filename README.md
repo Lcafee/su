@@ -1,6 +1,7 @@
 # L Cafe
 
-Static React + Vite frontend for the L Cafe Landing and Menu.
+React + Vite frontend with a PHP/MySQL menu-admin control plane and static
+snapshot delivery for the public menu.
 
 ## Development
 
@@ -21,10 +22,17 @@ uses Node 22), matching the Vite 8 runtime requirement.
 domain. The manually dispatched GitHub Pages workflow sets it to `/su/` and
 generates an approved artifact for the exact commit entered by the operator.
 
+Local Vite development and preview serve the tracked
+`src/menu/fixtures/current.json` at the same `managed-menu/current.json` and
+`previous.json` paths used in production. No local database or PHP runtime is
+required. Regenerate that preview fixture from the legacy reference with
+`npm run menu:fixture`.
+
 ## Public routes
 
 - `/` and `/index.html` — Landing
 - `/menu.html` — Menu
+- `/admin/` — separately built authenticated menu editor
 
 Vite builds both HTML files as separate React entry points so the established
 Menu URL remains compatible with QR codes and static hosting.
@@ -33,9 +41,15 @@ Menu URL remains compatible with QR codes and static hosting.
 
 - `src/landing/` owns the Landing components and motion.
 - `src/menu/` owns Menu rendering and interaction state.
+- `src/admin/` owns the isolated admin bundle.
 - `src/styles/` preserves the approved visual system.
-- `menu.json` remains the only Menu content source.
-- `assets/` and `uploads/` contain the existing public media and fonts.
+- MySQL is authoritative for edited menu data; the public menu fetches only
+  persistent `managed-menu/current.json`, then `previous.json` as recovery.
+- `menu.json` is legacy migration/reference input and is not a public runtime
+  data source.
+- `managed-media/` is persistent runtime storage. Legacy menu images remain in
+  source for migration/local preview, but production releases ship only the
+  code-owned placeholder from that legacy set.
 
 The superseded generated-HTML toolchain is isolated under
 `legacy/retired-generated-frontend/` for recoverable historical reference. It
@@ -45,10 +59,10 @@ The current Menu renders the thin `metal-fx` category rule for every category.
 The effect is decorative and capability-gated: the content remains ordinary
 React/CSS when WebGL is unavailable or Metal-FX initialization fails.
 
-`L_Cafe_Menu_Content.xlsx` is a generated view of `menu.json`, not a second
-source of truth. Regenerate it after Menu data changes with `py menu_xlsx.py`.
-The optional Python maintenance utilities use the packages pinned in
-`requirements-tools.txt`; they are not production dependencies.
+`L_Cafe_Menu_Content.xlsx` is a historical generated view of the legacy
+`menu.json`, not a second source of truth. The optional Python maintenance
+utilities use the packages pinned in `requirements-tools.txt`; they are not
+production dependencies.
 
 ## Source and release workflow
 
