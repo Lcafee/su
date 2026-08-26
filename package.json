@@ -8,13 +8,19 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:admin": "vite --config vite.admin.config.js",
     "validate:release": "node scripts/validate-release.mjs",
     "validate:dist": "node scripts/validate-dist.mjs",
-    "build": "vite build",
+    "build": "npm run build:public && npm run build:admin",
+    "build:public": "vite build",
+    "build:admin": "vite build --config vite.admin.config.js",
     "release:generate": "node scripts/generate-release.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "metal-fx": "^1.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

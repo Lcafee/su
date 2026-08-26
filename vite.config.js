@@ -40,6 +40,7 @@ const staticFiles = [
 const buildInputFiles = [
   ".htaccess",
   "404.html",
+  "admin/index.html",
   "index.html",
   "menu.html",
   "menu.json",
@@ -47,6 +48,7 @@ const buildInputFiles = [
   "package-lock.json",
   "robots.txt",
   "sitemap.xml",
+  "vite.admin.config.js",
   "vite.config.js",
 ];
 const buildInputTrees = ["src", "assets", "uploads", "server"];

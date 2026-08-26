@@ -106,7 +106,7 @@ def deploy_order_key(name):
     """Promote access rules and dependencies before their public entry points."""
     if name in {".htaccess", "api/.htaccess"}:
         phase = 0
-    elif name.startswith(("assets/", "uploads/", "api/_app/")):
+    elif name.startswith(("assets/", "uploads/", "admin/assets/", "api/_app/")):
         phase = 1
     elif name == "api/index.php":
         phase = 3
