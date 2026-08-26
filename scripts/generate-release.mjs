@@ -42,6 +42,14 @@ function git(args, options = {}) {
   return run("git", args, options);
 }
 
+function npm(args, options = {}) {
+  const npmCli = process.env.npm_execpath;
+  if (!npmCli) {
+    fail("npm CLI path is unavailable; run through npm run release:generate");
+  }
+  return run(process.execPath, [npmCli, ...args], options);
+}
+
 function assertInside(parent, child) {
   const rel = relative(parent, child);
   if (!rel || rel.startsWith(`..${sep}`) || rel === ".." || isAbsolute(rel)) {
@@ -178,9 +186,8 @@ async function main() {
     git(["worktree", "add", "--quiet", "--detach", worktree, commit]);
     worktreeAdded = true;
 
-    const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-    run(npm, ["ci"], { cwd: worktree, stdio: "inherit" });
-    run(npm, ["run", "build"], { cwd: worktree, stdio: "inherit" });
+    npm(["ci"], { cwd: worktree, stdio: "inherit" });
+    npm(["run", "build"], { cwd: worktree, stdio: "inherit" });
 
     await cp(resolve(worktree, "dist"), staging, { recursive: true });
     await writeReleaseManifest(staging, commit, remoteRefs);
