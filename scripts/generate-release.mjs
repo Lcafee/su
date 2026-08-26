@@ -122,6 +122,15 @@ async function copyBackendRelease(worktree, staging, commit) {
   await cp(resolve(worktree, "server", "bin"), resolve(appDirectory, "bin"), {
     recursive: true,
   });
+  await cp(
+    resolve(worktree, "server", "migrations"),
+    resolve(appDirectory, "migrations"),
+    { recursive: true },
+  );
+  await cp(
+    resolve(worktree, "server", "config.example.php"),
+    resolve(appDirectory, "config.example.php"),
+  );
 
   const controllerPath = resolve(apiDirectory, "index.php");
   const controller = await readFile(controllerPath, "utf8");

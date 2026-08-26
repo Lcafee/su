@@ -1,11 +1,13 @@
 # Menu-admin backend foundation
 
 This directory contains the source-controlled control plane for menu editing and
-the one-time legacy import command. The separately built React admin calls this
-API; the public menu reads only the static snapshot files it publishes. Approved
-releases copy `server/app`, `server/bin`, and `server/public/api` into the release
-artifact. Database contents, configuration, sessions, snapshots, originals, and
-managed renditions are runtime state and are never copied.
+the one-time provisioning and legacy import commands. The separately built
+React admin calls this API; the public menu reads only the static snapshot files
+it publishes. Approved releases copy `server/app`, `server/bin`,
+`server/migrations`, `server/config.example.php`, and
+`server/public/api` into the release artifact. Database contents, configuration,
+sessions, snapshots, originals, and managed renditions are runtime state and are
+never copied.
 
 ## Host prerequisites
 
@@ -20,9 +22,11 @@ managed renditions are runtime state and are never copied.
 - A private config file based on `config.example.php`, exposed through the
   `LCAFE_PRIVATE_CONFIG` environment variable.
 
-Apply `migrations/001_menu_admin.sql`, then create the first active
-`admin_users` row with a PHP `password_hash(..., PASSWORD_DEFAULT)` result. No
-plaintext password belongs in SQL, Git, or the release artifact.
+Use the interactive provisioner rather than applying SQL or inserting an admin
+row manually. The complete operator sequence and host values are documented in
+[`HOST-ACTIVATION.md`](HOST-ACTIVATION.md). It creates the external config and
+persistent directories, applies release-owned migrations, and creates the first
+active user with `password_hash(..., PASSWORD_DEFAULT)`.
 
 The public snapshot publisher owns `managed-menu/current.json` and
 `managed-menu/previous.json`. Immutable recovery copies live in the private
@@ -31,10 +35,9 @@ overwritten by the operator workflow.
 
 ## One-time legacy import
 
-After the schema, private config, persistent directories, and PHP extensions are
-ready, run the release-owned CLI command from a host terminal. The menu JSON and
-legacy image directory are explicit inputs; neither is copied into managed
-runtime storage by a code deployment.
+After `bin/provision-admin.php` has completed, run the release-owned importer
+from a host terminal. The menu JSON and legacy image directory are explicit
+inputs; neither is copied into managed runtime storage by a code deployment.
 
 ```text
 php api/_app/<approved-commit>/bin/import-legacy-menu.php \
