@@ -18,6 +18,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const releaseRoot = resolve(root, "release");
 const currentRelease = resolve(releaseRoot, "current");
 const RELEASE_MANIFEST = ".lcafe-release.json";
+const API_RELEASE_TOKEN = "__LCAFE_API_RELEASE__";
 
 function fail(message) {
   throw new Error(`release generation: ${message}`);
@@ -107,6 +108,31 @@ async function writeReleaseManifest(staging, commit, remoteRefs) {
   );
 }
 
+async function copyBackendRelease(worktree, staging, commit) {
+  const apiDirectory = resolve(staging, "api");
+  await cp(resolve(worktree, "server", "public", "api"), apiDirectory, {
+    recursive: true,
+  });
+
+  const appDirectory = resolve(apiDirectory, "_app", commit);
+  await mkdir(appDirectory, { recursive: true });
+  await cp(resolve(worktree, "server", "app"), appDirectory, {
+    recursive: true,
+  });
+
+  const controllerPath = resolve(apiDirectory, "index.php");
+  const controller = await readFile(controllerPath, "utf8");
+  const occurrences = controller.split(API_RELEASE_TOKEN).length - 1;
+  if (occurrences !== 1) {
+    fail(`API front controller must contain exactly one ${API_RELEASE_TOKEN}`);
+  }
+  await writeFile(
+    controllerPath,
+    controller.replace(API_RELEASE_TOKEN, commit),
+    "utf8",
+  );
+}
+
 async function promote(staging) {
   await mkdir(releaseRoot, { recursive: true });
   assertInside(releaseRoot, staging);
@@ -190,6 +216,7 @@ async function main() {
     npm(["run", "build"], { cwd: worktree, stdio: "inherit" });
 
     await cp(resolve(worktree, "dist"), staging, { recursive: true });
+    await copyBackendRelease(worktree, staging, commit);
     await writeReleaseManifest(staging, commit, remoteRefs);
     await promote(staging);
   } finally {

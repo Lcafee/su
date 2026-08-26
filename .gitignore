@@ -35,3 +35,10 @@ menu-products.xlsx
 # Which file contents deploy.py last put on the host. Local bookkeeping, and
 # per-machine: another clone has not uploaded anything yet.
 .deploy-state.json
+
+# Menu-admin runtime state. These paths are host-provisioned and must remain
+# independent of approved code releases and Git history.
+.lcafe-private/
+managed-menu/
+managed-media/
+server/config.php

@@ -103,13 +103,17 @@ STAGING_DENY_MARKER = b"LCAFE-DEPLOY-STAGING-DENY"
 
 
 def deploy_order_key(name):
-    """Promote dependencies before the HTML files that reference them."""
-    if name.startswith(("assets/", "uploads/")):
+    """Promote access rules and dependencies before their public entry points."""
+    if name in {".htaccess", "api/.htaccess"}:
         phase = 0
-    elif name in HTML_ENTRY_POINTS or name.endswith(".html"):
-        phase = 2
-    else:
+    elif name.startswith(("assets/", "uploads/", "api/_app/")):
         phase = 1
+    elif name == "api/index.php":
+        phase = 3
+    elif name in HTML_ENTRY_POINTS or name.endswith(".html"):
+        phase = 4
+    else:
+        phase = 2
     return (phase, name)
 
 

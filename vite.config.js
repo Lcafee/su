@@ -49,7 +49,7 @@ const buildInputFiles = [
   "sitemap.xml",
   "vite.config.js",
 ];
-const buildInputTrees = ["src", "assets", "uploads"];
+const buildInputTrees = ["src", "assets", "uploads", "server"];
 
 async function listTree(relativeDir) {
   const entries = await readdir(resolve(root, relativeDir), { withFileTypes: true });
