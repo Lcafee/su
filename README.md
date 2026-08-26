@@ -74,14 +74,20 @@ atomically promotes the result to ignored `release/current/`. The artifact's
 `.lcafe-release.json` records the commit and every generated file hash. Normal
 `npm run build` and `npm run dev` never write there.
 
+Release generation is the operating boundary: source changes, commit and push,
+explicit approval, generate `release/current/`, then stop. Release approval does
+not authorize production deployment. Codex may deploy only in a separate task
+that explicitly instructs it to do so.
+
 The pre-consolidation approved artifact is preserved unchanged under
 `release/legacy-approved/`. It has no recorded Git SHA, so it is retained only
 as a rollback/reference snapshot and is intentionally not accepted by the new
 package or deploy commands.
 
-## Packaging and deployment
+## Manual packaging and production deployment
 
-After explicit release generation:
+These commands are separate manual operations after release generation. They are
+never invoked by a build, release command, Git hook, or GitHub workflow:
 
 ```sh
 py package.py

@@ -68,6 +68,11 @@ promotes it to ignored `release/current/`. `.lcafe-release.json` records the SHA
 and generated-file hashes. `package.py` and `deploy.py` consume only that
 approved artifact and do not publish either internal manifest.
 
+Approved generation is a hard automation boundary: generate `release/current/`
+and stop. Release approval never implies deployment approval. `deploy.py` is a
+manual production tool and Codex may invoke it only from a separate task that
+explicitly requests production deployment.
+
 `menu_xlsx.py` regenerates `L_Cafe_Menu_Content.xlsx` from `menu.json`.
 `optimize_images.py`
 remains the image optimization utility. `package.py` and `deploy.py` consume
