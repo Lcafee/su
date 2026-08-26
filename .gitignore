@@ -4,6 +4,7 @@ graphify-out/
 .thumbnail
 node_modules/
 dist/
+release/
 *.log
 ~$*.xlsx
 .DS_Store

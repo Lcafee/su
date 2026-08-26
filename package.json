@@ -11,6 +11,7 @@
     "validate:release": "node scripts/validate-release.mjs",
     "validate:dist": "node scripts/validate-dist.mjs",
     "build": "vite build",
+    "release:generate": "node scripts/generate-release.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

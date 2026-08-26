@@ -53,20 +53,25 @@ npm run dev
 npm run build
 ```
 
-`vite.config.js` builds `index.html` and `menu.html` and copies the existing
-fonts, optimized Menu photos, Landing photos, logo, favicon, `.htaccess`, 404,
-robots, and sitemap into `dist/` at their established public paths. `404.html`
+`vite.config.js` builds `index.html` and `menu.html` into disposable `dist/` and
+copies the existing fonts, optimized Menu photos, Landing photos, logo,
+favicon, `.htaccess`, 404, robots, and sitemap into `dist/` at their established
+public paths. `404.html`
 is base-path-expanded at build time so both the production apex (`/`) and the
 GitHub Pages preview (`/su/`) resolve its assets and Menu link correctly.
 
 The build also writes `dist/.lcafe-build.json`, containing SHA-256 hashes for
-the active build inputs. `deploy.py` uses it instead of file mtimes to reject a
-stale build. `package.py` does not publish that internal manifest.
+the active build inputs. A normal build is never deployable. After an exact
+pushed commit is explicitly approved, `npm run release:generate -- --approve
+<full-commit-sha>` builds that commit from a detached worktree and atomically
+promotes it to ignored `release/current/`. `.lcafe-release.json` records the SHA
+and generated-file hashes. `package.py` and `deploy.py` consume only that
+approved artifact and do not publish either internal manifest.
 
 `menu_xlsx.py` regenerates `L_Cafe_Menu_Content.xlsx` from `menu.json`.
 `optimize_images.py`
-remains the image optimization utility. `package.py` and `deploy.py` now consume
-`dist/` rather than generated root HTML.
+remains the image optimization utility. `package.py` and `deploy.py` consume
+only `release/current/`, never disposable `dist/` or generated root HTML.
 
 ## Content rule
 

@@ -14,7 +14,7 @@ and a cPanel FTP account is usually the cPanel account - the same credential
 that owns everything else on the host.
 
 Only changed files are sent, compared by SHA-256 against .deploy-state.json.
-The first run therefore uploads the full Vite output; later ones usually upload one.
+The first run therefore uploads the full approved release; later ones usually upload one.
 Changed files are fully staged and size-checked under temporary remote names
 before any live path is replaced. Promotion is dependency-safe: assets and
 configuration are switched first and HTML entry points last, so a new page
@@ -23,7 +23,7 @@ from the host except deploy-owned temporary files: a pruning sync can empty
 public_html on a bad day, and the served set otherwise only grows.
 
 Setup:  copy .deploy.ini.example to .deploy.ini and fill it in
-Run after npm run build:  py deploy.py [--all] [--dry-run]
+Run after explicit release approval/generation:  py deploy.py [--all] [--dry-run]
 First deploy from an older .htaccess: confirm the target, then use
                               py deploy.py --bootstrap-htaccess
 """
@@ -46,7 +46,6 @@ import package
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONF = os.path.join(HERE, ".deploy.ini")
 STATE = os.path.join(HERE, ".deploy-state.json")
-BUILD_MANIFEST = os.path.join(HERE, "dist", ".lcafe-build.json")
 
 
 def fail(message):
@@ -96,48 +95,6 @@ def guard_untracked():
     if tracked:
         fail(".deploy.ini is tracked by git. Run:  git rm --cached .deploy.ini\n"
              "        Then treat the password in it as leaked and change it.")
-
-
-def guard_build_fresh():
-    if not os.path.isfile(BUILD_MANIFEST):
-        fail("build manifest is missing. Run: npm run build")
-
-    try:
-        with io.open(BUILD_MANIFEST, encoding="utf-8") as fh:
-            manifest = json.load(fh)
-        if manifest.get("version") != 1:
-            raise ValueError("unsupported manifest version")
-        roots = manifest["roots"]
-        recorded = manifest["inputs"]
-    except (KeyError, TypeError, ValueError, OSError) as e:
-        fail("build manifest is invalid (%s). Run: npm run build" % e)
-
-    current_paths = set(roots.get("files", []))
-    for input_dir in roots.get("trees", []):
-        directory_root = os.path.join(HERE, input_dir)
-        for directory, dirnames, filenames in os.walk(directory_root):
-            dirnames.sort()
-            for filename in sorted(filenames):
-                current_paths.add(
-                    os.path.relpath(os.path.join(directory, filename), HERE).replace(os.sep, "/")
-                )
-
-    recorded_paths = set(recorded)
-    added = sorted(current_paths - recorded_paths)
-    removed = sorted(recorded_paths - current_paths)
-    changed = []
-    for name in sorted(current_paths & recorded_paths):
-        path = os.path.join(HERE, name.replace("/", os.sep))
-        if not os.path.isfile(path) or digest(path) != recorded[name]:
-            changed.append(name)
-
-    stale = added + removed + changed
-    if stale:
-        fail(
-            "build is stale, refusing to upload:\n  "
-            + "\n  ".join(stale)
-            + "\n        Run: npm run build"
-        )
 
 
 HTML_ENTRY_POINTS = {"index.html", "menu.html", "404.html"}
@@ -208,7 +165,7 @@ def install_staging_protection(ftp):
     with open(path, "rb") as fh:
         payload = fh.read()
     if STAGING_DENY_MARKER not in payload:
-        fail("local dist/.htaccess is missing the staging deny rule; rebuild first")
+        fail("approved release .htaccess is missing the staging deny rule")
 
     previous = read_remote_file(ftp, ".htaccess")
     try:
@@ -454,7 +411,11 @@ def main():
     args = ap.parse_args()
 
     guard_untracked()
-    guard_build_fresh()
+    try:
+        release = package.verify_release()
+    except SystemExit as error:
+        fail(str(error))
+    print("deploy: approved release %s" % release["gitCommit"])
 
     names = package.collect()
     missing = [n for n in names if not os.path.isfile(package.source_path(n))]
@@ -518,7 +479,7 @@ def main():
             print("  installed and verified staging protection (.htaccess)")
 
         # Remove leftovers from interrupted earlier attempts before creating any
-        # new staging file. State keys cover files that may have since left dist/.
+        # new staging file. State keys cover files that may have since left the release.
         leftovers = cleanup_staging_files(ftp, set(names) | set(state))
         if leftovers:
             fail("could not clean abandoned staging files:\n  " + "\n  ".join(leftovers))

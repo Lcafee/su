@@ -12,13 +12,14 @@ npm run build
 npm run validate:dist
 ```
 
-`npm run build` writes the deployable site to `dist/`. No Node server is needed
-in production. The project is pinned to Node 20.19+ or 22.12+ (CI uses Node 22), matching the Vite 8 runtime
-requirement.
+`npm run build` writes disposable local output to `dist/`; it is not an approved
+production release and the deploy tooling will not consume it. No Node server
+is needed in production. The project is pinned to Node 20.19+ or 22.12+ (CI
+uses Node 22), matching the Vite 8 runtime requirement.
 
 `VITE_BASE_PATH` controls the public base and defaults to `/` for the custom
-domain. The GitHub Pages workflow sets it to `/su/` and deploys `dist/` through
-the official Pages artifact flow.
+domain. The manually dispatched GitHub Pages workflow sets it to `/su/` and
+generates an approved artifact for the exact commit entered by the operator.
 
 ## Public routes
 
@@ -49,9 +50,38 @@ source of truth. Regenerate it after Menu data changes with `py menu_xlsx.py`.
 The optional Python maintenance utilities use the packages pinned in
 `requirements-tools.txt`; they are not production dependencies.
 
+## Source and release workflow
+
+Normal work has one editable source of truth and one GitHub flow:
+
+```sh
+# edit in this repository
+git add <files>
+git commit -m "Describe the change"
+git push
+```
+
+Only after a specific pushed commit is explicitly approved, generate its
+production artifact with the full SHA:
+
+```sh
+npm run release:generate -- --approve <full-commit-sha>
+```
+
+The generator refuses a dirty working tree or a commit that is not present on
+an `origin/*` branch. It builds a detached worktree for that exact commit and
+atomically promotes the result to ignored `release/current/`. The artifact's
+`.lcafe-release.json` records the commit and every generated file hash. Normal
+`npm run build` and `npm run dev` never write there.
+
+The pre-consolidation approved artifact is preserved unchanged under
+`release/legacy-approved/`. It has no recorded Git SHA, so it is retained only
+as a rollback/reference snapshot and is intentionally not accepted by the new
+package or deploy commands.
+
 ## Packaging and deployment
 
-After `npm run build`:
+After explicit release generation:
 
 ```sh
 py package.py
@@ -59,10 +89,11 @@ py deploy.py --dry-run
 py deploy.py
 ```
 
-`package.py` archives exactly the contents of `dist/`. `deploy.py` uploads that
-same served file set and refuses to deploy when the build-manifest hashes no
-longer match the active source tree. The internal `.lcafe-build.json` manifest
-is intentionally excluded from the public upload ZIP.
+`package.py` archives exactly the public contents of `release/current/`.
+`deploy.py` uploads that same served file set. Both refuse missing, edited, or
+unknown-commit release artifacts. The internal `.lcafe-build.json` and
+`.lcafe-release.json` manifests are intentionally excluded from the public
+upload ZIP and FTPS upload.
 
 Deploy-owned temporary files are denied by `.htaccess` before staging begins.
 On a host that still has the older `.htaccess`, the first deploy will stop before
