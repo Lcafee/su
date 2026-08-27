@@ -468,8 +468,8 @@ const MenuFooter = memo(function MenuFooter() {
           alt="ال کافه"
         />
         <div className="foot-contact">
-          <a href="tel:+989130005768">
-            <bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi>
+          <a href="tel:+989130005767">
+            <bdi dir="ltr">09130005767</bdi>
           </a>
           <a
             href="https://www.instagram.com/lcafe.esf/"

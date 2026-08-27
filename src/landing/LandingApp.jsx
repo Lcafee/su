@@ -14,7 +14,10 @@ const FEATURE_PHOTO_SRC_SET = [
 const FEATURE_PHOTO_FALLBACK = sitePath(
   "assets/l-cafe-sculptural-light-1280.webp",
 );
-const MENU_HREF = sitePath("menu.html");
+const MENU_HREF =
+  import.meta.env.BASE_URL === "/"
+    ? sitePath("menu")
+    : "https://l-cafe.ir/menu";
 const BRAND_MARK_SRC = sitePath("uploads/L_Cafe_Full_NoTagline_White.svg");
 
 function RevealBlock({ children, className }) {
@@ -302,8 +305,8 @@ function ClosingSection({ footerRef }) {
             <p className="contact-hours">ساعت ۷ تا ۲۳</p>
           </div>
           <div className="contact-links">
-            <a href="tel:+989130005768">
-              <bdi>۰۹۱۳ ۰۰۰ ۵۷۶۸</bdi>
+            <a href="tel:+989130005767">
+              <bdi dir="ltr">09130005767</bdi>
             </a>
             <a
               href="https://maps.app.goo.gl/UcyaTAH42vChA7RA9"

@@ -34,6 +34,74 @@ function walk(dir, prefix = "") {
 const files = new Set(walk(dist));
 if (files.size < 20) fail(`dist looks incomplete (${files.size} files)`);
 
+const PUBLIC_MENU_URL = "https://l-cafe.ir/menu";
+const PHONE_DISPLAY = "09130005767";
+const PHONE_E164 = "+989130005767";
+const builtIndex = readFileSync(resolve(dist, "index.html"), "utf8");
+const builtMenu = readFileSync(resolve(dist, "menu.html"), "utf8");
+const built404 = readFileSync(resolve(dist, "404.html"), "utf8");
+const builtSitemap = readFileSync(resolve(dist, "sitemap.xml"), "utf8");
+const builtRobots = readFileSync(resolve(dist, "robots.txt"), "utf8");
+const builtHtaccess = readFileSync(resolve(dist, ".htaccess"), "utf8");
+const publicScripts = [...files]
+  .filter((file) => /^assets\/.*\.js$/.test(file))
+  .map((file) => readFileSync(resolve(dist, file), "utf8"))
+  .join("\n");
+const searchablePublicOutput = [
+  builtIndex,
+  builtMenu,
+  built404,
+  builtSitemap,
+  publicScripts,
+].join("\n");
+
+for (const retiredPhone of [
+  "+989130005768",
+  "09130005768",
+  "۰۹۱۳ ۰۰۰ ۵۷۶۸",
+  "۰۹۱۳۰۰۰۵۷۶۸",
+]) {
+  if (searchablePublicOutput.includes(retiredPhone)) {
+    fail("built public output contains the retired phone number");
+  }
+}
+if (!builtIndex.includes(`"telephone": "${PHONE_E164}"`)) {
+  fail("built JSON-LD telephone is incorrect");
+}
+if (!builtIndex.includes(`"hasMenu": "${PUBLIC_MENU_URL}"`)) {
+  fail("built JSON-LD hasMenu is not canonical");
+}
+if (!builtMenu.includes(`<link rel="canonical" href="${PUBLIC_MENU_URL}"`)) {
+  fail("built menu canonical link is incorrect");
+}
+if (!builtMenu.includes(`<meta property="og:url" content="${PUBLIC_MENU_URL}"`)) {
+  fail("built menu og:url is incorrect");
+}
+if (!builtSitemap.includes(`<loc>${PUBLIC_MENU_URL}</loc>`) || builtSitemap.includes("menu.html")) {
+  fail("built sitemap does not expose only the canonical menu URL");
+}
+if (!built404.includes(`href="${PUBLIC_MENU_URL}"`)) {
+  fail("built 404 page does not link to the canonical menu URL");
+}
+if (publicScripts.includes("menu.html")) {
+  fail("built public JavaScript exposes the physical menu.html entry");
+}
+if (!publicScripts.includes(`tel:${PHONE_E164}`) || !publicScripts.includes(PHONE_DISPLAY)) {
+  fail("built public JavaScript does not contain the approved phone link and display");
+}
+if (!builtRobots.includes("Allow: /") || !builtRobots.includes("https://l-cafe.ir/sitemap.xml")) {
+  fail("built robots.txt does not allow indexing and advertise the sitemap");
+}
+for (const requiredRule of [
+  "# LCAFE-PUBLIC-MENU-CANONICAL",
+  "RewriteRule ^menu\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
+  "RewriteRule ^menu$ menu.html [L]",
+]) {
+  if (!builtHtaccess.includes(requiredRule)) {
+    fail(`built .htaccess is missing ${requiredRule}`);
+  }
+}
+
 const manifest = JSON.parse(readFileSync(resolve(dist, ".lcafe-build.json"), "utf8"));
 if (manifest.version !== 1 || !manifest.inputs || !manifest.roots) {
   fail("build manifest is malformed");

@@ -14,6 +14,17 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # LCAFE-PUBLIC-MENU-CANONICAL
+  # menu.html remains the physical build file, but it is never the public URL.
+  # THE_REQUEST distinguishes a real legacy request from the internal rewrite
+  # below, preventing a redirect loop. Apache preserves the query string; URL
+  # fragments never reach the server and remain attached in the browser.
+  RewriteCond %{THE_REQUEST} \s/+menu\.html(?:[?\s]) [NC]
+  RewriteRule ^menu\.html$ https://l-cafe.ir/menu [R=301,L,NE]
+
+  RewriteCond %{THE_REQUEST} \s/+menu/+(?:[?\s]) [NC]
+  RewriteRule ^menu/+$ https://l-cafe.ir/menu [R=301,L,NE]
+
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteRule ^ https://l-cafe.ir%{REQUEST_URI} [R=301,L]
@@ -27,6 +38,9 @@
   # static recovery pointers used by the menu runtime.
   RewriteRule ^managed-(?:menu|media)/\. - [F,L,NC]
   RewriteRule ^managed-(?:menu|media)/.*\.(?:php|phtml|phar|cgi|pl)$ - [F,L,NC]
+
+  # Serve the extensionless canonical route from the Vite-built HTML entry.
+  RewriteRule ^menu$ menu.html [L]
 </IfModule>
 
 ErrorDocument 404 /404.html

@@ -5,9 +5,9 @@
 The production frontend is a React + Vite multi-page static build:
 
 ```text
-index.html ──> src/landing/main.jsx ──> LandingApp
-menu.html  ──> src/menu/main.jsx    ──> MenuApp ──> menu.json
-                                      └──────────> metal-fx
+/          ──> index.html ──> src/landing/main.jsx ──> LandingApp
+/menu      ──> menu.html  ──> src/menu/main.jsx    ──> MenuApp
+                                                    └──> metal-fx
 ```
 
 The previous design-canvas HTML, Python HTML generator, runtime loader, custom
@@ -53,12 +53,15 @@ npm run dev
 npm run build
 ```
 
-`vite.config.js` builds `index.html` and `menu.html` into disposable `dist/` and
-copies the existing fonts, optimized Menu photos, Landing photos, logo,
+`vite.config.js` builds `index.html` and the internal `menu.html` entry into
+disposable `dist/`. Apache/LiteSpeed exposes that entry canonically at `/menu`
+and permanently redirects `/menu.html`. The build copies
+the existing fonts, optimized Menu photos, Landing photos, logo,
 favicon, `.htaccess`, 404, robots, and sitemap into `dist/` at their established
 public paths. `404.html`
 is base-path-expanded at build time so both the production apex (`/`) and the
-GitHub Pages preview (`/su/`) resolve its assets and Menu link correctly.
+GitHub Pages preview (`/su/`) resolve its assets. Menu links on non-root previews
+point to the production canonical URL rather than exposing `menu.html`.
 
 The build also writes `dist/.lcafe-build.json`, containing SHA-256 hashes for
 the active build inputs. A normal build is never deployable. After an exact

@@ -28,11 +28,6 @@
   --reveal-dur:var(--motion-dur);
   --reveal-blur:1.5px;
   --reveal-ease:var(--motion-ease);
-  /* transitions.dev — page side-by-side (08) */
-  --page-slide-dur:var(--motion-dur);
-  --page-slide-distance:6px;
-  --page-blur:1.5px;
-  --page-slide-ease:var(--motion-ease);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{
@@ -319,35 +314,6 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   50%    {opacity:var(--pulse-min)}
 }
 
-/* transitions.dev — page side-by-side (08), adapted for real navigation. The
-   preset slides two <section>s inside one document; these are two documents,
-   so the same four tokens drive a cross-document view transition instead.
-   Both pages sit on the same maroon, so what reads is the copy crossing over
-   a background that never moves.
-
-   Direction is RTL-correct: the page you are leaving withdraws to the right,
-   the page you are going to arrives from the left, which is forward here.
-
-   This is also why the runtime had to go first. A view transition snapshots
-   the incoming document at its first paint, and under the runtime that was a
-   blank rectangle - it would have cross-faded into nothing.
-
-   No fallback to write: a browser without view transitions performs exactly
-   the navigation it performs today. */
-@view-transition{navigation:auto}
-::view-transition-group(root){
-  animation-duration:var(--page-slide-dur);
-  animation-timing-function:var(--page-slide-ease);
-}
-::view-transition-old(root){animation-name:t-page-out}
-::view-transition-new(root){animation-name:t-page-in}
-@keyframes t-page-out{
-  to{opacity:0;transform:translateX(var(--page-slide-distance));filter:blur(var(--page-blur))}
-}
-@keyframes t-page-in{
-  from{opacity:0;transform:translateX(calc(var(--page-slide-distance) * -1));filter:blur(var(--page-blur))}
-}
-
 @media (hover:hover) and (pointer:fine){
   .site-menu-link:hover{border-color:var(--ink)}
   .cta:hover{background:rgba(243,241,236,.88);color:var(--bg)}
@@ -355,9 +321,6 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 
 @media (prefers-reduced-motion:reduce){
-  /* The whole feature off, not just its animations - a zeroed view transition
-     still holds the old page on screen while the new one loads. */
-  @view-transition{navigation:none}
   .mark{transform:translate3d(-50%,0,0) !important}
   .scroll-cue-line::after{display:none}
   .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}

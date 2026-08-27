@@ -31,11 +31,13 @@ required. Regenerate that preview fixture from the legacy reference with
 ## Public routes
 
 - `/` and `/index.html` — Landing
-- `/menu.html` — Menu
+- `/menu` — Menu (canonical public URL; Apache/LiteSpeed serves the internal
+  `menu.html` build entry and permanently redirects legacy `/menu.html` visits)
 - `/admin/` — separately built authenticated menu editor
 
-Vite builds both HTML files as separate React entry points so the established
-Menu URL remains compatible with QR codes and static hosting.
+Vite builds both HTML files as separate React entry points. The physical
+`menu.html` file remains an internal static-hosting detail; public links, QR
+codes, metadata, and crawlers use `/menu`.
 
 ## Source ownership
 
