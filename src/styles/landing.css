@@ -55,7 +55,7 @@ body,#landing-root,.page{
   min-height:100dvh;
 }
 body{overflow-x:hidden;overflow-x:clip}
-a{color:var(--ink)}
+a{color:var(--ink);touch-action:manipulation}
 a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 .skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
 .skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
@@ -77,6 +77,36 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .mark path{fill:#E6E5E1}
 
 .page{position:relative;z-index:2;background:transparent}
+
+.site-header{
+  position:absolute;
+  top:0;
+  right:0;
+  left:0;
+  z-index:4;
+  width:min(100%,1180px);
+  min-height:72px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding-top:max(14px,env(safe-area-inset-top,0px));
+  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
+  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
+}
+.site-brand{display:block;width:auto;height:34px}
+.site-menu-link{
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  padding:2px 0 0;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+  font:500 clamp(12.5px,3.4vw,14px)/1 var(--font);
+  text-decoration:none;
+  transition:border-color 180ms var(--motion-ease),color 180ms var(--motion-ease);
+}
 
 .hero{position:relative;margin:0;width:100%;height:100vh;height:100svh;
   display:flex;align-items:center;justify-content:center}
@@ -151,7 +181,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .menu-support{max-width:none}
 .cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(20px,3vw,28px);
   padding:0 30px;background:var(--ink);color:var(--bg);
-  font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
+  font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px;
+  touch-action:manipulation;transition:background-color 180ms var(--motion-ease),color 180ms var(--motion-ease)}
 
 /* One compact closing composition: the heading introduces a single body that
    holds location, hours and actions together rather than splitting utilities
@@ -317,6 +348,12 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   from{opacity:0;transform:translateX(calc(var(--page-slide-distance) * -1));filter:blur(var(--page-blur))}
 }
 
+@media (hover:hover) and (pointer:fine){
+  .site-menu-link:hover{border-color:var(--ink)}
+  .cta:hover{background:rgba(243,241,236,.88);color:var(--bg)}
+  .contact a:hover{color:var(--ink);text-decoration-color:var(--ink)}
+}
+
 @media (prefers-reduced-motion:reduce){
   /* The whole feature off, not just its animations - a zeroed view transition
      still holds the old page on screen while the new one loads. */
@@ -328,6 +365,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 @media (max-width:640px){
+  .site-header{min-height:64px;padding-top:max(10px,env(safe-area-inset-top,0px))}
+  .site-brand{height:30px}
   .about .inner{display:block}
   .about-headline{margin-bottom:clamp(20px,6vw,26px)}
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px

@@ -31,8 +31,8 @@ function MenuRuntime() {
   return (
     <main id="menu" aria-live="polite">
       <header className="menu-masthead">
-        <span className="menu-brand-mark" aria-hidden="true">L CAFE</span>
         <h1>منوی ال کافه</h1>
+        <span className="menu-brand-mark" aria-hidden="true">L CAFE</span>
       </header>
       <section className="menu-runtime-state">
         {state.status === "failed" ? (

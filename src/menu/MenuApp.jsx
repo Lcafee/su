@@ -1,15 +1,19 @@
 import {
   Component,
+  lazy,
   memo,
+  Suspense,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import { MetalFx } from "metal-fx";
 
 import { sitePath } from "../sitePath";
+
+const LazyMetalFx = lazy(() =>
+  import("metal-fx").then(({ MetalFx }) => ({ default: MetalFx })),
+);
 
 const PLACEHOLDER_IMAGE = {
   src: sitePath("assets/menu/opt/item-placeholder.webp"),
@@ -88,9 +92,33 @@ function SafeMetalFx(props) {
 
   return (
     <MetalFxBoundary>
-      <MetalFx {...props} />
+      <Suspense fallback={null}>
+        <LazyMetalFx {...props} />
+      </Suspense>
     </MetalFxBoundary>
   );
+}
+
+function useDeferredEnhancement(enabled) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) {
+      setReady(false);
+      return undefined;
+    }
+
+    const reveal = () => setReady(true);
+    if ("requestIdleCallback" in window) {
+      const idleCallback = window.requestIdleCallback(reveal, { timeout: 1400 });
+      return () => window.cancelIdleCallback(idleCallback);
+    }
+
+    const fallback = window.setTimeout(reveal, 700);
+    return () => window.clearTimeout(fallback);
+  }, [enabled]);
+
+  return ready;
 }
 
 let sharedDescriptionObserver;
@@ -149,6 +177,7 @@ function useMediaQuery(queryText) {
 
 const CategoryMetalRule = memo(function CategoryMetalRule({
   enhancedMetalFx,
+  metalFxReady,
   reducedMotion,
 }) {
   return (
@@ -158,22 +187,24 @@ const CategoryMetalRule = memo(function CategoryMetalRule({
       aria-hidden="true"
     >
       <span className="category-rule-base" />
-      <SafeMetalFx
-        variant="button"
-        preset="silver"
-        theme="light"
-        strength={enhancedMetalFx ? 0.96 : 0.58}
-        paused={reducedMotion}
-        borderRadius={999}
-        ringCssPx={enhancedMetalFx ? 1.2 : 0.75}
-        shaderScale={enhancedMetalFx ? 1.2 : 2.4}
-        disableGlow={!enhancedMetalFx}
-        normalizeHostStyles={false}
-        className="category-rule-fx"
-        style={METAL_RULE_STYLE}
-      >
-        <span className="category-rule-metal-host" />
-      </SafeMetalFx>
+      {metalFxReady ? (
+        <SafeMetalFx
+          variant="button"
+          preset="silver"
+          theme="light"
+          strength={enhancedMetalFx ? 0.96 : 0.58}
+          paused={reducedMotion}
+          borderRadius={999}
+          ringCssPx={enhancedMetalFx ? 1.2 : 0.75}
+          shaderScale={enhancedMetalFx ? 1.2 : 2.4}
+          disableGlow={!enhancedMetalFx}
+          normalizeHostStyles={false}
+          className="category-rule-fx"
+          style={METAL_RULE_STYLE}
+        >
+          <span className="category-rule-metal-host" />
+        </SafeMetalFx>
+      ) : null}
     </div>
   );
 });
@@ -181,12 +212,14 @@ const CategoryMetalRule = memo(function CategoryMetalRule({
 const CategoryHeader = memo(function CategoryHeader({
   category,
   enhancedMetalFx,
+  metalFxReady,
   reducedMotion,
 }) {
   return (
     <div className="cat-head">
       <CategoryMetalRule
         enhancedMetalFx={enhancedMetalFx}
+        metalFxReady={metalFxReady}
         reducedMotion={reducedMotion}
       />
       <h2 id={category.id} tabIndex="-1">
@@ -226,7 +259,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
         alt=""
         decoding="async"
         loading={eager ? undefined : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
+        fetchPriority={priority ? "high" : undefined}
         onLoad={() => setReady(true)}
         onError={() => {
           if (!fallback && item.image) {
@@ -254,7 +287,7 @@ function ProductDescription({ description, itemName, slotId }) {
     setHasOverflow((current) => (current === overflow ? current : overflow));
   }, [expanded]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const paragraph = paragraphRef.current;
     if (!paragraph || expanded) return undefined;
     measure();
@@ -302,16 +335,21 @@ function VariantList({ item }) {
 }
 
 const ProductCard = memo(function ProductCard({ eager, item, priority }) {
+  const hasOptions = item.options.length > 0;
+
   return (
     <article className="item">
       <ProductPhoto eager={eager} item={item} priority={priority} />
-      <h3>{item.name}</h3>
+      <div className="item-heading">
+        <h3>{item.name}</h3>
+        {hasOptions ? null : <strong>{item.price}</strong>}
+      </div>
       <ProductDescription
         description={item.description}
         itemName={item.name}
         slotId={item.id}
       />
-      {item.options.length > 0 ? <VariantList item={item} /> : <strong>{item.price}</strong>}
+      {hasOptions ? <VariantList item={item} /> : null}
     </article>
   );
 });
@@ -323,7 +361,7 @@ const ProductGrid = memo(function ProductGrid({ category, firstCategory }) {
         <ProductCard
           key={item.id}
           item={item}
-          eager={firstCategory && index < 4}
+          eager={firstCategory && index < 2}
           priority={firstCategory && index < 2}
         />
       ))}
@@ -348,6 +386,7 @@ const CategorySection = memo(function CategorySection({
   category,
   enhancedMetalFx,
   firstCategory,
+  metalFxReady,
   reducedMotion,
   registerSection,
 }) {
@@ -360,6 +399,7 @@ const CategorySection = memo(function CategorySection({
       <CategoryHeader
         category={category}
         enhancedMetalFx={enhancedMetalFx}
+        metalFxReady={metalFxReady}
         reducedMotion={reducedMotion}
       />
       {category.layout === "addons" ? (
@@ -451,10 +491,10 @@ const MenuFooter = memo(function MenuFooter() {
 const MenuMasthead = memo(function MenuMasthead() {
   return (
     <header className="menu-masthead">
+      <h1>منوی ال کافه</h1>
       <span className="menu-brand-mark" aria-hidden="true">
         L CAFE
       </span>
-      <h1>منوی ال کافه</h1>
     </header>
   );
 });
@@ -462,6 +502,7 @@ const MenuMasthead = memo(function MenuMasthead() {
 const MenuIndexTrigger = memo(function MenuIndexTrigger({
   activeTitle,
   enhancedMetalFx,
+  metalFxReady,
   navOpen,
   onToggle,
   reducedMotion,
@@ -482,7 +523,7 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
           {activeTitle}
         </span>
       </button>
-      {enhancedMetalFx ? (
+      {enhancedMetalFx && metalFxReady ? (
         <SafeMetalFx
           variant="button"
           preset="silver"
@@ -507,6 +548,7 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
 export function MenuApp({ categories }) {
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
+  const metalFxReady = useDeferredEnhancement(!reducedMotion);
   const [activeId, setActiveId] = useState(() => {
     const hashId = safeHashId();
     return categories.some((category) => category.id === hashId)
@@ -611,6 +653,7 @@ export function MenuApp({ categories }) {
       <MenuIndexTrigger
         activeTitle={activeTitle}
         enhancedMetalFx={enhancedMetalFx}
+        metalFxReady={metalFxReady}
         navOpen={navOpen}
         onToggle={toggleNavigation}
         reducedMotion={reducedMotion}
@@ -624,6 +667,7 @@ export function MenuApp({ categories }) {
             category={category}
             enhancedMetalFx={enhancedMetalFx}
             firstCategory={index === 0}
+            metalFxReady={metalFxReady}
             reducedMotion={reducedMotion}
             registerSection={registerSection}
           />

@@ -15,6 +15,7 @@ const FEATURE_PHOTO_FALLBACK = sitePath(
   "assets/l-cafe-sculptural-light-1280.webp",
 );
 const MENU_HREF = sitePath("menu.html");
+const BRAND_MARK_SRC = sitePath("uploads/L_Cafe_Full_NoTagline_White.svg");
 
 function RevealBlock({ children, className }) {
   const blockRef = useRef(null);
@@ -190,6 +191,24 @@ function Hero({ cueRef, heroRef, phraseRef }) {
   );
 }
 
+function SiteHeader() {
+  return (
+    <header className="site-header">
+      <img
+        className="site-brand"
+        src={BRAND_MARK_SRC}
+        width="107"
+        height="56"
+        alt="ال کافه"
+        decoding="async"
+      />
+      <a className="site-menu-link" href={MENU_HREF}>
+        مشاهده منو
+      </a>
+    </header>
+  );
+}
+
 function EditorialSection({ sectionRef }) {
   return (
     <section ref={sectionRef} className="about" aria-label="درباره ما">
@@ -239,6 +258,8 @@ function FeaturePhoto({ photoRef }) {
             height="992"
             alt="چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده، مقابل دیوارنگاره و گیاهان سالن"
             decoding="async"
+            loading="lazy"
+            fetchPriority="low"
             onLoad={() => setLoaded(true)}
             onError={() => setLoaded(true)}
           />
@@ -334,6 +355,7 @@ export function LandingApp() {
         <a className="skip" href="#about">
           رفتن به محتوای اصلی
         </a>
+        <SiteHeader />
         <Hero cueRef={cueRef} heroRef={heroRef} phraseRef={phraseRef} />
         <main id="about">
           <EditorialSection sectionRef={aboutRef} />
