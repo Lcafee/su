@@ -101,18 +101,19 @@ function square_rendition(GdImage $source, int $size): GdImage
     return $target;
 }
 
-function promote_immutable_file(string $temp, string $final): void
+function promote_immutable_file(string $temp, string $final, int $permissions): void
 {
     if (is_file($final)) {
         unlink($temp);
-        return;
-    }
-    if (!rename($temp, $final)) {
+    } elseif (!rename($temp, $final)) {
         if (is_file($final)) {
             unlink($temp);
-            return;
+        } else {
+            throw new RuntimeException('Could not store an immutable media file.');
         }
-        throw new RuntimeException('Could not store an immutable media file.');
+    }
+    if (!chmod($final, $permissions)) {
+        throw new RuntimeException('Could not set immutable media file permissions.');
     }
 }
 
@@ -186,7 +187,7 @@ function import_media_file(PDO $pdo, array $config, string $tempPath): array
                     throw new RuntimeException('Could not encode a WebP rendition.');
                 }
                 $filename = $sha . '-' . $size . '.webp';
-                promote_immutable_file($temp, $publicDir . DIRECTORY_SEPARATOR . $filename);
+                promote_immutable_file($temp, $publicDir . DIRECTORY_SEPARATOR . $filename, 0644);
                 $filenames[$size] = $filename;
             } finally {
                 if ($rendition instanceof GdImage) {
@@ -210,7 +211,7 @@ function import_media_file(PDO $pdo, array $config, string $tempPath): array
         }
         try {
             write_complete_file($originalTemp, $sourceBytes);
-            promote_immutable_file($originalTemp, $originalPath);
+            promote_immutable_file($originalTemp, $originalPath, 0600);
         } finally {
             if (is_file($originalTemp)) {
                 unlink($originalTemp);
