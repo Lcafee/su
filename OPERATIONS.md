@@ -29,6 +29,12 @@ Last observed on 2026-08-29 (Asia/Tehran):
 - the obsolete GitHub Pages preview was disabled on 2026-08-29 because it served
   a retired Aug 16 build after its workflow had been removed.
 
+The verification client received connection resets after a repeated burst of
+managed-media requests, after the route, snapshot, and full media checks had
+already succeeded. Treat an isolated reset during an audit as inconclusive, not
+as proof that a file is missing. Stop the burst, allow a cooldown, and repeat in
+small sequential batches; do not create a retry storm against the shared host.
+
 DNS addresses and response headers are observations, not configuration truth.
 At the verification time the apex and `ftp.l-cafe.ir` resolved to
 `45.139.11.60`, LiteSpeed served the site, and web PHP reported 8.1.34.
@@ -147,6 +153,9 @@ and verify at minimum:
   deployment unless an independently authorized menu publish occurred;
 - every managed-media URL referenced by that snapshot still returns 200;
 - `GET /api/session` returns 200 with `authenticated: false` when logged out.
+
+Throttle media verification in small batches. If LiteSpeed starts resetting
+connections, stop and retry after a cooldown rather than increasing concurrency.
 
 Do not use an empty local `.deploy-state.json` as evidence of remote drift; it
 only records what that workstation uploaded. Use `--check-remote` or ParsPack
