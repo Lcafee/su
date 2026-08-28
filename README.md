@@ -18,9 +18,9 @@ production release and the deploy tooling will not consume it. No Node server
 is needed in production. The project is pinned to Node 20.19+ or 22.12+ (CI
 uses Node 22), matching the Vite 8 runtime requirement.
 
-`VITE_BASE_PATH` controls the public base and defaults to `/` for the custom
-domain. The manually dispatched GitHub Pages workflow sets it to `/su/` and
-generates an approved artifact for the exact commit entered by the operator.
+`VITE_BASE_PATH` controls the public base and defaults to `/` for the production
+domain. There is no active GitHub Pages deployment; the obsolete preview was
+disabled after its workflow was retired.
 
 Local Vite development and preview serve the tracked
 `src/menu/fixtures/current.json` at the same `managed-menu/current.json` and
@@ -108,6 +108,7 @@ never invoked by a build, release command, Git hook, or GitHub workflow:
 ```sh
 py package.py
 py deploy.py --dry-run
+py deploy.py --check-remote
 py deploy.py
 ```
 
@@ -117,10 +118,16 @@ unknown-commit release artifacts. The internal `.lcafe-build.json` and
 `.lcafe-release.json` manifests are intentionally excluded from the public
 upload ZIP and FTPS upload.
 
+`--dry-run` is a local-only release/upload preview and never reads credentials
+or connects. `--check-remote` connects read-only, confirms the existing target,
+compares every release-owned file by SHA-256, and verifies staging protection;
+it makes no remote change and never writes `.deploy-state.json`.
+
 Deploy-owned temporary files are denied by `.htaccess` before staging begins.
 On a host that still has the older `.htaccess`, the first deploy will stop before
-creating any temporary upload. After confirming the FTP document root with
-`--dry-run`, run the one-time bootstrap explicitly:
+creating any temporary upload. After confirming the FTP document root with the
+read-only `--check-remote` command or the ParsPack file manager, run the one-time
+bootstrap explicitly:
 
 ```sh
 py deploy.py --bootstrap-htaccess
@@ -130,3 +137,7 @@ Future deploys verify the remote protection automatically and clean abandoned
 `.lcafe-uploading` files before and after interrupted deployments. A genuinely
 empty first-upload directory passed with `--new` bootstraps the same protection
 automatically.
+
+The canonical ParsPack runbook, current live-state record, persistent-data
+boundaries, API recovery procedure, and deployment checklist are in
+[`OPERATIONS.md`](OPERATIONS.md).

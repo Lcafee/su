@@ -28,6 +28,10 @@ row manually. The complete operator sequence and host values are documented in
 persistent directories, applies release-owned migrations, and creates the first
 active user with `password_hash(..., PASSWORD_DEFAULT)`.
 
+For an existing production host, use [`../OPERATIONS.md`](../OPERATIONS.md) for
+the current observed state, ParsPack document root and upload methods,
+non-destructive API recovery, and pre/post-deployment checks.
+
 The public snapshot publisher owns `managed-menu/current.json` and
 `managed-menu/previous.json`. Immutable recovery copies live in the private
 snapshot archive. Managed image URLs contain their source hash and are never

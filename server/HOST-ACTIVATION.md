@@ -3,6 +3,10 @@
 This is the one-time operator runbook for a POSIX PHP/MySQL shared host. It does
 not change the application architecture or automate production deployment.
 Release generation and deployment remain separately approved manual actions.
+For an already provisioned host, current production facts, ParsPack access,
+non-destructive recovery, and deployment verification are authoritative in
+[`../OPERATIONS.md`](../OPERATIONS.md). Do not rerun provisioning merely because
+the web-runtime config pointer is missing.
 
 ## Obtain these host values first
 
@@ -86,6 +90,14 @@ The value is a path, not a secret, but it is host-specific and must not be added
 to Git or release-owned `.htaccess` files. The config it points to contains the
 database credentials and remains owner-readable outside the web root.
 
+On ParsPack/LiteSpeed, set this through the provider-supported site/PHP
+environment mechanism and reload the PHP handler if required. Confirm from the
+web runtime, not only a shell: logged-out `GET /api/session` must return HTTP 200
+with `authenticated: false`. A 503 `configuration_unavailable` means
+`getenv('LCAFE_PRIVATE_CONFIG')` is absent/unusable in web PHP. Restore the
+existing path; do not create a replacement config or re-import the menu when
+persistent snapshots/database already exist.
+
 ## 4. Run the one-time legacy migration
 
 Privately stage the current legacy `menu.json` and its referenced menu-image
@@ -119,3 +131,10 @@ Deployment owns application code only. It does not own or prune the database,
 private config, sessions, revision archives, managed snapshots, originals, or
 managed media. Future menu edits use the online admin and publish static data
 without Git, release generation, or deployment.
+
+The live host was already provisioned before 2026-08-29: published revisions 3
+and 4 and their managed media were present. At that verification the API was
+blocked only because web PHP lacked `LCAFE_PRIVATE_CONFIG`; current ParsPack
+control-panel/SSH/FTPS access was unavailable from the repository workspace.
+This is an access/configuration blocker, not evidence that schema or menu data
+should be replaced.

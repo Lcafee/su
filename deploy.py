@@ -23,7 +23,9 @@ from the host except deploy-owned temporary files: a pruning sync can empty
 public_html on a bad day, and the served set otherwise only grows.
 
 Setup:  copy .deploy.ini.example to .deploy.ini and fill it in
-Run after explicit release approval/generation:  py deploy.py [--all] [--dry-run]
+Local release preview (no connection):           py deploy.py --dry-run
+Read-only approved-release/live comparison:      py deploy.py --check-remote
+Run after explicit deployment authorization:     py deploy.py [--all]
 First deploy from an older .htaccess: confirm the target, then use
                               py deploy.py --bootstrap-htaccess
 """
@@ -273,6 +275,31 @@ def digest(path):
     return h.hexdigest()
 
 
+def bytes_digest(payload):
+    """Return the SHA-256 of bytes already retrieved from the host."""
+    return hashlib.sha256(payload).hexdigest()
+
+
+def check_remote_release(ftp, names, local):
+    """Compare the complete approved served set without changing remote state."""
+    matched = []
+    missing = []
+    mismatched = []
+    for index, name in enumerate(names, 1):
+        payload = read_remote_file(ftp, name)
+        if payload is None:
+            missing.append(name)
+            result = "missing/unreadable"
+        elif bytes_digest(payload) != local[name]:
+            mismatched.append(name)
+            result = "DIFFERS"
+        else:
+            matched.append(name)
+            result = "matches"
+        print("  checked [%d/%d] %s: %s" % (index, len(names), name, result))
+    return matched, missing, mismatched
+
+
 def load_state():
     if not os.path.isfile(STATE):
         return {}
@@ -396,12 +423,47 @@ def enter_target(ftp, directory):
     return here
 
 
+def run_remote_check(ftp, conf, names, local):
+    """Audit the approved served set and close the read-only FTPS session."""
+    try:
+        directory = conf["directory"].rstrip("/") or "."
+        here = enter_target(ftp, directory)
+        print("deploy: connected read-only to %s at %s" % (conf["host"], here))
+        protected = remote_staging_protected(ftp)
+        print(
+            "deploy: staging protection %s"
+            % ("verified" if protected else "MISSING OR UNREADABLE")
+        )
+        matched, missing, mismatched = check_remote_release(ftp, names, local)
+    finally:
+        try:
+            ftp.quit()
+        except (ftplib.Error, OSError):
+            pass
+
+    print(
+        "deploy: remote comparison: %d match, %d missing/unreadable, %d differ"
+        % (len(matched), len(missing), len(mismatched))
+    )
+    if not protected or missing or mismatched:
+        fail(
+            "remote state does not exactly match the approved release; "
+            "nothing was changed"
+        )
+    print("deploy: remote served set exactly matches the approved release")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Upload the site to the host.")
     ap.add_argument("--all", action="store_true",
                     help="upload every file, ignoring the change record")
     ap.add_argument("--dry-run", action="store_true",
-                    help="show what would be uploaded and stop")
+                    help="locally show what would be uploaded; never connect")
+    ap.add_argument(
+        "--check-remote",
+        action="store_true",
+        help="connect read-only and compare every approved release file with the host",
+    )
     ap.add_argument("--new", action="store_true",
                     help="allow uploading into a directory the site is not in yet")
     ap.add_argument(
@@ -413,6 +475,11 @@ def main():
         ),
     )
     args = ap.parse_args()
+
+    if args.check_remote and any(
+        (args.all, args.dry_run, args.new, args.bootstrap_htaccess)
+    ):
+        fail("--check-remote cannot be combined with upload options")
 
     guard_untracked()
     try:
@@ -433,16 +500,17 @@ def main():
         key=deploy_order_key,
     )
 
-    if not changed:
+    if not changed and not args.check_remote:
         print("deploy: nothing changed since the last upload")
         return
 
-    print("deploy: %d of %d files to upload" % (len(changed), len(names)))
-    for name in changed:
-        print("  " + name)
-    if args.dry_run:
-        print("deploy: dry run, nothing sent")
-        return
+    if not args.check_remote:
+        print("deploy: %d of %d files to upload" % (len(changed), len(names)))
+        for name in changed:
+            print("  " + name)
+        if args.dry_run:
+            print("deploy: local dry run, no host connection attempted")
+            return
 
     # Read last, so --dry-run answers "what would go up" before any credentials
     # exist - which is the run you want available while still setting this up.
@@ -453,6 +521,10 @@ def main():
             "the transfer is encrypted but the server identity is not verified."
         )
     ftp = connect(conf)
+    if args.check_remote:
+        run_remote_check(ftp, conf, names, local)
+        return
+
     sent = 0
     try:
         directory = conf["directory"].rstrip("/") or "."
