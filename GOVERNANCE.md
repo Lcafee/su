@@ -66,10 +66,17 @@ record or host configuration, never in Git.
 - Release generation, deployment, production access, and menu publication each
   require their own explicit authorization.
 
-## Pending GitHub governance
+## GitHub governance
 
-Repository visibility and lightweight protection for `main` remain explicit
-future decisions. P1-A does not change GitHub settings or require a pull-request
-workflow. No tracked `.github/` policy or workflow currently exists. The remote
-`backup-remote` branch is intentionally preserved without rewrite, deletion,
-tagging, or other mutation.
+`Lcafee/su` is private. Normal direct pushes to `main` remain allowed. The
+current GitHub plan does not provide branch deletion or force-push protection
+for this private repository, so those safeguards are not active. This is an
+accepted residual governance risk and does not block continued development.
+
+No pull-request requirement, approval requirement, CI, required status check,
+workflow, merge queue, or deployment automation was added. No tracked
+`.github/` policy or workflow currently exists. Revisit branch protection only
+if the GitHub plan changes.
+
+The remote `backup-remote` branch remains intentionally preserved without
+rewrite, deletion, tagging, or other mutation.
