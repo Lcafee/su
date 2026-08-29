@@ -14,6 +14,8 @@ const FEATURE_PHOTO_SRC_SET = [
 const FEATURE_PHOTO_FALLBACK = sitePath(
   "assets/l-cafe-sculptural-light-1280.webp",
 );
+const FEATURE_PHOTO_ALT =
+  "چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده، مقابل دیوارنگاره و گیاهان سالن";
 const MENU_HREF =
   import.meta.env.BASE_URL === "/"
     ? sitePath("menu")
@@ -82,6 +84,15 @@ function useHeroMotion({
     let zones = [];
     let lastPhraseOpacity = -1;
     let lastFieldOpacity = -1;
+    const motionPreference = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    );
+
+    const showStaticHero = () => {
+      phrase.style.opacity = "1";
+      field.style.opacity = "1";
+      if (cueRef.current) cueRef.current.style.opacity = "0.74";
+    };
 
     const fieldStrength = (pageY) => {
       if (!zones.length || pageY <= zones[0].y) return zones[0]?.value ?? 1;
@@ -103,6 +114,11 @@ function useHeroMotion({
 
     const paint = () => {
       animationFrame = 0;
+      if (motionPreference?.matches) {
+        showStaticHero();
+        return;
+      }
+
       const progress = Math.min(1, Math.max(0, window.scrollY / fadeEnd));
       const eased = progress * progress * (3 - 2 * progress);
       const phraseOpacity = 1 - eased;
@@ -125,7 +141,23 @@ function useHeroMotion({
     };
 
     const schedulePaint = () => {
+      if (motionPreference?.matches) return;
       if (!animationFrame) animationFrame = window.requestAnimationFrame(paint);
+    };
+
+    const handleMotionPreferenceChange = () => {
+      if (motionPreference?.matches) {
+        if (animationFrame) {
+          window.cancelAnimationFrame(animationFrame);
+          animationFrame = 0;
+        }
+        showStaticHero();
+        return;
+      }
+
+      lastPhraseOpacity = -1;
+      lastFieldOpacity = -1;
+      schedulePaint();
     };
 
     const midpoint = (element, fallback) => {
@@ -159,12 +191,18 @@ function useHeroMotion({
 
     window.addEventListener("scroll", schedulePaint, { passive: true });
     window.addEventListener("resize", measure);
+    motionPreference?.addEventListener?.("change", handleMotionPreferenceChange);
     document.fonts?.ready.then(measure).catch(() => {});
-    measure();
+    if (motionPreference?.matches) showStaticHero();
+    else measure();
 
     return () => {
       window.removeEventListener("scroll", schedulePaint);
       window.removeEventListener("resize", measure);
+      motionPreference?.removeEventListener?.(
+        "change",
+        handleMotionPreferenceChange,
+      );
       resizeObserver?.disconnect();
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
     };
@@ -211,10 +249,12 @@ function EditorialSection({ sectionRef }) {
 
 function FeaturePhoto({ photoRef }) {
   const imageRef = useRef(null);
-  const [loaded, setLoaded] = useState(false);
+  const [imageState, setImageState] = useState("loading");
 
   useEffect(() => {
-    if (imageRef.current?.complete) setLoaded(true);
+    const image = imageRef.current;
+    if (!image?.complete) return;
+    setImageState(image.naturalWidth > 0 ? "loaded" : "error");
   }, []);
 
   return (
@@ -222,13 +262,16 @@ function FeaturePhoto({ photoRef }) {
       ref={photoRef}
       className="photo t-skel"
       data-armed=""
-      data-revealed={loaded ? "" : undefined}
-      data-state={loaded ? "loaded" : "loading"}
+      data-revealed={imageState !== "loading" ? "" : undefined}
+      data-state={imageState}
     >
       <div className="t-skel-skeleton is-pulsing" aria-hidden="true">
         <span />
       </div>
-      <div className="t-skel-content">
+      <div
+        className="t-skel-content"
+        aria-hidden={imageState === "error" ? "true" : undefined}
+      >
         <picture>
           <source
             srcSet={FEATURE_PHOTO_SRC_SET}
@@ -240,15 +283,26 @@ function FeaturePhoto({ photoRef }) {
             src={FEATURE_PHOTO_FALLBACK}
             width="1586"
             height="992"
-            alt="چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده، مقابل دیوارنگاره و گیاهان سالن"
+            alt={FEATURE_PHOTO_ALT}
             decoding="async"
             loading="lazy"
             fetchPriority="low"
-            onLoad={() => setLoaded(true)}
-            onError={() => setLoaded(true)}
+            onLoad={() => setImageState("loaded")}
+            onError={() => setImageState("error")}
           />
         </picture>
       </div>
+      {imageState === "error" ? (
+        <div
+          className="photo-fallback"
+          role="img"
+          aria-label={`${FEATURE_PHOTO_ALT}؛ تصویر در دسترس نیست`}
+        >
+          <span className="photo-fallback-mark" lang="en" dir="ltr" aria-hidden="true">
+            L CAFE
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -285,22 +339,28 @@ function ClosingSection({ footerRef }) {
             </p>
             <p className="contact-hours">ساعت ۷ تا ۲۳</p>
           </div>
-          <div className="contact-links">
-            <a href="tel:+989130005767">
+          <div className="contact-links" aria-label="راه‌های ارتباطی">
+            <a
+              className="contact-link contact-link--phone"
+              href="tel:+989130005767"
+            >
               <bdi dir="ltr">09130005767</bdi>
             </a>
             <a
+              className="contact-link"
               href="https://www.google.com/maps/dir/?api=1&destination=32.6399905%2C51.6666685"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="مسیر ال کافه روی گوگل مپ (در برگه جدید باز می‌شود)"
             >
               مسیر روی نقشه
             </a>
             <a
+              className="contact-link"
               href="https://www.instagram.com/lcafe.esf/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="اینستاگرام ال کافه"
+              aria-label="اینستاگرام ال کافه، lcafe.esf (در برگه جدید باز می‌شود)"
             >
               <bdi>@lcafe.esf</bdi>
             </a>

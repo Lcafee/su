@@ -5,6 +5,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -157,6 +158,43 @@ function safeHashId() {
   } catch {
     return "";
   }
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .normalize("NFKC")
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+    .replace(/[يى]/g, "ی")
+    .replace(/ك/g, "ک")
+    .replace(/[\u200c\u200d]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLocaleLowerCase("fa");
+}
+
+function filterMenuCategories(categories, query) {
+  if (!query) return categories;
+
+  return categories.flatMap((category) => {
+    const categoryText = normalizeSearchText(
+      [category.title, category.intro].filter(Boolean).join(" "),
+    );
+    const categoryMatches = categoryText.includes(query);
+    const items = categoryMatches
+      ? category.items
+      : category.items.filter((item) => {
+          const optionLabels = item.options
+            ?.map((option) => option.label)
+            .filter(Boolean)
+            .join(" ");
+          const itemText = normalizeSearchText(
+            [item.name, item.description, optionLabels].filter(Boolean).join(" "),
+          );
+          return itemText.includes(query);
+        });
+
+    return items.length > 0 ? [{ ...category, items }] : [];
+  });
 }
 
 function useMediaQuery(queryText) {
@@ -340,16 +378,18 @@ const ProductCard = memo(function ProductCard({ eager, item, priority }) {
   return (
     <article className="item">
       <ProductPhoto eager={eager} item={item} priority={priority} />
-      <div className="item-heading">
-        <h3>{item.name}</h3>
-        {hasOptions ? null : <strong>{item.price}</strong>}
+      <div className="item-body">
+        <div className="item-heading">
+          <h3>{item.name}</h3>
+          {hasOptions ? null : <strong>{item.price}</strong>}
+        </div>
+        <ProductDescription
+          description={item.description}
+          itemName={item.name}
+          slotId={item.id}
+        />
+        {hasOptions ? <VariantList item={item} /> : null}
       </div>
-      <ProductDescription
-        description={item.description}
-        itemName={item.name}
-        slotId={item.id}
-      />
-      {hasOptions ? <VariantList item={item} /> : null}
     </article>
   );
 });
@@ -450,7 +490,10 @@ function CategoryNavigation({
               onClick={(event) => onSelect(event, category.id)}
             >
               <i aria-hidden="true" />
-              <span>{category.title}</span>
+              <span className="category-link-title">{category.title}</span>
+              <span className="category-link-count" aria-hidden="true">
+                {category.items.length.toLocaleString("fa-IR")}
+              </span>
             </a>
           );
         })}
@@ -458,6 +501,41 @@ function CategoryNavigation({
     </nav>
   );
 }
+
+const MenuSearch = memo(function MenuSearch({
+  onChange,
+  onClear,
+  onFocus,
+  query,
+}) {
+  return (
+    <div className="menu-search" role="search">
+      <label className="sr-only" htmlFor="menu-search-input">
+        جست‌وجو در منو
+      </label>
+      <input
+        id="menu-search-input"
+        type="search"
+        value={query}
+        autoComplete="off"
+        enterKeyHint="search"
+        placeholder="جست‌وجو در منو"
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={onFocus}
+      />
+      {query ? (
+        <button
+          className="menu-search-clear"
+          type="button"
+          aria-label="پاک کردن جست‌وجو"
+          onClick={onClear}
+        >
+          پاک
+        </button>
+      ) : null}
+    </div>
+  );
+});
 
 const MenuFooter = memo(function MenuFooter() {
   return (
@@ -545,10 +623,11 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
   );
 });
 
-export function MenuApp({ categories }) {
+export function MenuApp({ categories, onRefresh, snapshotSource = "current" }) {
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
   const metalFxReady = useDeferredEnhancement(!reducedMotion);
+  const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState(() => {
     const hashId = safeHashId();
     return categories.some((category) => category.id === hashId)
@@ -560,6 +639,23 @@ export function MenuApp({ categories }) {
   const linkRefs = useRef(new Map());
   const navRef = useRef(null);
   const triggerRef = useRef(null);
+  const discoveryRef = useRef(null);
+  const searchFeedbackRef = useRef(null);
+  const pendingCategoryRef = useRef(null);
+  const initialHashHandledRef = useRef(false);
+  const normalizedQuery = useMemo(() => normalizeSearchText(query), [query]);
+  const filteredCategories = useMemo(
+    () => filterMenuCategories(categories, normalizedQuery),
+    [categories, normalizedQuery],
+  );
+  const resultCount = useMemo(
+    () => filteredCategories.reduce(
+      (total, category) => total + category.items.length,
+      0,
+    ),
+    [filteredCategories],
+  );
+  const searching = normalizedQuery.length > 0;
 
   const registerSection = useCallback((id, node) => {
     if (node) sectionRefs.current.set(id, node);
@@ -572,6 +668,17 @@ export function MenuApp({ categories }) {
       window.requestAnimationFrame(() => triggerRef.current?.focus());
     }
   }, []);
+
+  const scrollToCategory = useCallback(
+    (id, { behavior = reducedMotion ? "auto" : "smooth", focus = true } = {}) => {
+      const section = sectionRefs.current.get(id);
+      if (!section) return false;
+      if (focus) section.querySelector("h2")?.focus({ preventScroll: true });
+      section.scrollIntoView({ behavior, block: "start" });
+      return true;
+    },
+    [reducedMotion],
+  );
 
   useEffect(() => {
     if (!("IntersectionObserver" in window)) return undefined;
@@ -589,7 +696,17 @@ export function MenuApp({ categories }) {
 
     for (const section of sectionRefs.current.values()) observer.observe(section);
     return () => observer.disconnect();
-  }, []);
+  }, [filteredCategories]);
+
+  useEffect(() => {
+    const pending = pendingCategoryRef.current;
+    if (!pending) return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      if (scrollToCategory(pending.id, pending)) pendingCategoryRef.current = null;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [filteredCategories, scrollToCategory]);
 
   useEffect(() => {
     if (!navOpen) return undefined;
@@ -599,7 +716,7 @@ export function MenuApp({ categories }) {
     const onPointerDown = (event) => {
       if (
         navRef.current?.contains(event.target) ||
-        triggerRef.current?.contains(event.target)
+        discoveryRef.current?.contains(event.target)
       ) {
         return;
       }
@@ -620,23 +737,88 @@ export function MenuApp({ categories }) {
     };
   }, [activeId, closeNavigation, navOpen]);
 
+  useEffect(() => {
+    const syncFromLocation = () => {
+      const hashId = safeHashId();
+      const id = categories.some((category) => category.id === hashId)
+        ? hashId
+        : (!hashId ? categories[0]?.id : "");
+      if (!id) return;
+
+      const navigation = { id, behavior: "auto", focus: false };
+      setActiveId(id);
+      closeNavigation(false);
+      if (searching) {
+        pendingCategoryRef.current = navigation;
+        setQuery("");
+      } else if (!scrollToCategory(id, navigation)) {
+        pendingCategoryRef.current = navigation;
+      }
+    };
+
+    window.addEventListener("popstate", syncFromLocation);
+    window.addEventListener("hashchange", syncFromLocation);
+    if (!initialHashHandledRef.current) {
+      initialHashHandledRef.current = true;
+      if (window.location.hash) syncFromLocation();
+    }
+    return () => {
+      window.removeEventListener("popstate", syncFromLocation);
+      window.removeEventListener("hashchange", syncFromLocation);
+    };
+  }, [categories, closeNavigation, scrollToCategory, searching]);
+
+  const changeQuery = useCallback(
+    (nextQuery) => {
+      const startingSearch = !normalizedQuery && Boolean(normalizeSearchText(nextQuery));
+      setQuery(nextQuery);
+      closeNavigation(false);
+      if (startingSearch) {
+        window.requestAnimationFrame(() => {
+          searchFeedbackRef.current?.scrollIntoView({
+            behavior: reducedMotion ? "auto" : "smooth",
+            block: "start",
+          });
+        });
+      }
+    },
+    [closeNavigation, normalizedQuery, reducedMotion],
+  );
+
+  const clearSearch = useCallback(() => {
+    const id = categories.some((category) => category.id === activeId)
+      ? activeId
+      : categories[0]?.id;
+    if (id) {
+      pendingCategoryRef.current = { id, behavior: "auto", focus: false };
+    }
+    setQuery("");
+  }, [activeId, categories]);
+
   const selectCategory = useCallback(
     (event, id) => {
       event.preventDefault();
-      const section = sectionRefs.current.get(id);
-      if (!section) return;
+      if (!categories.some((category) => category.id === id)) return;
+
+      const navigation = {
+        id,
+        behavior: reducedMotion ? "auto" : "smooth",
+        focus: true,
+      };
       setActiveId(id);
       closeNavigation(false);
-      window.history.pushState(null, "", `#${id}`);
-      section.querySelector("h2")?.focus({ preventScroll: true });
-      section.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
-        block: "start",
-      });
+      const nextHash = `#${encodeURIComponent(id)}`;
+      if (window.location.hash !== nextHash) {
+        window.history.pushState(null, "", nextHash);
+      }
+      if (searching) {
+        pendingCategoryRef.current = navigation;
+        setQuery("");
+      } else if (!scrollToCategory(id, navigation)) {
+        pendingCategoryRef.current = navigation;
+      }
     },
-    [closeNavigation],
+    [categories, closeNavigation, reducedMotion, scrollToCategory, searching],
   );
 
   const activeTitle =
@@ -650,18 +832,68 @@ export function MenuApp({ categories }) {
       <a className="skip" href="#menu">
         رفتن به منو
       </a>
-      <MenuIndexTrigger
-        activeTitle={activeTitle}
-        enhancedMetalFx={enhancedMetalFx}
-        metalFxReady={metalFxReady}
-        navOpen={navOpen}
-        onToggle={toggleNavigation}
-        reducedMotion={reducedMotion}
-        triggerRef={triggerRef}
-      />
+      <div ref={discoveryRef} className="menu-discovery">
+        <MenuSearch
+          query={query}
+          onChange={changeQuery}
+          onClear={clearSearch}
+          onFocus={() => closeNavigation(false)}
+        />
+        <MenuIndexTrigger
+          activeTitle={activeTitle}
+          enhancedMetalFx={enhancedMetalFx}
+          metalFxReady={metalFxReady}
+          navOpen={navOpen}
+          onToggle={toggleNavigation}
+          reducedMotion={reducedMotion}
+          triggerRef={triggerRef}
+        />
+      </div>
       <main id="menu">
         <MenuMasthead />
-        {categories.map((category, index) => (
+        {snapshotSource === "previous" ? (
+          <aside
+            className="menu-fallback-notice"
+            aria-labelledby="menu-fallback-title"
+          >
+            <div>
+              <h2 id="menu-fallback-title">آخرین نسخه ذخیره‌شده</h2>
+              <p>نسخه تازه منو موقتاً در دسترس نیست؛ آخرین نسخه ذخیره‌شده نمایش داده می‌شود.</p>
+            </div>
+            {onRefresh ? (
+              <button type="button" onClick={onRefresh}>
+                به‌روزرسانی منو
+              </button>
+            ) : null}
+          </aside>
+        ) : null}
+        <div
+          ref={searchFeedbackRef}
+          className="menu-search-feedback"
+          aria-live="polite"
+          aria-atomic="true"
+          hidden={!searching}
+        >
+          {resultCount > 0 ? (
+            <div className="menu-results-note">
+              <p>
+                <strong>{resultCount.toLocaleString("fa-IR")}</strong> مورد برای «{query.trim()}»
+              </p>
+              <button type="button" onClick={clearSearch}>
+                نمایش همه
+              </button>
+            </div>
+          ) : (
+            <div className="menu-no-results">
+              <h2>موردی پیدا نشد</h2>
+              <p>نام دیگری را امتحان کنید یا همه منو را ببینید.</p>
+              <button type="button" onClick={clearSearch}>
+                نمایش همه منو
+              </button>
+            </div>
+          )}
+        </div>
+        {filteredCategories.map((category, index) => (
           <CategorySection
             key={category.id}
             category={category}

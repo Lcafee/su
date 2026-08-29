@@ -1,16 +1,22 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { ItemCard } from "./ItemCard";
 
+const faNumber = new Intl.NumberFormat("fa-IR");
+
 function CategoryCardComponent({
   category,
+  visibleItems,
   index,
   categoryCount,
   categoryChoices,
   disabled,
+  reorderDisabled,
+  autoExpand,
   advanced,
+  focusTarget,
   uploadingIds,
   onUpdateCategory,
   onUpdateItem,
@@ -20,6 +26,7 @@ function CategoryCardComponent({
   onCreateItem,
 }) {
   const [expanded, setExpanded] = useState(Boolean(category._expanded) || index === 0);
+  const categoryTitleRef = useRef(null);
   const dragId = `category:${category.id}`;
   const {
     attributes,
@@ -31,13 +38,34 @@ function CategoryCardComponent({
   } = useSortable({
     id: dragId,
     data: { type: "category", categoryId: category.id },
-    disabled,
+    disabled: disabled || reorderDisabled,
   });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-  const itemDragIds = category.items.map((item) => `item:${item.id}`);
+  const itemDragIds = visibleItems.map((item) => `item:${item.id}`);
+
+  useEffect(() => {
+    const targetsCategory = focusTarget?.type === "category" && focusTarget.id === category.id;
+    const targetsItem = focusTarget?.type === "item" && focusTarget.categoryId === category.id;
+    if (!targetsCategory && !targetsItem) return undefined;
+    setExpanded(true);
+    if (!targetsCategory) return undefined;
+    const frame = requestAnimationFrame(() => {
+      categoryTitleRef.current?.focus();
+      categoryTitleRef.current?.select();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [category.id, focusTarget]);
+
+  useEffect(() => {
+    if (autoExpand) setExpanded(true);
+  }, [autoExpand]);
+
+  const countLabel = visibleItems.length === category.items.length
+    ? `${faNumber.format(category.items.length)} آیتم`
+    : `${faNumber.format(visibleItems.length)} از ${faNumber.format(category.items.length)} آیتم`;
 
   return (
     <section
@@ -50,8 +78,8 @@ function CategoryCardComponent({
           type="button"
           className="drag-handle category-drag-handle"
           aria-label={`جابجایی دسته ${category.title}`}
-          title="برای جابجایی دسته بکشید"
-          disabled={disabled}
+          title={reorderDisabled ? "برای جابجایی، همه موارد را نمایش دهید" : "برای جابجایی دسته بکشید"}
+          disabled={disabled || reorderDisabled}
           {...attributes}
           {...listeners}
         >
@@ -67,7 +95,7 @@ function CategoryCardComponent({
             <strong>{category.title || "دسته بدون نام"}</strong>
             {category.archived ? <span className="archive-badge">آرشیو شده</span> : null}
           </span>
-          <span className="category-count">{category.items.length} آیتم</span>
+          <span className="category-count">{countLabel}</span>
           <span className="chevron" aria-hidden="true">{expanded ? "−" : "+"}</span>
         </button>
         <div className="category-header-actions">
@@ -76,14 +104,14 @@ function CategoryCardComponent({
             className="icon-button"
             aria-label="انتقال دسته به بالا"
             onClick={() => onMoveCategoryByOffset(category.id, -1)}
-            disabled={disabled || index === 0}
+            disabled={disabled || reorderDisabled || index === 0}
           >↑</button>
           <button
             type="button"
             className="icon-button"
             aria-label="انتقال دسته به پایین"
             onClick={() => onMoveCategoryByOffset(category.id, 1)}
-            disabled={disabled || index === categoryCount - 1}
+            disabled={disabled || reorderDisabled || index === categoryCount - 1}
           >↓</button>
           <button
             type="button"
@@ -105,6 +133,7 @@ function CategoryCardComponent({
             <label>
               <span>نام دسته</span>
               <input
+                ref={categoryTitleRef}
                 dir="auto"
                 value={category.title}
                 onChange={(event) => onUpdateCategory(category.id, { title: event.target.value })}
@@ -112,8 +141,12 @@ function CategoryCardComponent({
                 maxLength="191"
               />
             </label>
-            {advanced ? (
-              <>
+          </div>
+
+          {advanced ? (
+            <details className="owner-settings">
+              <summary>تنظیمات پیشرفته مالک</summary>
+              <div className="category-fields owner-settings-fields">
                 <label>
                   <span>نوع نمایش</span>
                   <select
@@ -125,7 +158,7 @@ function CategoryCardComponent({
                     <option value="addons">فهرست افزودنی‌ها</option>
                   </select>
                 </label>
-                <label className="wide-field">
+                <label>
                   <span>توضیح کوتاه دسته</span>
                   <textarea
                     dir="auto"
@@ -136,34 +169,40 @@ function CategoryCardComponent({
                     maxLength="4000"
                   />
                 </label>
-              </>
-            ) : null}
-          </div>
+              </div>
+            </details>
+          ) : null}
 
           <div className="category-item-actions">
             <button
               type="button"
               className="secondary-button"
               onClick={() => onCreateItem(category.id)}
-              disabled={disabled}
+              disabled={disabled || category.archived}
             >
-              + آیتم جدید
+              آیتم جدید در این دسته
             </button>
           </div>
 
           <SortableContext items={itemDragIds} strategy={verticalListSortingStrategy}>
             <div className="item-list">
-              {category.items.length === 0 ? (
-                <p className="empty-category">این دسته خالی است. یک آیتم جدید بسازید یا آیتمی را از دسته دیگر به اینجا منتقل کنید.</p>
+              {visibleItems.length === 0 ? (
+                <p className="empty-category">
+                  {category.items.length === 0
+                    ? "این دسته خالی است. یک آیتم جدید بسازید یا آیتمی را از دسته دیگر منتقل کنید."
+                    : "در فیلتر فعلی آیتمی از این دسته نمایش داده نمی‌شود."}
+                </p>
               ) : null}
-              {category.items.map((item) => (
+              {visibleItems.map((item) => (
                 <ItemCard
                   key={item.id}
                   item={item}
                   categoryId={category.id}
                   categoryChoices={categoryChoices}
                   disabled={disabled}
+                  reorderDisabled={reorderDisabled}
                   advanced={advanced}
+                  focusTarget={focusTarget}
                   uploading={uploadingIds.has(item.id)}
                   onUpdate={onUpdateItem}
                   onMove={onMoveItem}

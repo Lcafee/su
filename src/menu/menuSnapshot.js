@@ -67,10 +67,16 @@ async function fetchSnapshot(url) {
 
 async function fetchManagedSnapshot() {
   try {
-    return await fetchSnapshot(CURRENT_SNAPSHOT_URL);
+    return {
+      snapshot: await fetchSnapshot(CURRENT_SNAPSHOT_URL),
+      source: "current",
+    };
   } catch (currentError) {
     try {
-      return await fetchSnapshot(PREVIOUS_SNAPSHOT_URL);
+      return {
+        snapshot: await fetchSnapshot(PREVIOUS_SNAPSHOT_URL),
+        source: "previous",
+      };
     } catch (previousError) {
       throw new AggregateError(
         [currentError, previousError],
@@ -82,7 +88,7 @@ async function fetchManagedSnapshot() {
 
 let snapshotRequest;
 
-export function loadMenuSnapshot() {
-  if (!snapshotRequest) snapshotRequest = fetchManagedSnapshot();
+export function loadMenuSnapshot({ force = false } = {}) {
+  if (force || !snapshotRequest) snapshotRequest = fetchManagedSnapshot();
   return snapshotRequest;
 }

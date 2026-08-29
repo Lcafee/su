@@ -15,6 +15,7 @@ import {
   cloneDocument,
   createCategory,
   createItem,
+  documentChangeCount,
   documentCounts,
   editableSignature,
   firstDocumentIssue,
@@ -94,6 +95,8 @@ export function AdminApp() {
   const [uploadingIds, setUploadingIds] = useState(() => new Set());
   const [notice, setNotice] = useState(null);
   const [conflict, setConflict] = useState(null);
+  const [undoState, setUndoState] = useState(null);
+  const [focusTarget, setFocusTarget] = useState(null);
 
   const applyEditorData = useCallback(({ menu, publishStatus: nextStatus }) => {
     setSavedDocument(cloneDocument(menu));
@@ -101,6 +104,8 @@ export function AdminApp() {
     setPublishStatus(nextStatus);
     setConflict(null);
     setNotice(null);
+    setUndoState(null);
+    setFocusTarget(null);
   }, []);
 
   const initialize = useCallback(async () => {
@@ -148,8 +153,12 @@ export function AdminApp() {
     [categoryChoiceSignature],
   );
   const counts = useMemo(() => (draft ? documentCounts(draft) : null), [draft]);
+  const changeCount = useMemo(
+    () => documentChangeCount(draft, savedDocument),
+    [draft, savedDocument],
+  );
   const uploadInProgress = uploadingIds.size > 0;
-  const editorDisabled = saving || uploadInProgress || conflict !== null;
+  const editorDisabled = saving || conflict !== null;
   const isOwner = session?.user?.role === "owner";
 
   const handleSessionExpiry = useCallback((error) => {
@@ -180,15 +189,47 @@ export function AdminApp() {
   const mutateDraft = useCallback((updater) => {
     setDraft((current) => updater(current));
     setNotice(null);
+    setUndoState(null);
   }, []);
 
   const handleUpdateCategory = useCallback((categoryId, patch) => {
+    if (Object.prototype.hasOwnProperty.call(patch, "archived") && draft) {
+      const category = draft.categories.find((candidate) => candidate.id === categoryId);
+      if (!category) return;
+      const activeItemCount = category.items.filter((item) => !item.archived).length;
+      if (
+        patch.archived
+        && activeItemCount > 0
+        && !window.confirm(`با آرشیو این دسته، ${new Intl.NumberFormat("fa-IR").format(activeItemCount)} آیتم فعال از منوی عمومی پنهان می‌شود. ادامه می‌دهید؟`)
+      ) {
+        return;
+      }
+      setUndoState({
+        document: cloneDocument(draft),
+        message: patch.archived ? `دسته «${category.title}» آرشیو شد.` : `دسته «${category.title}» بازگردانده شد.`,
+      });
+      setDraft(updateCategory(draft, categoryId, patch));
+      setNotice(null);
+      return;
+    }
     mutateDraft((current) => updateCategory(current, categoryId, patch));
-  }, [mutateDraft]);
+  }, [draft, mutateDraft]);
 
   const handleUpdateItem = useCallback((categoryId, itemId, patch) => {
+    if (Object.prototype.hasOwnProperty.call(patch, "archived") && draft) {
+      const category = draft.categories.find((candidate) => candidate.id === categoryId);
+      const item = category?.items.find((candidate) => candidate.id === itemId);
+      if (!item) return;
+      setUndoState({
+        document: cloneDocument(draft),
+        message: patch.archived ? `آیتم «${item.name}» آرشیو شد.` : `آیتم «${item.name}» بازگردانده شد.`,
+      });
+      setDraft(updateItem(draft, categoryId, itemId, patch));
+      setNotice(null);
+      return;
+    }
     mutateDraft((current) => updateItem(current, categoryId, itemId, patch));
-  }, [mutateDraft]);
+  }, [draft, mutateDraft]);
 
   const handleMoveCategory = useCallback((categoryId, overCategoryId) => {
     mutateDraft((current) => moveCategory(current, categoryId, overCategoryId));
@@ -203,12 +244,22 @@ export function AdminApp() {
   }, [mutateDraft]);
 
   const handleCreateCategory = useCallback(() => {
-    mutateDraft((current) => createCategory(current).document);
-  }, [mutateDraft]);
+    if (!draft) return;
+    const result = createCategory(draft);
+    setDraft(result.document);
+    setFocusTarget({ type: "category", id: result.categoryId });
+    setNotice(null);
+    setUndoState(null);
+  }, [draft]);
 
   const handleCreateItem = useCallback((categoryId) => {
-    mutateDraft((current) => createItem(current, categoryId).document);
-  }, [mutateDraft]);
+    if (!draft) return;
+    const result = createItem(draft, categoryId);
+    setDraft(result.document);
+    setFocusTarget({ type: "item", id: result.itemId, categoryId });
+    setNotice(null);
+    setUndoState(null);
+  }, [draft]);
 
   const handleUpload = useCallback(async (categoryId, itemId, file) => {
     setUploadingIds((current) => new Set(current).add(itemId));
@@ -235,13 +286,27 @@ export function AdminApp() {
 
   const handleDiscard = useCallback(() => {
     if (!savedDocument) return;
+    if (!window.confirm(`همه ${new Intl.NumberFormat("fa-IR").format(changeCount)} تغییر ذخیره‌نشده پاک شود؟`)) return;
     setDraft(cloneDocument(savedDocument));
     setConflict(null);
+    setUndoState(null);
+    setFocusTarget(null);
     setNotice({ tone: "neutral", message: "تغییرات ذخیره‌نشده پاک شد." });
-  }, [savedDocument]);
+  }, [changeCount, savedDocument]);
+
+  const handleUndo = useCallback(() => {
+    if (!undoState) return;
+    setDraft(cloneDocument(undoState.document));
+    setUndoState(null);
+    setNotice({ tone: "neutral", message: "آخرین تغییر برگردانده شد." });
+  }, [undoState]);
 
   const handleSave = useCallback(async () => {
-    if (!draft || !hasUnsavedChanges || uploadInProgress) return;
+    if (!draft || !hasUnsavedChanges) return;
+    if (uploadInProgress) {
+      setNotice({ tone: "pending", message: "پس از پایان بارگذاری تصویرها می‌توانید ذخیره کنید." });
+      return;
+    }
     const documentIssue = firstDocumentIssue(draft);
     if (documentIssue) {
       setNotice({ tone: "error", message: documentIssue });
@@ -259,6 +324,7 @@ export function AdminApp() {
       setDraft(nextDocument);
       setSavedDocument(cloneDocument(nextDocument));
       setConflict(null);
+      setUndoState(null);
       setPublishStatus({
         editRevision: result.revision,
         publishedRevision: result.published ? result.revision : draft.publishedRevision,
@@ -282,7 +348,18 @@ export function AdminApp() {
     }
   }, [draft, handleSessionExpiry, hasUnsavedChanges, session, uploadInProgress]);
 
+  useEffect(() => {
+    function handleSaveShortcut(event) {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "s") return;
+      event.preventDefault();
+      handleSave();
+    }
+    window.addEventListener("keydown", handleSaveShortcut);
+    return () => window.removeEventListener("keydown", handleSaveShortcut);
+  }, [handleSave]);
+
   const handleReloadAfterConflict = useCallback(async () => {
+    if (!window.confirm("نسخه جدید بارگذاری شود؟ تغییرات فعلی شما از صفحه کنار گذاشته می‌شود؛ در صورت نیاز ابتدا نسخه خود را دانلود کنید.")) return;
     setSaving(true);
     try {
       applyEditorData(await fetchEditorData());
@@ -295,6 +372,18 @@ export function AdminApp() {
       setSaving(false);
     }
   }, [applyEditorData, handleSessionExpiry]);
+
+  const handleDownloadConflictDraft = useCallback(() => {
+    if (!draft) return;
+    const blob = new Blob([JSON.stringify(toSavePayload(draft), null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `l-cafe-menu-local-revision-${draft.revision}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setNotice({ tone: "neutral", message: "یک نسخه از تغییرات فعلی شما دانلود شد." });
+  }, [draft]);
 
   const handleRetryPublish = useCallback(async () => {
     setRetrying(true);
@@ -345,7 +434,6 @@ export function AdminApp() {
         <div className="brand-lockup">
           <div className="brand-mark small" aria-hidden="true">L</div>
           <div>
-            <p className="eyebrow">ال کافه</p>
             <h1>مدیریت منو</h1>
           </div>
         </div>
@@ -357,7 +445,14 @@ export function AdminApp() {
 
       <main className="admin-main">
         {isOwner ? (
-          <>
+          <section className="owner-workspace" aria-labelledby="owner-tools-title">
+            <div className="owner-workspace-heading">
+              <div>
+                <h2 id="owner-tools-title">کنترل مالک</h2>
+                <p>وضعیت انتشار و تنظیمات پیشرفته فقط در حساب مالک نمایش داده می‌شود.</p>
+              </div>
+              <span className="role-chip">دسترسی کامل</span>
+            </div>
             <section className="overview" aria-label="خلاصه منو">
               <div><strong>{counts.categories}</strong><span>دسته‌بندی</span></div>
               <div><strong>{counts.activeItems}</strong><span>آیتم فعال</span></div>
@@ -366,22 +461,34 @@ export function AdminApp() {
             </section>
 
             <PublishPanel status={publishStatus} retrying={retrying} onRetry={handleRetryPublish} />
-          </>
+          </section>
         ) : null}
 
         {notice ? (
           <p className={`notice tone-${notice.tone}`} role="status">{notice.message}</p>
         ) : null}
 
+        {undoState ? (
+          <section className="undo-panel" role="status">
+            <span>{undoState.message}</span>
+            <button type="button" className="quiet-button" onClick={handleUndo}>واگردانی</button>
+          </section>
+        ) : null}
+
         {conflict ? (
           <section className="conflict-panel" role="alert">
             <div>
               <strong>نسخه جدیدتری از منو ذخیره شده است</strong>
-              <p>برای جلوگیری از پاک شدن تغییرات جدید، ذخیره متوقف شد. تغییرات فعلی شما تا زمان بارگذاری مجدد روی صفحه می‌ماند.</p>
+              <p>ذخیره متوقف شد و تغییرات شما روی همین صفحه حفظ شده است. پیش از بارگذاری نسخه جدید می‌توانید یک نسخه از کار خود دانلود کنید.</p>
             </div>
-            <button type="button" className="primary-button" onClick={handleReloadAfterConflict} disabled={saving}>
-              بارگذاری نسخه جدید و کنار گذاشتن تغییرات من
-            </button>
+            <div className="conflict-actions">
+              <button type="button" className="quiet-button" onClick={handleDownloadConflictDraft} disabled={saving}>
+                دانلود تغییرات من
+              </button>
+              <button type="button" className="primary-button" onClick={handleReloadAfterConflict} disabled={saving}>
+                بارگذاری نسخه جدید
+              </button>
+            </div>
           </section>
         ) : null}
 
@@ -391,6 +498,7 @@ export function AdminApp() {
           uploadingIds={uploadingIds}
           disabled={editorDisabled}
           advanced={isOwner}
+          focusTarget={focusTarget}
           onUpdateCategory={handleUpdateCategory}
           onUpdateItem={handleUpdateItem}
           onMoveCategory={handleMoveCategory}
@@ -405,7 +513,11 @@ export function AdminApp() {
       <footer className="save-bar">
         <div className="save-state">
           <span className={`dirty-dot${hasUnsavedChanges ? " is-dirty" : ""}`} aria-hidden="true" />
-          <span>{hasUnsavedChanges ? "تغییرات ذخیره‌نشده دارید" : "همه تغییرات ذخیره شده‌اند"}</span>
+          <span>
+            {hasUnsavedChanges
+              ? `${new Intl.NumberFormat("fa-IR").format(changeCount)} بخش تغییر کرده و ذخیره نشده است`
+              : "همه تغییرات ذخیره شده‌اند"}
+          </span>
         </div>
         <div className="save-actions">
           <button
@@ -421,8 +533,13 @@ export function AdminApp() {
             className="primary-button"
             onClick={handleSave}
             disabled={!hasUnsavedChanges || saving || uploadInProgress || conflict !== null}
+            title="ذخیره و انتشار (Ctrl+S)"
           >
-            {saving ? "در حال ذخیره…" : uploadInProgress ? "منتظر بارگذاری تصویر…" : "ذخیره و انتشار"}
+            {saving
+              ? "در حال ذخیره و انتشار…"
+              : uploadInProgress
+                ? `در حال بارگذاری ${new Intl.NumberFormat("fa-IR").format(uploadingIds.size)} تصویر…`
+                : "ذخیره و انتشار"}
           </button>
         </div>
       </footer>

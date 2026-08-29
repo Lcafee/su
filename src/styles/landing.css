@@ -7,9 +7,15 @@
   --ink-soft:rgba(243,241,236,.72);
   --line:rgba(243,241,236,.35);
   --gutter:clamp(20px,6vw,80px);
+  --copy-size:clamp(15px,calc(.65vw + 12.6px),17px);
+  --copy-leading:2.05;
+  --meta-size:clamp(13px,1.2vw,14px);
+  --utility-size:clamp(12px,1.1vw,13.5px);
+  --utility-leading:1.65;
   /* The landing now moves as one editorial sequence. This single shared gap
      keeps adjacent moments connected without reintroducing section-sized voids. */
   --flow:clamp(52px,7vw,80px);
+  --flow-close:clamp(72px,9vw,108px);
   --tile:clamp(200px,46vw,346px);
 
   /* One restrained motion voice for copy, image arrival and page handoff. */
@@ -73,15 +79,20 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 .page{position:relative;z-index:2;background:transparent}
 
-.hero{position:relative;margin:0;width:100%;height:100vh;height:100svh;
+.hero{position:relative;margin:0;width:100%;min-height:100vh;min-height:100svh;
+  padding-top:max(18px,env(safe-area-inset-top,0px));
+  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
+  padding-bottom:max(18px,env(safe-area-inset-bottom,0px));
+  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
   display:flex;align-items:center;justify-content:center}
 .hero-phrase{display:block;
-  width:min(88vw,1080px);max-width:11.5ch;margin-inline:auto;
-  font:600 clamp(40px,10vw,96px)/.96 'Fahkwang',var(--font);
+  width:min(100%,1080px);max-width:11.5ch;margin-inline:auto;
+  font:600 clamp(36px,min(10vw,11svh),96px)/.98 'Fahkwang',var(--font);
   letter-spacing:clamp(.045em,.18vw,.085em);color:var(--ink);
   text-align:center;text-wrap:balance;white-space:normal}
-.scroll-cue{position:absolute;bottom:clamp(22px,4svh,36px);left:50%;
-  width:2px;height:clamp(94px,14svh,136px);transform:translateX(-50%);
+.scroll-cue{position:absolute;
+  bottom:max(clamp(18px,3svh,30px),env(safe-area-inset-bottom,0px));left:50%;
+  width:2px;height:clamp(72px,12svh,116px);transform:translateX(-50%);
   opacity:.74;overflow:hidden;pointer-events:none}
 .scroll-cue-line{display:block;position:absolute;inset:0;background:rgba(243,241,236,.38)}
 .scroll-cue-line::after{content:"";position:absolute;top:0;left:0;width:2px;height:42%;
@@ -92,7 +103,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   72%,100%{transform:translate3d(0,250%,0)}
 }
 
-.body{margin:0;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
+.body{margin:0;font:400 var(--copy-size)/var(--copy-leading) var(--font);color:var(--ink-strong)}
 
 /* The introduction is composed as headline plus reading column on wide screens,
    and folds back to one measured column on mobile. */
@@ -111,7 +122,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   font-weight:700;font-size:clamp(34px,4.4vw,56px);line-height:1.34;
   color:var(--ink);text-wrap:balance}
 .about-body{width:min(100%,40ch);margin:0;font-family:var(--font);font-weight:400;
-  font-size:clamp(15px,calc(.65vw + 12.6px),17px);line-height:2.05;color:var(--ink-strong)}
+  font-size:var(--copy-size);line-height:var(--copy-leading);color:var(--ink-strong)}
 
 /* The photo is the page's single light moment. Inset on the start side — the
    right, in RTL — so a strip of the field survives at the reading origin and
@@ -130,7 +141,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    With the ratio matched, object-fit:cover is a no-op and stays only as a
    guard — contain would letterbox on the maroon and read as a bug. */
 .photo{aspect-ratio:1586/992;background:var(--ink);overflow:hidden;
-  margin-block-start:var(--flow);margin-block-end:clamp(72px,9vw,112px);
+  margin-block-start:var(--flow);margin-block-end:var(--flow-close);
   margin-inline-start:clamp(0px,8vw,140px)}
 
 /* The menu entry is a quiet handoff, not another display-heading moment. Its
@@ -138,7 +149,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .menu{
   padding:0 max(var(--gutter),env(safe-area-inset-left,0px));
   padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  margin:0 auto clamp(64px,8.5vw,100px);
+  margin:0 auto var(--flow-close);
   max-width:1180px;
   text-align:center;
 }
@@ -169,16 +180,17 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   letter-spacing:-.005em;color:var(--ink);text-wrap:balance}
 .contact-body{min-width:0;display:grid;grid-template-columns:minmax(240px,1fr) auto;
   gap:clamp(16px,3vw,36px);align-items:start}
-.contact-location{min-width:0}
+.contact-location{min-width:0;display:grid;gap:2px}
 .contact-address{max-width:34ch;margin:0;color:var(--ink-strong);
-  font:400 clamp(13px,1.2vw,14px)/1.85 var(--font)}
-.contact-hours{margin:4px 0 0;color:var(--ink-soft);
-  font:400 clamp(12px,1.1vw,13.5px)/1.65 var(--font)}
-.contact-links{display:flex;flex-wrap:wrap;align-items:flex-start;
-  justify-content:flex-start;gap:0 clamp(12px,1.8vw,18px)}
+  font:400 var(--meta-size)/1.85 var(--font)}
+.contact-hours{margin:0;color:var(--ink-soft);
+  font:400 var(--utility-size)/var(--utility-leading) var(--font)}
+.contact-links{display:grid;grid-template-columns:repeat(2,max-content);
+  align-items:center;justify-content:start;column-gap:clamp(12px,1.8vw,18px)}
 .contact a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-soft);
-  font:400 clamp(12px,1.1vw,13.5px)/1.5 var(--font);
+  font:400 var(--utility-size)/1.5 var(--font);white-space:nowrap;
   text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line)}
+.contact-link--phone{grid-column:1/-1;color:var(--ink)!important;font-weight:500!important}
 
 /* Unified landing motion */
 /* transitions.dev — texts reveal (18). Each copy block's lines rise out of a
@@ -244,6 +256,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    on .photo is what has to be updated to match. */
 .t-skel-content>picture{display:block;width:100%;height:100%}
 .t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover;object-position:46% 48%}
+.photo-fallback{position:absolute;inset:0;z-index:3;display:grid;place-items:center;
+  background:var(--ink);color:var(--bg)}
+.photo-fallback-mark{font:600 clamp(30px,7vw,68px)/1 'Fahkwang',var(--font);
+  letter-spacing:.16em;text-indent:.16em}
 .t-skel-skeleton{
   z-index:1;
   opacity:1;
@@ -290,6 +306,8 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 
 @media (prefers-reduced-motion:reduce){
+  .field,.hero-phrase{opacity:1!important}
+  .scroll-cue{opacity:.74!important}
   .mark{transform:translate3d(-50%,0,0) !important}
   .scroll-cue-line::after{display:none}
   .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
@@ -297,6 +315,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 @media (max-width:640px){
+  :root{--flow-close:clamp(72px,20vw,84px)}
   .about .inner{display:block}
   .about-headline{margin-bottom:clamp(20px,6vw,26px)}
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
@@ -311,16 +330,18 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      own ratio is 238px on a 375px phone: shorter than 62vh and the whole
      picture. If it needs to be taller than that, it needs a taller photograph,
      not a narrower crop of this one. */
-  .photo{margin-block-start:var(--flow);
-    margin-block-end:clamp(72px,20vw,84px);margin-inline-start:0}
-  .menu{margin-bottom:clamp(64px,18vw,76px)}
+  .photo{margin-block-start:var(--flow);margin-inline-start:0}
   .contact{padding-top:0}
   .contact .inner{grid-template-columns:minmax(84px,.42fr) minmax(0,1fr);
     gap:clamp(12px,3.6vw,16px) clamp(14px,4vw,18px);
     padding-top:clamp(18px,5.5vw,22px)}
   .contact-body{display:block}
   .contact-title{font-size:clamp(19px,5.5vw,22px);line-height:1.35}
-  .contact-address{font-size:clamp(12.5px,3.5vw,13.5px);line-height:1.8}
-  .contact-links{margin-top:2px;column-gap:clamp(8px,2vw,10px)}
+  .contact-address{font-size:var(--meta-size);line-height:1.8}
+  .contact-links{margin-top:4px;column-gap:clamp(10px,3vw,14px)}
   .mark{height:108vh;top:-4vh}
+}
+@media (max-height:520px){
+  .hero-phrase{max-width:13ch;font-size:clamp(32px,min(9vw,10svh),56px);line-height:1}
+  .scroll-cue{bottom:max(10px,env(safe-area-inset-bottom,0px));height:clamp(48px,10svh,64px)}
 }

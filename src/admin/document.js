@@ -66,6 +66,69 @@ export function editableSignature(document) {
   return JSON.stringify(toSavePayload(document));
 }
 
+function comparableCategory(category) {
+  return {
+    title: category.title,
+    intro: category.intro,
+    layout: category.layout,
+    archived: category.archived,
+  };
+}
+
+function comparableItem(item, categoryId, sortOrder) {
+  return {
+    categoryId,
+    sortOrder,
+    name: item.name,
+    description: item.description,
+    price: item.price,
+    mediaId: item.mediaId,
+    metadata: item.metadata,
+    archived: item.archived,
+    options: item.options,
+  };
+}
+
+export function documentChangeCount(document, savedDocument) {
+  if (!document || !savedDocument) return 0;
+
+  let count = 0;
+  const currentCategoryOrder = document.categories.map((category) => category.id);
+  const savedCategoryOrder = savedDocument.categories.map((category) => category.id);
+  if (JSON.stringify(currentCategoryOrder) !== JSON.stringify(savedCategoryOrder)) count += 1;
+
+  const currentCategories = new Map(document.categories.map((category) => [category.id, category]));
+  const savedCategories = new Map(savedDocument.categories.map((category) => [category.id, category]));
+  const categoryIds = new Set([...currentCategories.keys(), ...savedCategories.keys()]);
+  for (const categoryId of categoryIds) {
+    const current = currentCategories.get(categoryId);
+    const saved = savedCategories.get(categoryId);
+    if (!current || !saved || JSON.stringify(comparableCategory(current)) !== JSON.stringify(comparableCategory(saved))) {
+      count += 1;
+    }
+  }
+
+  const collectItems = (source) => {
+    const items = new Map();
+    for (const category of source.categories) {
+      category.items.forEach((item, index) => {
+        items.set(item.id, comparableItem(item, category.id, index));
+      });
+    }
+    return items;
+  };
+  const currentItems = collectItems(document);
+  const savedItems = collectItems(savedDocument);
+  const itemIds = new Set([...currentItems.keys(), ...savedItems.keys()]);
+  for (const itemId of itemIds) {
+    if (JSON.stringify(currentItems.get(itemId)) !== JSON.stringify(savedItems.get(itemId))) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
 export function firstDocumentIssue(document) {
   for (const category of document.categories) {
     if (!category.title.trim()) return "نام همه دسته‌بندی‌ها باید وارد شود.";
