@@ -9,6 +9,7 @@ function ItemCardComponent({
   categoryId,
   categoryChoices,
   disabled,
+  advanced,
   uploading,
   onUpdate,
   onMove,
@@ -160,12 +161,16 @@ function ItemCardComponent({
           </label>
         </div>
 
-        <MetadataEditor
-          metadata={item.metadata}
-          onChange={(metadata) => update({ metadata })}
-        />
-        {item.options.length > 0 ? (
-          <p className="preserved-note">{item.options.length} گزینه قیمت این آیتم بدون تغییر حفظ می‌شود.</p>
+        {advanced ? (
+          <>
+            <MetadataEditor
+              metadata={item.metadata}
+              onChange={(metadata) => update({ metadata })}
+            />
+            {item.options.length > 0 ? (
+              <p className="preserved-note">{item.options.length} گزینه قیمت این آیتم بدون تغییر حفظ می‌شود.</p>
+            ) : null}
+          </>
         ) : null}
       </div>
     </article>

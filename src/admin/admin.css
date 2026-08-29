@@ -544,6 +544,12 @@ small {
   padding: 18px;
 }
 
+.category-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
 .category-fields,
 .field-grid {
   display: grid;

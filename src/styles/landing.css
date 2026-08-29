@@ -73,41 +73,11 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 
 .page{position:relative;z-index:2;background:transparent}
 
-.site-header{
-  position:absolute;
-  top:0;
-  right:0;
-  left:0;
-  z-index:4;
-  width:min(100%,1180px);
-  min-height:72px;
-  margin:0 auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:24px;
-  padding-top:max(14px,env(safe-area-inset-top,0px));
-  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
-}
-.site-brand{display:block;width:auto;height:34px}
-.site-menu-link{
-  min-height:44px;
-  display:inline-flex;
-  align-items:center;
-  padding:2px 0 0;
-  border-bottom:1px solid var(--line);
-  color:var(--ink);
-  font:500 clamp(12.5px,3.4vw,14px)/1 var(--font);
-  text-decoration:none;
-  transition:border-color 180ms var(--motion-ease),color 180ms var(--motion-ease);
-}
-
 .hero{position:relative;margin:0;width:100%;height:100vh;height:100svh;
   display:flex;align-items:center;justify-content:center}
-.hero-phrase{display:block;transform:translateY(-2svh);
-  width:min(88vw,1080px);max-width:11.5ch;
-  font:600 clamp(40px,10vw,96px)/.96 var(--font);
+.hero-phrase{display:block;
+  width:min(88vw,1080px);max-width:11.5ch;margin-inline:auto;
+  font:600 clamp(40px,10vw,96px)/.96 'Fahkwang',var(--font);
   letter-spacing:clamp(.045em,.18vw,.085em);color:var(--ink);
   text-align:center;text-wrap:balance;white-space:normal}
 .scroll-cue{position:absolute;bottom:clamp(22px,4svh,36px);left:50%;
@@ -315,7 +285,6 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 
 @media (hover:hover) and (pointer:fine){
-  .site-menu-link:hover{border-color:var(--ink)}
   .cta:hover{background:rgba(243,241,236,.88);color:var(--bg)}
   .contact a:hover{color:var(--ink);text-decoration-color:var(--ink)}
 }
@@ -328,8 +297,6 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 @media (max-width:640px){
-  .site-header{min-height:64px;padding-top:max(10px,env(safe-area-inset-top,0px))}
-  .site-brand{height:30px}
   .about .inner{display:block}
   .about-headline{margin-bottom:clamp(20px,6vw,26px)}
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px

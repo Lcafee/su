@@ -10,12 +10,14 @@ function CategoryCardComponent({
   categoryCount,
   categoryChoices,
   disabled,
+  advanced,
   uploadingIds,
   onUpdateCategory,
   onUpdateItem,
   onMoveItem,
   onUpload,
   onMoveCategoryByOffset,
+  onCreateItem,
 }) {
   const [expanded, setExpanded] = useState(Boolean(category._expanded) || index === 0);
   const dragId = `category:${category.id}`;
@@ -110,34 +112,49 @@ function CategoryCardComponent({
                 maxLength="191"
               />
             </label>
-            <label>
-              <span>نوع نمایش</span>
-              <select
-                value={category.layout}
-                onChange={(event) => onUpdateCategory(category.id, { layout: event.target.value })}
-                disabled={disabled}
-              >
-                <option value="grid">کارت‌های منو</option>
-                <option value="addons">فهرست افزودنی‌ها</option>
-              </select>
-            </label>
-            <label className="wide-field">
-              <span>توضیح کوتاه دسته</span>
-              <textarea
-                dir="auto"
-                rows="2"
-                value={category.intro ?? ""}
-                onChange={(event) => onUpdateCategory(category.id, { intro: event.target.value || null })}
-                disabled={disabled}
-                maxLength="4000"
-              />
-            </label>
+            {advanced ? (
+              <>
+                <label>
+                  <span>نوع نمایش</span>
+                  <select
+                    value={category.layout}
+                    onChange={(event) => onUpdateCategory(category.id, { layout: event.target.value })}
+                    disabled={disabled}
+                  >
+                    <option value="grid">کارت‌های منو</option>
+                    <option value="addons">فهرست افزودنی‌ها</option>
+                  </select>
+                </label>
+                <label className="wide-field">
+                  <span>توضیح کوتاه دسته</span>
+                  <textarea
+                    dir="auto"
+                    rows="2"
+                    value={category.intro ?? ""}
+                    onChange={(event) => onUpdateCategory(category.id, { intro: event.target.value || null })}
+                    disabled={disabled}
+                    maxLength="4000"
+                  />
+                </label>
+              </>
+            ) : null}
+          </div>
+
+          <div className="category-item-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => onCreateItem(category.id)}
+              disabled={disabled}
+            >
+              + آیتم جدید
+            </button>
           </div>
 
           <SortableContext items={itemDragIds} strategy={verticalListSortingStrategy}>
             <div className="item-list">
               {category.items.length === 0 ? (
-                <p className="empty-category">این دسته خالی است. یک آیتم را اینجا بکشید یا از انتخاب‌گر دسته استفاده کنید.</p>
+                <p className="empty-category">این دسته خالی است. یک آیتم جدید بسازید یا آیتمی را از دسته دیگر به اینجا منتقل کنید.</p>
               ) : null}
               {category.items.map((item) => (
                 <ItemCard
@@ -146,6 +163,7 @@ function CategoryCardComponent({
                   categoryId={category.id}
                   categoryChoices={categoryChoices}
                   disabled={disabled}
+                  advanced={advanced}
                   uploading={uploadingIds.has(item.id)}
                   onUpdate={onUpdateItem}
                   onMove={onMoveItem}

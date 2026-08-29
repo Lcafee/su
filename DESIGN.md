@@ -87,7 +87,8 @@ accent.
 
 Sahel is used only at its shipped 700 weight for display moments and category
 headings. Vazirmatn carries body copy, item names, prices, controls, and Latin
-brand text. Both are self-hosted with swap behavior.
+brand text. Fahkwang SemiBold is reserved for the landing's `YOUR DAILY PAUSE`
+phrase. All three are self-hosted with swap behavior.
 
 On Menu mobile:
 
@@ -103,8 +104,9 @@ unit, separator, or inferred value.
 ## Landing composition
 
 The opening is a full small-viewport-height hero with the English phrase at
-center and a quiet vertical scroll cue. The fixed brand field and mark handoff
-are atmospheric but never gate readable content.
+center in Fahkwang SemiBold and a quiet vertical scroll cue. It intentionally
+has no top logo or menu control. The fixed brand field is atmospheric but never
+gates readable content.
 
 The editorial introduction becomes one column below 640px. The café image is
 full-bleed on mobile and retains its intrinsic `1586 / 992` ratio; it is not
@@ -118,9 +120,10 @@ The Menu canvas is ivory from edge to edge. Content is width-constrained to
 `900px`, but no central wrapper paints a separate background, border, radius,
 or shadow.
 
-The opening brand signature is deliberately small: a single baseline row with
-“منوی ال کافه” and the Latin `L CAFE` mark, divided from the first category by
-one hairline. It is an orientation mark, not a second hero.
+The opening signature is deliberately small: a `بازگشت` link to the landing
+page and the standalone Latin `L` mark share one baseline row, divided from the
+first category by one hairline. It is navigation and orientation, not a second
+hero.
 
 Every category retains the existing two-column product grid. Mobile grid
 columns never collapse or reflow; only spacing and tile radii tighten. Menu
@@ -226,7 +229,8 @@ geometry. No measured benefit currently outweighs those interaction risks.
 
 ## Guardrails
 
-- Do not change `menu.json` to solve layout problems.
+- Do not change the managed menu, development fixture, or archived menu inputs
+  to solve layout problems.
 - Do not collapse or restructure the two-column product grid on mobile.
 - Do not turn the Menu masthead into a hero.
 - Do not place Metal-FX around a category, header, card, grid, navigation

@@ -488,12 +488,12 @@ const MenuFooter = memo(function MenuFooter() {
   );
 });
 
-const MenuMasthead = memo(function MenuMasthead() {
+export const MenuMasthead = memo(function MenuMasthead() {
   return (
     <header className="menu-masthead">
-      <h1>منوی ال کافه</h1>
+      <a className="menu-back-link" href={sitePath("index.html")}>بازگشت</a>
       <span className="menu-brand-mark" aria-hidden="true">
-        L CAFE
+        L
       </span>
     </header>
   );

@@ -46,7 +46,6 @@ const buildInputFiles = [
   "admin/index.html",
   "index.html",
   "menu.html",
-  "menu.json",
   "package.json",
   "package-lock.json",
   "robots.txt",

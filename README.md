@@ -25,8 +25,8 @@ disabled after its workflow was retired.
 Local Vite development and preview serve the tracked
 `src/menu/fixtures/current.json` at the same `managed-menu/current.json` and
 `previous.json` paths used in production. No local database or PHP runtime is
-required. Regenerate that preview fixture from the legacy reference with
-`npm run menu:fixture`.
+required. The fixture is a self-contained development artifact and is not
+generated from, or synchronized with, production menu data.
 
 ## Public routes
 
@@ -34,6 +34,12 @@ required. Regenerate that preview fixture from the legacy reference with
 - `/menu` — Menu (canonical public URL; Apache/LiteSpeed serves the internal
   `menu.html` build entry and permanently redirects legacy `/menu.html` visits)
 - `/admin/` — separately built authenticated menu editor
+
+The admin has two database-backed roles. Owners receive the complete editor and
+publish-recovery controls. Cashiers retain normal category, item, price, media,
+ordering, archive, save, and publish work while advanced category fields, item
+metadata/options, and publish retry remain owner-only. PHP enforces this
+boundary independently of the React UI.
 
 Vite builds both HTML files as separate React entry points. The physical
 `menu.html` file remains an internal static-hosting detail; public links, QR
@@ -47,24 +53,16 @@ codes, metadata, and crawlers use `/menu`.
 - `src/styles/` preserves the approved visual system.
 - MySQL is authoritative for edited menu data; the public menu fetches only
   persistent `managed-menu/current.json`, then `previous.json` as recovery.
-- `menu.json` is legacy migration/reference input and is not a public runtime
-  data source.
-- `managed-media/` is persistent runtime storage. Legacy menu images remain in
-  source for migration/local preview, but production releases ship only the
-  code-owned placeholder from that legacy set.
+- `managed-media/` is persistent runtime storage. Production releases ship only
+  the code-owned placeholder from the historical local menu-image set.
 
-The superseded generated-HTML toolchain is isolated under
-`legacy/retired-generated-frontend/` for recoverable historical reference. It
-is not part of the build and is not an alternative source of truth.
+The superseded generated frontend and the pre-admin JSON/Excel/import/generator
+toolchain are isolated under `legacy/` for recoverable historical reference.
+They are not build, release, provisioning, deployment, or menu-editing inputs.
 
 The current Menu renders the thin `metal-fx` category rule for every category.
 The effect is decorative and capability-gated: the content remains ordinary
 React/CSS when WebGL is unavailable or Metal-FX initialization fails.
-
-`L_Cafe_Menu_Content.xlsx` is a historical generated view of the legacy
-`menu.json`, not a second source of truth. The optional Python maintenance
-utilities use the packages pinned in `requirements-tools.txt`; they are not
-production dependencies.
 
 ## Source and release workflow
 
@@ -137,6 +135,10 @@ Future deploys verify the remote protection automatically and clean abandoned
 `.lcafe-uploading` files before and after interrupted deployments. A genuinely
 empty first-upload directory passed with `--new` bootstraps the same protection
 automatically.
+
+Host-specific PHP runtime settings remain outside release ownership. Never add
+the private-config path or another host-only runtime override to a generated
+release.
 
 The canonical ParsPack runbook, current live-state record, persistent-data
 boundaries, API recovery procedure, and deployment checklist are in

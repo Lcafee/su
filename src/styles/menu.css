@@ -220,18 +220,19 @@ a:focus-visible,button:focus-visible{
   padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
   border-bottom:1px solid var(--line);
 }
-.menu-masthead h1{
+.menu-back-link{
   margin:0;
   color:var(--ink);
   font:700 clamp(16px,4.2vw,19px)/1.45 var(--display);
+  text-decoration:none;
   text-wrap:balance;
 }
 .menu-brand-mark{
   direction:ltr;
   flex:0 0 auto;
   color:var(--ink-soft);
-  font:600 9px/1 var(--font);
-  letter-spacing:.16em;
+  font:600 20px/1 var(--font);
+  letter-spacing:0;
   white-space:nowrap;
 }
 

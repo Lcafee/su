@@ -18,7 +18,6 @@ const MENU_HREF =
   import.meta.env.BASE_URL === "/"
     ? sitePath("menu")
     : "https://l-cafe.ir/menu";
-const BRAND_MARK_SRC = sitePath("uploads/L_Cafe_Full_NoTagline_White.svg");
 
 function RevealBlock({ children, className }) {
   const blockRef = useRef(null);
@@ -194,24 +193,6 @@ function Hero({ cueRef, heroRef, phraseRef }) {
   );
 }
 
-function SiteHeader() {
-  return (
-    <header className="site-header">
-      <img
-        className="site-brand"
-        src={BRAND_MARK_SRC}
-        width="107"
-        height="56"
-        alt="ال کافه"
-        decoding="async"
-      />
-      <a className="site-menu-link" href={MENU_HREF}>
-        مشاهده منو
-      </a>
-    </header>
-  );
-}
-
 function EditorialSection({ sectionRef }) {
   return (
     <section ref={sectionRef} className="about" aria-label="درباره ما">
@@ -309,7 +290,7 @@ function ClosingSection({ footerRef }) {
               <bdi dir="ltr">09130005767</bdi>
             </a>
             <a
-              href="https://maps.app.goo.gl/UcyaTAH42vChA7RA9"
+              href="https://www.google.com/maps/dir/?api=1&destination=32.6399905%2C51.6666685"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -358,7 +339,6 @@ export function LandingApp() {
         <a className="skip" href="#about">
           رفتن به محتوای اصلی
         </a>
-        <SiteHeader />
         <Hero cueRef={cueRef} heroRef={heroRef} phraseRef={phraseRef} />
         <main id="about">
           <EditorialSection sectionRef={aboutRef} />

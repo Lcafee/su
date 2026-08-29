@@ -19,6 +19,7 @@ export function MenuEditor({
   categoryChoices,
   uploadingIds,
   disabled,
+  advanced,
   onUpdateCategory,
   onUpdateItem,
   onMoveCategory,
@@ -26,6 +27,7 @@ export function MenuEditor({
   onMoveItem,
   onUpload,
   onCreateCategory,
+  onCreateItem,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -78,12 +80,14 @@ export function MenuEditor({
               categoryCount={document.categories.length}
               categoryChoices={categoryChoices}
               disabled={disabled}
+              advanced={advanced}
               uploadingIds={uploadingIds}
               onUpdateCategory={onUpdateCategory}
               onUpdateItem={onUpdateItem}
               onMoveItem={onMoveItem}
               onUpload={onUpload}
               onMoveCategoryByOffset={onMoveCategoryByOffset}
+              onCreateItem={onCreateItem}
             />
           ))}
         </div>

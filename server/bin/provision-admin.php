@@ -81,7 +81,7 @@ try {
     fwrite(STDOUT, $result['adminCreated']
         ? "Created the initial active admin account.\n"
         : "An active admin account already exists; accounts were not modified.\n");
-    fwrite(STDOUT, "Next: set the web runtime LCAFE_PRIVATE_CONFIG path, then run the legacy importer.\n");
+    fwrite(STDOUT, "Next: set the web runtime LCAFE_PRIVATE_CONFIG path, then create menu content in the admin.\n");
     exit(0);
 } catch (Throwable $exception) {
     fwrite(STDERR, 'Provisioning stopped: ' . $exception->getMessage() . "\n");

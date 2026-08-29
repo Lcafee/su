@@ -49,7 +49,7 @@ That private activation bundle contains the PHP application and non-secret
 config template at its root, plus `bin/` and `migrations/`. It contains no live
 config, credentials, menu data, or runtime files.
 
-## 2. Provision persistent storage, schema, and the first admin
+## 2. Provision persistent storage, schema, and the first owner
 
 From the private activation bundle, run this single interactive command. Use
 the host's real absolute paths; quote an option if its path contains spaces.
@@ -58,7 +58,7 @@ the host's real absolute paths; quote an option if its path contains spaces.
 php bin/provision-admin.php \
   --config=/home/account/private/lcafe/config.php \
   --private-root=/home/account/private/lcafe \
-  --document-root=/home/account/l-cafe.ir \
+  --document-root=/home/account/public_html \
   --origin=https://l-cafe.ir
 ```
 
@@ -69,7 +69,7 @@ The command:
 - creates the external config only if absent and never overwrites it;
 - refuses a non-empty database that has no L Cafe migration history;
 - applies the release-owned SQL migrations in order;
-- prompts twice for the initial admin password and stores only
+- prompts twice for the initial owner password and stores only
   `password_hash(..., PASSWORD_DEFAULT)`; and
 - is safe to rerun after a partial stop: existing migration markers and an
   existing active administrator are left unchanged.
@@ -86,42 +86,51 @@ Using the host's provider-supported site environment configuration, set:
 LCAFE_PRIVATE_CONFIG=/home/account/private/lcafe/config.php
 ```
 
-The value is a path, not a secret, but it is host-specific and must not be added
-to Git or release-owned `.htaccess` files. The config it points to contains the
-database credentials and remains owner-readable outside the web root.
+The value is a path, not a secret, but it is host-specific and should normally
+be stored in the provider-managed domain/PHP layer rather than release-owned
+files. The config it points to contains database credentials and remains
+owner-readable outside the web root.
 
-On ParsPack/LiteSpeed, set this through the provider-supported site/PHP
-environment mechanism and reload the PHP handler if required. Confirm from the
-web runtime, not only a shell: logged-out `GET /api/session` must return HTTP 200
-with `authenticated: false`. A 503 `configuration_unavailable` means
-`getenv('LCAFE_PRIVATE_CONFIG')` is absent/unusable in web PHP. Restore the
-existing path; do not create a replacement config or re-import the menu when
-persistent snapshots/database already exist.
+For cPanel on LiteSpeed/LSPHP, do not assume `.user.ini` is active. LiteSpeed
+normally consumes cPanel PHP overrides from `.htaccess`; `.user.ini` requires
+the provider to enable `LSPHP_ENABLE_USER_INI`. Prefer the provider-supported
+MultiPHP/LSAPI configuration and recycle only the PHP handler if that mechanism
+requires it. Confirm from the web runtime, not only a shell: logged-out
+`GET /api/session` must return HTTP 200 with `authenticated: false`. A 503
+`configuration_unavailable` means `getenv('LCAFE_PRIVATE_CONFIG')` remains
+absent/unusable in web PHP. Restore the existing path; do not create a
+replacement config or re-import the menu when persistent snapshots/database
+already exist.
 
-## 4. Run the one-time legacy migration
+Current ParsPack details and the temporary marked host-only `.htaccess` recovery
+block are recorded in `../OPERATIONS.md`. Because `.htaccess` is otherwise
+release-owned, do not deploy over that block or normalize the difference until
+the pointer is moved to a provider-managed layer or preservation is explicitly
+approved.
 
-Privately stage the current legacy `menu.json` and its referenced menu-image
-directory without placing either under release ownership. Then run the existing
-importer from the same private activation bundle:
+## 4. Create additional role-assigned accounts
+
+Migration `002_admin_roles` preserves every pre-role account as an owner. Create
+the cashier, or another owner when required, from the same private activation
+bundle:
 
 ```text
-php bin/import-legacy-menu.php \
+php bin/create-admin-user.php \
   --config=/home/account/private/lcafe/config.php \
-  --menu=/absolute/private-staging/menu.json \
-  --images=/absolute/private-staging/assets/menu/opt \
-  --confirm-empty-import
+  --username=account-name \
+  --role=cashier
 ```
 
-The image path may point to the legacy `assets/menu` directory instead. The
-importer refuses a non-empty menu, creates managed-media records/renditions,
-saves revision 1, and atomically publishes `managed-menu/current.json`. If it
-reports that the database import succeeded but publication is pending, do not
-rerun it; use the admin publish-retry action after the code deployment.
+The command refuses duplicate usernames, accepts only `owner` or `cashier`, and
+prompts twice for the password with terminal echo disabled. Do not put the
+password on the command line. The pre-admin importer and its JSON/Excel tools
+are archived under `legacy/` and are not part of host activation. On a blank
+installation, the owner creates categories and items through `/admin/`.
 
 ## 5. Manually deploy the approved release
 
-Only after provisioning and the importer complete, manually deploy the same
-approved release through the existing deployment workflow:
+Only after provisioning/migrations and required accounts are ready, manually
+deploy the same approved release through the existing deployment workflow:
 
 ```text
 py deploy.py
@@ -133,8 +142,8 @@ managed media. Future menu edits use the online admin and publish static data
 without Git, release generation, or deployment.
 
 The live host was already provisioned before 2026-08-29: published revisions 3
-and 4 and their managed media were present. At that verification the API was
-blocked only because web PHP lacked `LCAFE_PRIVATE_CONFIG`; current ParsPack
-control-panel/SSH/FTPS access was unavailable from the repository workspace.
-This is an access/configuration blocker, not evidence that schema or menu data
-should be replaced.
+and 4 and their managed media were present. cPanel confirmed the existing
+private config at `/home/h415280/private/lcafe/config.php` and document root at
+`/home/h415280/public_html`. The later web-runtime pointer recovery is host
+state, not release content; preserve it and all persistent paths when applying
+the role migration and future code releases.

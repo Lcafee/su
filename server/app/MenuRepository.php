@@ -304,6 +304,112 @@ function assert_no_implicit_deletes(PDO $pdo, array $document): void
     }
 }
 
+/**
+ * The editor saves one complete document. Cashiers may operate the normal menu
+ * fields, but owner-only values must round-trip unchanged even if a client
+ * bypasses the React UI.
+ *
+ * @param array{id:int|null,username:string,role:string} $actor
+ * @param array<string, mixed> $document
+ */
+function assert_actor_can_save_menu(PDO $pdo, array $actor, array $document): void
+{
+    $submittedCategories = [];
+    $submittedItems = [];
+    foreach ($document['categories'] as $category) {
+        $submittedCategories[$category['id']] = $category;
+        foreach ($category['items'] as $item) {
+            $submittedItems[$item['id']] = $item;
+        }
+    }
+
+    $storedCategories = [];
+    foreach ($pdo->query('SELECT id, public_id, intro, layout FROM menu_categories')->fetchAll() as $row) {
+        $storedCategories[(string) $row['id']] = $row;
+    }
+    $storedItems = [];
+    foreach ($pdo->query('SELECT id, public_id, metadata_json FROM menu_items')->fetchAll() as $row) {
+        $storedItems[(string) $row['id']] = $row;
+    }
+
+    foreach ($storedCategories as $id => $stored) {
+        $submitted = $submittedCategories[$id];
+        if ($submitted['publicId'] !== (string) $stored['public_id']) {
+            throw new ApiException(422, 'immutable_identifier', 'Existing category identifiers cannot be changed.');
+        }
+    }
+    foreach ($storedItems as $id => $stored) {
+        $submitted = $submittedItems[$id];
+        if ($submitted['publicId'] !== (string) $stored['public_id']) {
+            throw new ApiException(422, 'immutable_identifier', 'Existing item identifiers cannot be changed.');
+        }
+    }
+
+    if ($actor['role'] === 'owner') {
+        return;
+    }
+    if ($actor['role'] !== 'cashier') {
+        throw new ApiException(403, 'permission_denied', 'The admin role cannot edit the menu.');
+    }
+
+    $storedOptions = [];
+    $optionRows = $pdo->query(
+        'SELECT id, item_id, label, price_text, external_code, sort_order '
+        . 'FROM menu_item_options ORDER BY item_id, sort_order, id'
+    )->fetchAll();
+    foreach ($optionRows as $row) {
+        $storedOptions[(string) $row['item_id']][] = [
+            'id' => (string) $row['id'],
+            'label' => (string) $row['label'],
+            'price' => (string) $row['price_text'],
+            'code' => $row['external_code'] !== null ? (string) $row['external_code'] : null,
+            'sortOrder' => (int) $row['sort_order'],
+        ];
+    }
+
+    foreach ($submittedCategories as $id => $submitted) {
+        $stored = $storedCategories[$id] ?? null;
+        if ($stored === null) {
+            if ($submitted['intro'] !== null || $submitted['layout'] !== 'grid') {
+                cashier_advanced_field_error('category');
+            }
+            continue;
+        }
+        $storedIntro = $stored['intro'] !== null ? (string) $stored['intro'] : null;
+        if ($submitted['intro'] !== $storedIntro || $submitted['layout'] !== (string) $stored['layout']) {
+            cashier_advanced_field_error('category');
+        }
+    }
+
+    foreach ($submittedItems as $id => $submitted) {
+        $stored = $storedItems[$id] ?? null;
+        $submittedMetadata = json_decode($submitted['metadataJson'], true, 512, JSON_THROW_ON_ERROR);
+        if ($stored === null) {
+            if ($submittedMetadata !== [] || $submitted['options'] !== []) {
+                cashier_advanced_field_error('item');
+            }
+            continue;
+        }
+        $storedMetadata = json_decode((string) $stored['metadata_json'], true, 512, JSON_THROW_ON_ERROR);
+        if (
+            $submittedMetadata != $storedMetadata
+            || $submitted['options'] != ($storedOptions[$id] ?? [])
+        ) {
+            cashier_advanced_field_error('item');
+        }
+    }
+}
+
+function cashier_advanced_field_error(string $field): never
+{
+    throw new ApiException(
+        403,
+        'permission_denied',
+        'Cashier accounts cannot change advanced menu fields.',
+        ['field' => $field]
+    );
+}
+
 /** @param array<string, mixed> $document */
 function assert_media_exists(PDO $pdo, array $document): void
 {
@@ -558,7 +664,7 @@ function mark_publish_failure(PDO $pdo, int $revision): void
 
 /**
  * @param array<string, mixed> $config
- * @param array{id:int|null,username:string} $actor
+ * @param array{id:int|null,username:string,role:string} $actor
  * @param array<string, mixed> $input
  * @return array<string, mixed>
  */
@@ -586,6 +692,7 @@ function save_menu_document(PDO $pdo, array $config, array $actor, array $input)
         }
 
         assert_no_implicit_deletes($pdo, $document);
+        assert_actor_can_save_menu($pdo, $actor, $document);
         assert_media_exists($pdo, $document);
         $oldMedia = referenced_media_set($pdo);
         persist_menu_document($pdo, $document, $oldMedia);

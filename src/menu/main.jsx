@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { MenuApp } from "./MenuApp";
+import { MenuApp, MenuMasthead } from "./MenuApp";
 import { loadMenuSnapshot } from "./menuSnapshot";
 import "../styles/menu.css";
 
@@ -30,10 +30,7 @@ function MenuRuntime() {
   }
   return (
     <main id="menu" aria-live="polite">
-      <header className="menu-masthead">
-        <h1>منوی ال کافه</h1>
-        <span className="menu-brand-mark" aria-hidden="true">L CAFE</span>
-      </header>
+      <MenuMasthead />
       <section className="menu-runtime-state">
         {state.status === "failed" ? (
           <>

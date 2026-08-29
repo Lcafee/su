@@ -484,27 +484,57 @@ function ensure_initial_admin_user(PDO $pdo): bool
         return false;
     }
 
-    $username = prompt_line('Initial admin username: ');
+    $username = validated_admin_username(prompt_line('Initial owner username: '));
+    $hash = prompt_admin_password_hash('Initial owner');
+
+    $statement = $pdo->prepare(
+        "INSERT INTO admin_users (username, password_hash, role, is_active) VALUES (?, ?, 'owner', 1)"
+    );
+    $statement->execute([$username, $hash]);
+    return true;
+}
+
+function create_admin_user(PDO $pdo, string $username, string $role): void
+{
+    require_interactive_terminal();
+    $username = validated_admin_username($username);
+    if (!in_array($role, ['owner', 'cashier'], true)) {
+        throw new RuntimeException('The admin role must be owner or cashier.');
+    }
+    $exists = $pdo->prepare('SELECT COUNT(*) FROM admin_users WHERE username = ?');
+    $exists->execute([$username]);
+    if ((int) $exists->fetchColumn() > 0) {
+        throw new RuntimeException('An admin account with that username already exists.');
+    }
+    $hash = prompt_admin_password_hash("New $role account");
+    $statement = $pdo->prepare(
+        'INSERT INTO admin_users (username, password_hash, role, is_active) VALUES (?, ?, ?, 1)'
+    );
+    $statement->execute([$username, $hash, $role]);
+}
+
+function validated_admin_username(string $username): string
+{
     if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$/', $username) !== 1) {
         throw new RuntimeException(
             'The admin username must be 3-64 ASCII letters, numbers, dots, underscores, or hyphens.'
         );
     }
-    $password = prompt_hidden('Initial admin password (hidden, at least 12 characters): ');
+    return $username;
+}
+
+function prompt_admin_password_hash(string $label): string
+{
+    $password = prompt_hidden("$label password (hidden, at least 12 characters): ");
     if (strlen($password) < 12 || strlen($password) > 4096 || preg_match('/[\x00-\x1F\x7F]/', $password) === 1) {
         throw new RuntimeException('The admin password must contain 12-4096 characters and no control characters.');
     }
-    $confirmation = prompt_hidden('Repeat initial admin password: ');
+    $confirmation = prompt_hidden("Repeat $label password: ");
     if (!hash_equals($password, $confirmation)) {
         throw new RuntimeException('The admin passwords did not match.');
     }
     $hash = password_hash($password, PASSWORD_DEFAULT);
     $password = '';
     $confirmation = '';
-
-    $statement = $pdo->prepare(
-        'INSERT INTO admin_users (username, password_hash, is_active) VALUES (?, ?, 1)'
-    );
-    $statement->execute([$username, $hash]);
-    return true;
+    return $hash;
 }

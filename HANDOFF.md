@@ -17,21 +17,22 @@ no Node server. Apache/LiteSpeed exposes physical `menu.html` canonically as
 requests never query MySQL and instead fetch `managed-menu/current.json`, then
 `previous.json` as recovery.
 
-The retired generated-HTML/Python/runtime-loader implementation is isolated in
-`legacy/retired-generated-frontend/` as read-only history and is excluded from
-the active build.
+The retired generated frontend and pre-admin JSON/Excel/import/generator
+implementation are isolated under `legacy/` as read-only history and are
+excluded from active build, release, provisioning, and deployment paths.
 
 ## Ownership
 
 - `src/landing/`, `src/menu/`, `src/admin/`, and `src/styles/` own UI behavior.
 - `server/app/`, `server/public/api/`, `server/migrations/`, and `server/bin/`
-  own the control plane, provisioning, and one-time migration.
+  own the control plane, schema migrations, provisioning, and secure account
+  creation.
 - MySQL owns editable production menu content and revision state.
 - `managed-menu/` and `managed-media/` are public persistent runtime output;
   private config, sessions, revision archives, and originals remain outside the
   document root.
-- `menu.json` is legacy migration/reference data. The tracked snapshot under
-  `src/menu/fixtures/` supports local Vite development only.
+- The tracked snapshot under `src/menu/fixtures/` supports local Vite
+  development only and is independent of archived menu inputs.
 
 `MenuApp` owns category navigation; memoized category/product boundaries and a
 shared `ResizeObserver` manage rendering. Variants are informational rows, not
@@ -63,9 +64,11 @@ read-only remote audit, and recovery guidance.
 
 Production menu copy, order, prices, photos, Sepidz codes, variants, and add-ons
 are edited in `/admin/`, saved to MySQL, and published to the managed snapshot.
-Do not edit JSX, `menu.json`, the Excel export, or the local fixture as a way to
-change the live menu. `menu.json`, `menu_xlsx.py`, and `optimize_images.py` remain
-migration/maintenance utilities only.
+Owners have the full editor and publish-retry control. Cashiers can perform
+normal category/item/media/order/archive/save-and-publish operations, while
+advanced category fields and item metadata/options are hidden and rejected by
+the API if changed. Accounts are created only with the interactive host CLI.
+Do not edit JSX, archived inputs, or the local fixture to change the live menu.
 
 For UI/code changes, edit source, validate, commit, push, obtain exact-SHA
 approval, generate the release, then stop at the approval boundary. For host or

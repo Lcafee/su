@@ -12,20 +12,11 @@ release/
 # Unused source photo, 3.5 MB, referenced by no page.
 uploads/IMG_7751.jpeg
 
-# Python bytecode from the packaging, deployment, export, and image utilities.
+# Python bytecode from packaging and deployment utilities.
 __pycache__/
 
 # Upload archive, rebuilt by package.py from files already tracked here.
 lcafe-site.zip
-
-# The handoff sheet, rebuilt by menu_xlsx.py from menu.json - same rule as the zip
-# above. Two reasons beyond that one: an .xlsx is a zip container, so every
-# regeneration is a wholly new 20 KB blob in history that git cannot diff, and a
-# tracked copy reads as a file worth editing in place when it is not - the next
-# run overwrites whatever was typed into it. The route back into the site is
-# menu.json, by hand, which is what menu_xlsx.py's own guide sheet says.
-L_Cafe_Menu_Content.xlsx
-menu-products.xlsx
 
 # Host credentials. .deploy.ini.example is the tracked template; the real file
 # holds the FTP password and must never be committed. deploy.py checks this on

@@ -14,7 +14,6 @@
     "build": "npm run build:public && npm run build:admin",
     "build:public": "vite build",
     "build:admin": "vite build --config vite.admin.config.js",
-    "menu:fixture": "node scripts/generate-menu-snapshot-fixture.mjs",
     "release:generate": "node scripts/generate-release.mjs",
     "preview": "vite preview"
   },

@@ -21,8 +21,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-routine-01.webp",
-            "srcSet": "assets/menu/opt/menu-routine-01-300.webp 300w, assets/menu/opt/menu-routine-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -39,8 +39,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-routine-02.webp",
-            "srcSet": "assets/menu/opt/menu-routine-02-300.webp 300w, assets/menu/opt/menu-routine-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -57,8 +57,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-routine-03.webp",
-            "srcSet": "assets/menu/opt/menu-routine-03-300.webp 300w, assets/menu/opt/menu-routine-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -87,8 +87,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-routine-04.webp",
-            "srcSet": "assets/menu/opt/menu-routine-04-300.webp 300w, assets/menu/opt/menu-routine-04.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -137,8 +137,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-01.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-01-300.webp 300w, assets/menu/opt/menu-hot-coffee-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -155,8 +155,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-01.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-01-300.webp 300w, assets/menu/opt/menu-hot-coffee-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -183,8 +183,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-05.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-05-300.webp 300w, assets/menu/opt/menu-hot-coffee-05.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -211,8 +211,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-06.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-06-300.webp 300w, assets/menu/opt/menu-hot-coffee-06.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -239,8 +239,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-07.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-07-300.webp 300w, assets/menu/opt/menu-hot-coffee-07.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -267,8 +267,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-04.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-04-300.webp 300w, assets/menu/opt/menu-hot-coffee-04.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -295,8 +295,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-03.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-03-300.webp 300w, assets/menu/opt/menu-hot-coffee-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -323,8 +323,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-08.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-08-300.webp 300w, assets/menu/opt/menu-hot-coffee-08.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -363,8 +363,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-14.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-14-300.webp 300w, assets/menu/opt/menu-hot-coffee-14.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -381,8 +381,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-02.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-02-300.webp 300w, assets/menu/opt/menu-hot-coffee-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -399,8 +399,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-09.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-09-300.webp 300w, assets/menu/opt/menu-hot-coffee-09.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -417,8 +417,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-coffee-10.webp",
-            "srcSet": "assets/menu/opt/menu-hot-coffee-10-300.webp 300w, assets/menu/opt/menu-hot-coffee-10.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -453,8 +453,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-cold-coffee-01.webp",
-            "srcSet": "assets/menu/opt/menu-cold-coffee-01-300.webp 300w, assets/menu/opt/menu-cold-coffee-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -481,8 +481,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-cold-coffee-02.webp",
-            "srcSet": "assets/menu/opt/menu-cold-coffee-02-300.webp 300w, assets/menu/opt/menu-cold-coffee-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -521,8 +521,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-cold-coffee-04.webp",
-            "srcSet": "assets/menu/opt/menu-cold-coffee-04-300.webp 300w, assets/menu/opt/menu-cold-coffee-04.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -583,8 +583,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/fr-01.webp",
-            "srcSet": "assets/menu/opt/fr-01-300.webp 300w, assets/menu/opt/fr-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -601,8 +601,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/fr-02.webp",
-            "srcSet": "assets/menu/opt/fr-02-300.webp 300w, assets/menu/opt/fr-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -651,8 +651,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/cl-01.webp",
-            "srcSet": "assets/menu/opt/cl-01-300.webp 300w, assets/menu/opt/cl-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -669,8 +669,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/cl-03.webp",
-            "srcSet": "assets/menu/opt/cl-03-300.webp 300w, assets/menu/opt/cl-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -687,8 +687,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/cl-02.webp",
-            "srcSet": "assets/menu/opt/cl-02-300.webp 300w, assets/menu/opt/cl-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -728,8 +728,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-06.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-06-300.webp 300w, assets/menu/opt/menu-hot-drinks-06.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -745,8 +745,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-07.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-07-300.webp 300w, assets/menu/opt/menu-hot-drinks-07.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -763,8 +763,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-08.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-08-300.webp 300w, assets/menu/opt/menu-hot-drinks-08.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -815,8 +815,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-09.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-09-300.webp 300w, assets/menu/opt/menu-hot-drinks-09.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -833,8 +833,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-01.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-01-300.webp 300w, assets/menu/opt/menu-hot-drinks-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -851,8 +851,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-04.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-04-300.webp 300w, assets/menu/opt/menu-hot-drinks-04.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -869,8 +869,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-02.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-02-300.webp 300w, assets/menu/opt/menu-hot-drinks-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -887,8 +887,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-03.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-03-300.webp 300w, assets/menu/opt/menu-hot-drinks-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -905,8 +905,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-hot-drinks-05.webp",
-            "srcSet": "assets/menu/opt/menu-hot-drinks-05-300.webp 300w, assets/menu/opt/menu-hot-drinks-05.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -967,8 +967,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-cold-drinks-06.webp",
-            "srcSet": "assets/menu/opt/menu-cold-drinks-06-300.webp 300w, assets/menu/opt/menu-cold-drinks-06.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1009,8 +1009,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-matcha-02.webp",
-            "srcSet": "assets/menu/opt/menu-matcha-02-300.webp 300w, assets/menu/opt/menu-matcha-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1042,8 +1042,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-matcha-02.webp",
-            "srcSet": "assets/menu/opt/menu-matcha-02-300.webp 300w, assets/menu/opt/menu-matcha-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1060,8 +1060,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-matcha-03.webp",
-            "srcSet": "assets/menu/opt/menu-matcha-03-300.webp 300w, assets/menu/opt/menu-matcha-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1093,8 +1093,8 @@
             }
           ],
           "image": {
-            "src": "assets/menu/opt/menu-matcha-03.webp",
-            "srcSet": "assets/menu/opt/menu-matcha-03-300.webp 300w, assets/menu/opt/menu-matcha-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1131,8 +1131,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/it-02.webp",
-            "srcSet": "assets/menu/opt/it-02-300.webp 300w, assets/menu/opt/it-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1149,8 +1149,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/it-01.webp",
-            "srcSet": "assets/menu/opt/it-01-300.webp 300w, assets/menu/opt/it-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1167,8 +1167,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/rf-02.webp",
-            "srcSet": "assets/menu/opt/rf-02-300.webp 300w, assets/menu/opt/rf-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1185,8 +1185,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/rf-01.webp",
-            "srcSet": "assets/menu/opt/rf-01-300.webp 300w, assets/menu/opt/rf-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1203,8 +1203,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/rf-03.webp",
-            "srcSet": "assets/menu/opt/rf-03-300.webp 300w, assets/menu/opt/rf-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1229,8 +1229,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-icecream-01.webp",
-            "srcSet": "assets/menu/opt/menu-icecream-01-300.webp 300w, assets/menu/opt/menu-icecream-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1247,8 +1247,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-icecream-02.webp",
-            "srcSet": "assets/menu/opt/menu-icecream-02-300.webp 300w, assets/menu/opt/menu-icecream-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1265,8 +1265,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-icecream-03.webp",
-            "srcSet": "assets/menu/opt/menu-icecream-03-300.webp 300w, assets/menu/opt/menu-icecream-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1283,8 +1283,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-icecream-04.webp",
-            "srcSet": "assets/menu/opt/menu-icecream-04-300.webp 300w, assets/menu/opt/menu-icecream-04.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1309,8 +1309,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-01.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-01-300.webp 300w, assets/menu/opt/menu-dessert-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1327,8 +1327,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-02.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-02-300.webp 300w, assets/menu/opt/menu-dessert-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1357,8 +1357,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-05.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-05-300.webp 300w, assets/menu/opt/menu-dessert-05.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1375,8 +1375,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-06.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-06-300.webp 300w, assets/menu/opt/menu-dessert-06.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1393,8 +1393,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-07.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-07-300.webp 300w, assets/menu/opt/menu-dessert-07.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1411,8 +1411,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-08.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-08-300.webp 300w, assets/menu/opt/menu-dessert-08.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1429,8 +1429,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-09.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-09-300.webp 300w, assets/menu/opt/menu-dessert-09.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1447,8 +1447,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-dessert-10.webp",
-            "srcSet": "assets/menu/opt/menu-dessert-10-300.webp 300w, assets/menu/opt/menu-dessert-10.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1533,8 +1533,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-food-01.webp",
-            "srcSet": "assets/menu/opt/menu-food-01-300.webp 300w, assets/menu/opt/menu-food-01.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1551,8 +1551,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-food-02.webp",
-            "srcSet": "assets/menu/opt/menu-food-02-300.webp 300w, assets/menu/opt/menu-food-02.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1569,8 +1569,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-food-03.webp",
-            "srcSet": "assets/menu/opt/menu-food-03-300.webp 300w, assets/menu/opt/menu-food-03.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1598,8 +1598,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-food-05.webp",
-            "srcSet": "assets/menu/opt/menu-food-05-300.webp 300w, assets/menu/opt/menu-food-05.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1616,8 +1616,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-food-06.webp",
-            "srcSet": "assets/menu/opt/menu-food-06-300.webp 300w, assets/menu/opt/menu-food-06.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }
@@ -1634,8 +1634,8 @@
           },
           "options": [],
           "image": {
-            "src": "assets/menu/opt/menu-food-07.webp",
-            "srcSet": "assets/menu/opt/menu-food-07-300.webp 300w, assets/menu/opt/menu-food-07.webp 600w",
+            "src": "assets/menu/opt/item-placeholder.webp",
+            "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
           }

@@ -59,7 +59,8 @@ try {
         LCafe\Admin\json_response(LCafe\Admin\publish_status($pdo));
     }
     if ($method === 'POST' && $route === '/admin/publish-retry') {
-        LCafe\Admin\require_user($pdo, $config);
+        $user = LCafe\Admin\require_user($pdo, $config);
+        LCafe\Admin\require_owner($user);
         LCafe\Admin\require_csrf($config);
         LCafe\Admin\json_response(LCafe\Admin\retry_snapshot_publish($pdo, $config));
     }

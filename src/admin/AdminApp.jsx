@@ -14,6 +14,7 @@ import {
 import {
   cloneDocument,
   createCategory,
+  createItem,
   documentCounts,
   editableSignature,
   firstDocumentIssue,
@@ -43,6 +44,8 @@ function messageForError(error) {
     unsupported_media: "فقط تصویر JPEG، PNG یا WebP قابل استفاده است.",
     upload_failed: "بارگذاری تصویر کامل نشد. دوباره تلاش کنید.",
     validation_error: "بعضی فیلدها کامل یا معتبر نیستند.",
+    permission_denied: "این بخش فقط در دسترس مالک است.",
+    immutable_identifier: "شناسه‌های ثابت منو قابل تغییر نیستند.",
   };
   return messages[error?.type] || "انجام درخواست ممکن نشد. دوباره تلاش کنید.";
 }
@@ -147,6 +150,7 @@ export function AdminApp() {
   const counts = useMemo(() => (draft ? documentCounts(draft) : null), [draft]);
   const uploadInProgress = uploadingIds.size > 0;
   const editorDisabled = saving || uploadInProgress || conflict !== null;
+  const isOwner = session?.user?.role === "owner";
 
   const handleSessionExpiry = useCallback((error) => {
     if (!(error instanceof ApiError) || error.status !== 401) return false;
@@ -200,6 +204,10 @@ export function AdminApp() {
 
   const handleCreateCategory = useCallback(() => {
     mutateDraft((current) => createCategory(current).document);
+  }, [mutateDraft]);
+
+  const handleCreateItem = useCallback((categoryId) => {
+    mutateDraft((current) => createItem(current, categoryId).document);
   }, [mutateDraft]);
 
   const handleUpload = useCallback(async (categoryId, itemId, file) => {
@@ -342,20 +350,24 @@ export function AdminApp() {
           </div>
         </div>
         <div className="operator-actions">
-          <span>{session.user.username}</span>
+          <span>{session.user.username} · {isOwner ? "مالک" : "صندوق‌دار"}</span>
           <button type="button" className="quiet-button" onClick={handleLogout}>خروج</button>
         </div>
       </header>
 
       <main className="admin-main">
-        <section className="overview" aria-label="خلاصه منو">
-          <div><strong>{counts.categories}</strong><span>دسته‌بندی</span></div>
-          <div><strong>{counts.activeItems}</strong><span>آیتم فعال</span></div>
-          <div><strong>{counts.archivedItems}</strong><span>آیتم آرشیوی</span></div>
-          <div><strong>{draft.revision}</strong><span>نسخه ویرایش</span></div>
-        </section>
+        {isOwner ? (
+          <>
+            <section className="overview" aria-label="خلاصه منو">
+              <div><strong>{counts.categories}</strong><span>دسته‌بندی</span></div>
+              <div><strong>{counts.activeItems}</strong><span>آیتم فعال</span></div>
+              <div><strong>{counts.archivedItems}</strong><span>آیتم آرشیوی</span></div>
+              <div><strong>{draft.revision}</strong><span>نسخه ویرایش</span></div>
+            </section>
 
-        <PublishPanel status={publishStatus} retrying={retrying} onRetry={handleRetryPublish} />
+            <PublishPanel status={publishStatus} retrying={retrying} onRetry={handleRetryPublish} />
+          </>
+        ) : null}
 
         {notice ? (
           <p className={`notice tone-${notice.tone}`} role="status">{notice.message}</p>
@@ -378,6 +390,7 @@ export function AdminApp() {
           categoryChoices={categoryChoices}
           uploadingIds={uploadingIds}
           disabled={editorDisabled}
+          advanced={isOwner}
           onUpdateCategory={handleUpdateCategory}
           onUpdateItem={handleUpdateItem}
           onMoveCategory={handleMoveCategory}
@@ -385,6 +398,7 @@ export function AdminApp() {
           onMoveItem={handleMoveItem}
           onUpload={handleUpload}
           onCreateCategory={handleCreateCategory}
+          onCreateItem={handleCreateItem}
         />
       </main>
 

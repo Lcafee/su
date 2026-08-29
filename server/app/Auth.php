@@ -21,7 +21,7 @@ function clear_session_identity(): void
 
 /**
  * @param array<string, mixed> $config
- * @return array{id:int,username:string}|null
+ * @return array{id:int,username:string,role:string}|null
  */
 function session_user(PDO $pdo, array $config, bool $touch = true): ?array
 {
@@ -41,7 +41,7 @@ function session_user(PDO $pdo, array $config, bool $touch = true): ?array
         return null;
     }
 
-    $statement = $pdo->prepare('SELECT id, username FROM admin_users WHERE id = ? AND is_active = 1');
+    $statement = $pdo->prepare('SELECT id, username, role FROM admin_users WHERE id = ? AND is_active = 1');
     $statement->execute([$userId]);
     $user = $statement->fetch();
     if (!is_array($user)) {
@@ -51,10 +51,22 @@ function session_user(PDO $pdo, array $config, bool $touch = true): ?array
     if ($touch) {
         $_SESSION['last_seen'] = $now;
     }
-    return ['id' => (int) $user['id'], 'username' => (string) $user['username']];
+    return [
+        'id' => (int) $user['id'],
+        'username' => (string) $user['username'],
+        'role' => normalized_admin_role((string) $user['role']),
+    ];
 }
 
-/** @param array<string, mixed> $config @return array{id:int,username:string} */
+function normalized_admin_role(string $role): string
+{
+    if (!in_array($role, ['owner', 'cashier'], true)) {
+        throw new ApiException(503, 'schema_unavailable', 'The admin role is invalid.');
+    }
+    return $role;
+}
+
+/** @param array<string, mixed> $config @return array{id:int,username:string,role:string} */
 function require_user(PDO $pdo, array $config): array
 {
     $user = session_user($pdo, $config);
@@ -62,6 +74,14 @@ function require_user(PDO $pdo, array $config): array
         throw new ApiException(401, 'authentication_required', 'Authentication is required.');
     }
     return $user;
+}
+
+/** @param array{id:int,username:string,role:string} $user */
+function require_owner(array $user): void
+{
+    if ($user['role'] !== 'owner') {
+        throw new ApiException(403, 'permission_denied', 'Owner access is required.');
+    }
 }
 
 /** @param array<string, mixed> $config */

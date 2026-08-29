@@ -187,6 +187,33 @@ export function createCategory(document) {
   };
 }
 
+export function createItem(document, categoryId) {
+  const id = crypto.randomUUID();
+  const item = {
+    id,
+    publicId: `item-${id.replaceAll("-", "").slice(0, 12)}`,
+    name: "آیتم جدید",
+    description: null,
+    price: null,
+    mediaId: null,
+    media: null,
+    metadata: {},
+    archived: false,
+    options: [],
+  };
+  return {
+    document: {
+      ...document,
+      categories: document.categories.map((category) =>
+        category.id === categoryId
+          ? { ...category, items: [...category.items, item] }
+          : category,
+      ),
+    },
+    itemId: id,
+  };
+}
+
 export function documentCounts(document) {
   let activeItems = 0;
   let archivedItems = 0;
