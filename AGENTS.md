@@ -17,8 +17,8 @@ generation only. Codex must never run `deploy.py` or otherwise deploy production
 in the same task. Production deployment requires a separate task that explicitly
 instructs Codex to deploy.
 
-`OPERATIONS.md` is the canonical authority for ParsPack access, live-state
-observations, persistent runtime ownership, deployment checks, and recovery.
+`OPERATIONS.md` is the canonical authority for production access procedure,
+persistent runtime ownership, deployment checks, and recovery.
 Read it before any release, host, admin/API, or production-state work. Keep it,
 `README.md`, `HANDOFF.md`, `PRODUCT.md`, and affected server documentation
 consistent whenever architecture or operations change.
@@ -28,6 +28,6 @@ build command, release command, Git hook, or GitHub workflow may invoke them or
 automatically deploy production.
 
 Root `.htaccess` has split ownership. Git/release owns only the code-managed
-portion; ParsPack owns the fenced host runtime block. Never commit its private
+portion; the production host owns the fenced runtime block. Never commit its private
 path/content, never package the live root path for file-manager extraction, and
 never change deployment behavior to overwrite or reconstruct that block.

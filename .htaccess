@@ -110,25 +110,8 @@ Options -Indexes
   </IfModule>
 </IfModule>
 
-# Legacy stable-name helper, if served by an older host layout, must also
-# revalidate rather than being pinned in a browser cache.
-<FilesMatch "^image-slot\.js$">
-  <IfModule mod_expires.c>
-    ExpiresByType application/javascript "access plus 0 seconds"
-  </IfModule>
-  <IfModule mod_headers.c>
-    Header set Cache-Control "no-cache"
-  </IfModule>
-</FilesMatch>
-
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set X-Frame-Options "SAMEORIGIN"
 </IfModule>
-
-# image-slot.js fetches this on every page load; without an explicit type some
-# hosts serve dotfiles as octet-stream.
-<Files ".image-slots.state.json">
-  ForceType application/json
-</Files>

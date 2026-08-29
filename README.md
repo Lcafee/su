@@ -54,14 +54,16 @@ codes, metadata, and crawlers use `/menu`.
 - `src/menu/` owns Menu rendering and interaction state.
 - `src/admin/` owns the isolated admin bundle.
 - `src/styles/` preserves the approved visual system.
+- `assets/` owns code-managed fonts, brand assets, icons, and public imagery.
 - MySQL is authoritative for edited menu data; the public menu fetches only
   persistent `managed-menu/current.json`, then `previous.json` as recovery.
 - `managed-media/` is persistent runtime storage. Production releases ship only
   the code-owned placeholder from the historical local menu-image set.
 
-The superseded generated frontend and the pre-admin JSON/Excel/import/generator
-toolchain are isolated under `legacy/` for recoverable historical reference.
-They are not build, release, provisioning, deployment, or menu-editing inputs.
+The superseded generated frontend, pre-admin JSON/Excel/import/generator
+toolchain, and retired Summer Pause campaign are isolated under `legacy/` for
+recoverable historical reference. They are not build, release, provisioning,
+deployment, menu-editing, or active product inputs.
 
 The current Menu renders the thin `metal-fx` category rule for every category.
 The effect is decorative and capability-gated: the content remains ordinary
@@ -126,12 +128,12 @@ compares every release-owned file by SHA-256, and verifies staging protection;
 it makes no remote change and never writes `.deploy-state.json`.
 
 Deploy-owned temporary files are denied by `.htaccess` before staging begins.
-The release owns its code-managed portion; ParsPack owns one final fenced
+The release owns its code-managed portion; the production host owns one final fenced
 runtime block. Deployment preserves that block byte-for-byte and fails safely
 on missing, malformed, or duplicate ownership markers.
 On a host that still has the older `.htaccess`, the first deploy will stop before
 creating any temporary upload. After confirming the FTP document root with the
-read-only `--check-remote` command or the ParsPack file manager, run the one-time
+read-only `--check-remote` command or the hosting file manager, run the one-time
 bootstrap explicitly:
 
 ```sh
@@ -148,6 +150,10 @@ Host-specific PHP runtime settings remain outside release ownership. Never add
 the private-config path, bootstrap path, or host-only runtime block to Git or a
 generated release.
 
-The canonical ParsPack runbook, current live-state record, persistent-data
+The canonical production runbook, current state ledger, persistent-data
 boundaries, API recovery procedure, and deployment checklist are in
 [`OPERATIONS.md`](OPERATIONS.md).
+
+Repository ACTIVE, HISTORICAL, and PRIVATE-RUNTIME ownership is defined in
+[`GOVERNANCE.md`](GOVERNANCE.md). SEO-only planning is scoped under
+[`docs/seo/`](docs/seo/); it is not the project state or general product roadmap.

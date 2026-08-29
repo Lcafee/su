@@ -1,42 +1,25 @@
 # L Cafe production operations
 
-This is the canonical hosting and deployment runbook for `Lcafee/su` and
-`https://l-cafe.ir`. Mutable state is authoritative in `PROJECT_STATE.md`.
-`README.md` explains local
-development, `HANDOFF.md` explains code ownership, and
+This is the canonical hosting and deployment runbook. Mutable state is
+authoritative only in `PROJECT_STATE.md`. Real hostnames, account identifiers,
+credentials, absolute roots, and private paths belong in the approved private
+operator record. `README.md` explains local development, `HANDOFF.md` explains code ownership, and
 `server/HOST-ACTIVATION.md` gives the one-time PHP/MySQL provisioning sequence.
 When those documents overlap with production procedure, this file is
 authoritative.
 
-## Current recorded state
+## State authority
 
-Current authoritative state is in `PROJECT_STATE.md`. As confirmed on
-2026-08-30:
+`PROJECT_STATE.md` is the sole tracked ledger for source baseline, production
+SHA, release state, migrations, roles, architecture, blockers, phase, and next
+action. Do not copy changing hashes, runtime versions, network addresses,
+snapshot counts, media counts, or dated verification observations into this
+runbook. Store action-specific observations in the private operator record.
 
-- production runs `d2a87a274e9bb9304abb79d2bb3aa0e89445d51a`;
-- migrations `001_menu_admin` and `002_admin_roles` are active;
-- owner and cashier roles are active;
-- the direct ParsPack `.htaccess` `php_value auto_prepend_file` override is
-  required host-owned runtime state;
-- live persistent snapshot: `managed-menu/current.json`, revision 4, 12
-  categories and 94 items; recovery snapshot is revision 3;
-- all 96 managed-media URLs referenced by revision 4 responded successfully;
-- the private config, database, snapshots, media, and fenced runtime override
-  remain outside release ownership;
-- HTTP-to-HTTPS, `www`-to-apex, canonical `/menu`, custom 404, and source-file
-  denial were working;
-- the obsolete GitHub Pages preview was disabled on 2026-08-29 because it served
-  a retired Aug 16 build after its workflow had been removed.
-
-The verification client received connection resets after a repeated burst of
-managed-media requests, after the route, snapshot, and full media checks had
-already succeeded. Treat an isolated reset during an audit as inconclusive, not
-as proof that a file is missing. Stop the burst, allow a cooldown, and repeat in
-small sequential batches; do not create a retry storm against the shared host.
-
-DNS addresses and response headers are observations, not configuration truth.
-At the verification time the apex and `ftp.l-cafe.ir` resolved to
-`45.139.11.60`, LiteSpeed served the site, and web PHP reported 8.1.34.
+The durable production contract is that private config, database, sessions,
+snapshots, media, and the fenced `.htaccess` runtime override remain outside
+release ownership. The required direct `php_value auto_prepend_file` setting is
+host-owned state; its enclosed bytes and private path are never tracked.
 
 ## Ownership model
 
@@ -48,7 +31,7 @@ Production has two deliberately separate layers:
 2. Runtime state persists independently: MySQL, the private config, sessions,
    revision archives, original uploads, `managed-menu/`, and `managed-media/`.
 3. Root `.htaccess` is a composite ownership boundary. The approved release
-   owns the code-managed portion; ParsPack owns exactly one final fenced block
+   owns the code-managed portion; the production host owns exactly one final fenced block
    from `LCAFE-HOST-RUNTIME-BEGIN` through `LCAFE-HOST-RUNTIME-END`.
 
 `deploy.py` preserves the fenced block byte-for-byte and fails before mutation
@@ -89,17 +72,12 @@ or an unapproved commit. `package.py` and `deploy.py` validate the approved
 manifest and reject dirty/unknown artifacts. Internal `.lcafe-build.json` and
 `.lcafe-release.json` files are not public upload files.
 
-## ParsPack access and upload methods
+## Host access and upload methods
 
 Hostnames, usernames, absolute roots, credentials, and private paths are kept
 out of Git. Store them in the ignored `.deploy.ini` or the operator's approved
-credential store. The production document root is the existing ParsPack site
-root selected in that private configuration.
-
-```text
-port = 21
-directory = public_html
-```
+credential store. The production document root and connection settings come
+only from that private configuration.
 
 Copy `.deploy.ini.example` to the ignored `.deploy.ini`, use explicit FTPS, and
 keep certificate verification enabled. If an FTP account is scoped directly to
@@ -110,12 +88,12 @@ The supported upload paths are:
 - preferred: `py deploy.py`, which uses FTPS, fully stages and size-checks every
   changed file, then promotes dependencies before HTML using RNFR/RNTO;
 - fallback: create `lcafe-site.zip` with `py package.py`, upload it through the
-  ParsPack file manager, and extract it into the existing site root without
+  hosting file manager, and extract it into the existing site root without
   deleting or replacing persistent runtime directories. The ZIP intentionally
   omits root `.htaccess`; never add it manually.
 
 The method used for the existing production upload is not confirmed. Do not
-turn the likely file-manager/ZIP history into a fact until ParsPack logs or an
+turn the likely file-manager/ZIP history into a fact until private operator logs or an
 operator confirms it.
 
 ## Read-only preflight
@@ -179,14 +157,14 @@ Throttle media verification in small batches. If LiteSpeed starts resetting
 connections, stop and retry after a cooldown rather than increasing concurrency.
 
 Do not use an empty local `.deploy-state.json` as evidence of remote drift; it
-only records what that workstation uploaded. Use `--check-remote` or ParsPack
+only records what that workstation uploaded. Use `--check-remote` or host
 file hashes.
 
 ## Admin runtime and role activation
 
 Production uses a private config and web bootstrap outside the document root.
 Their absolute paths and contents are host-sensitive operator state and are not
-recorded in Git. LiteSpeed/LSPHP applies the required direct ParsPack override
+recorded in Git. LiteSpeed/LSPHP applies the required direct host override
 through the host-owned fenced block in root `.htaccess`. See the
 [LiteSpeed cPanel guidance](https://docs.litespeedtech.com/lsws/cp/cpanel/php-user-ini/)
 and [cPanel MultiPHP INI guidance](https://docs.cpanel.net/cpanel/software/multiphp-ini-editor-for-cpanel/).
@@ -202,22 +180,21 @@ the failure returns, interpret `/api/session` as follows:
 - `database_unavailable`: pointer/config loaded, but database connection failed;
 - `schema_unavailable`: database loaded, but the L Cafe schema is unavailable.
 
-Migrations `001_menu_admin` and `002_admin_roles` and both production roles are
-active. Future additive migrations run through the provisioner against the
-existing private configuration. Do not run or reconstruct the archived legacy
-importer. FTPS credentials are required only for remote comparison/deployment;
-release generation does not use them.
+Current migration and role state is recorded only in `PROJECT_STATE.md`. Future
+additive migrations run through the provisioner against the existing private
+configuration. Do not run or reconstruct the archived legacy importer. FTPS
+credentials are required only for remote comparison/deployment; release
+generation does not use them.
 
 ## Operator record and documentation protocol
 
 For every production action, record the date/time, operator, approved SHA,
-access method, remote root, pre/post snapshot revision and hash, files changed,
-verification results, and rollback taken. Never record passwords or config
-contents.
+access method, remote target identifier, pre/post snapshot revision and hash,
+files changed, verification results, and rollback taken in the private operator
+record. Never place passwords, account details, private roots, or config
+contents in tracked documentation.
 
-After architecture, hosting, release, or live-state changes, update this file
-and all affected canonical documents in the same source commit. Keep facts
-labelled as source-defined, release-verified, live-observed, or host-confirmed;
-include the observation date for mutable production facts. Re-index the
-codebase knowledge graph after documentation changes so future agents do not
-inherit an obsolete architecture.
+After mutable source, release, or live-state changes, update `PROJECT_STATE.md`.
+Update this runbook only when durable procedure or ownership changes. Keep
+private operator observations labelled as source-defined, release-verified,
+live-observed, or host-confirmed and include their observation date.

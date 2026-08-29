@@ -15,7 +15,8 @@
 
 ## Production architecture
 
-- دامنه‌ی اصلی `https://l-cafe.ir` روی هاست لینوکس اشتراکی پارس‌پک است.
+- دامنه‌ی اصلی `https://l-cafe.ir` روی هاست لینوکس اشتراکی/LiteSpeed است؛
+  وضعیت mutable هاست فقط در `PROJECT_STATE.md` ثبت می‌شود.
 - رابط عمومی React + Vite است و برای اجرا در production به Node نیاز ندارد.
 - `/admin/` یک bundle مستقل React است و `/api` با PHP 8.1+/MySQL اجرا می‌شود.
 - MySQL منبع حقیقت قابل‌ویرایش منو است. API انتشار، snapshotهای پایدار

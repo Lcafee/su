@@ -9,8 +9,9 @@ release/
 ~$*.xlsx
 .DS_Store
 
-# Unused source photo, 3.5 MB, referenced by no page.
-uploads/IMG_7751.jpeg
+# Root uploads are not active source. Code-owned brand/media assets belong
+# under assets/; any retained local source material here remains untracked.
+uploads/
 
 # Python bytecode from packaging and deployment utilities.
 __pycache__/

@@ -19,9 +19,10 @@ no Node server. Apache/LiteSpeed exposes physical `menu.html` canonically as
 requests never query MySQL and instead fetch `managed-menu/current.json`, then
 `previous.json` as recovery.
 
-The retired generated frontend and pre-admin JSON/Excel/import/generator
-implementation are isolated under `legacy/` as read-only history and are
-excluded from active build, release, provisioning, and deployment paths.
+The retired generated frontend, pre-admin JSON/Excel/import/generator
+implementation, and Summer Pause campaign are isolated under `legacy/` as
+read-only history and are excluded from active build, release, provisioning,
+deployment, and product-maintenance paths.
 
 ## Ownership
 
@@ -35,7 +36,7 @@ excluded from active build, release, provisioning, and deployment paths.
   document root.
 - The tracked snapshot under `src/menu/fixtures/` supports local Vite
   development only and is independent of archived menu inputs.
-- Root `.htaccess` is composite: release code owns the public rules and ParsPack
+- Root `.htaccess` is composite: release code owns the public rules and the host
   owns the final fenced runtime block. Deployment preserves the block; manual
   ZIPs omit the root file.
 
@@ -64,8 +65,9 @@ host runtime block.
 
 Approved generation is a hard stop. Deployment requires separate explicit
 authorization. Code deployment never publishes menu changes or owns persistent
-runtime data. See `OPERATIONS.md` for the live-state record, ParsPack procedure,
-read-only remote audit, and recovery guidance.
+runtime data. See `OPERATIONS.md` for durable production procedure, read-only
+remote comparison, and recovery guidance; see `PROJECT_STATE.md` for mutable
+state.
 
 ## Content workflow
 

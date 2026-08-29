@@ -1,36 +1,21 @@
-# Copy this file to .deploy.ini and fill it in. .deploy.ini is gitignored and
-# deploy.py refuses to run if git is tracking it anyway.
-#
-# These are the cPanel FTP details from the host's control panel. Prefer an FTP
-# account scoped to public_html over the main cPanel login: if it ever leaks,
-# it loses a website rather than the whole account.
+# Copy this file to .deploy.ini and fill it from the approved private operator
+# record. .deploy.ini is gitignored and deploy.py refuses to run if Git tracks
+# it. Never place a real hostname, account name, credential, or host path in
+# this tracked template.
 
 [host]
-host = ftp.l-cafe.ir
+host = REPLACE_ME
 user = REPLACE_ME
 password = REPLACE_ME
 
-# Where the site lives on the host, as seen AFTER logging in.
-#
-# Leave this as "." when the FTP account was created scoped to the site's
-# directory: such an account is chrooted into it, so the absolute path shown in
-# cPanel does not exist from the account's own point of view and setting it here
-# only produces "cannot enter". This is the common case, and this host serves
-# the domain from ~/l-cafe.ir rather than from public_html anyway.
-#
-# Set an actual path only when using the main cPanel login, which lands in the
-# home directory and has to descend - "l-cafe.ir" on this host.
-#
-# Either way deploy.py checks: it asks the server where it ended up and refuses
-# to upload unless the site's own pages are already there.
+# Directory as seen after login. Use "." for an account scoped directly to the
+# site root; otherwise copy the operator-approved relative directory into the
+# ignored local file. deploy.py confirms the target before any upload.
 directory = .
 
-# 21 is the standard FTP control port; the connection is upgraded to TLS on it.
+# Explicit FTPS upgrades the control connection to TLS.
 port = 21
 
-# Whether to check the host's TLS certificate. Leave this on. Turn it off only
-# if connecting fails with a certificate error, which on shared hosting usually
-# means the certificate is issued for the server's hostname and not for this
-# domain. With it off the password is still encrypted in transit; what is lost
-# is the proof that the far end is really this host.
+# Keep certificate verification enabled. Any exception belongs in the private
+# operator record and requires a separate security decision.
 verify = yes

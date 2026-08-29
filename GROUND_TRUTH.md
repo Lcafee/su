@@ -10,7 +10,7 @@ Last verified: 2026-08-30 (Asia/Tehran)
 | canonical_domain | `https://l-cafe.ir` | FACT | `OPERATIONS.md`, `index.html` | High | None |
 | canonical_repository | `Lcafee/su` (`main`) | FACT | `OPERATIONS.md` | High | None |
 | framework | React 19 + Vite 8 | FACT | `package.json`, `README.md` | High | None |
-| hosting | ParsPack shared hosting / LiteSpeed; PHP 8.1 observed | FACT | `OPERATIONS.md` | High | Runtime observations can change |
+| hosting | shared Linux/LiteSpeed host; current provider/runtime state is recorded only in `PROJECT_STATE.md` | FACT | `PROJECT_STATE.md`, `OPERATIONS.md` | High | Runtime observations can change |
 | deployment_flow | source → commit/push → explicit release approval → generate `release/current/` → separate production deploy approval | FACT | `README.md`, `OPERATIONS.md` | High | Production deployment is not authorized by SEO workstream alone |
 | business_name | L Cafe | FACT | owner confirmation + first-party site | High | Public listing displays `LCafe - ال کافه` |
 | business_name_fa | ال کافه | FACT | owner confirmation + first-party site | High | None |
@@ -37,7 +37,7 @@ Last verified: 2026-08-30 (Asia/Tehran)
   explicit daily hours, and the canonical Place-ID Maps target; it intentionally
   omits `geo`.
 - FACT — `/menu` source HTML is a JavaScript shell; categories/items are fetched from `managed-menu/current.json` and inserted after client execution.
-- FACT — production menu state is independent of deploy artifacts; `managed-menu/current.json` was revision 4 with 12 categories / 94 items in the latest repository operations record.
+- FACT — production menu state is independent of deploy artifacts; mutable revision and item counts belong in the private operator record, not the factual contract.
 - FACT — repository search found no common GA4/GTM/site-verification tokens. This does **not** prove analytics or Search Console are absent because verification/instrumentation may exist outside tracked source.
 
 ## Measurement access

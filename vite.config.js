@@ -37,7 +37,7 @@ const staticFiles = [
   "assets/l-cafe-sculptural-light-480.webp",
   "assets/menu/opt/item-placeholder-300.webp",
   "assets/menu/opt/item-placeholder.webp",
-  "uploads/L_Cafe_Full_NoTagline_White.svg",
+  "assets/brand/l-cafe-full-white.svg",
 ];
 
 const buildInputFiles = [
@@ -53,7 +53,7 @@ const buildInputFiles = [
   "vite.admin.config.js",
   "vite.config.js",
 ];
-const buildInputTrees = ["src", "assets", "uploads", "server"];
+const buildInputTrees = ["src", "assets", "server"];
 
 async function listTree(relativeDir) {
   const entries = await readdir(resolve(root, relativeDir), { withFileTypes: true });
@@ -156,7 +156,7 @@ function copyStaticSiteAssets() {
       }
 
       // 404.html is intentionally plain HTML, but unlike raw copy it still needs
-      // the build base so GitHub Pages (/su/) and the production apex both work.
+      // the configured build base so root and subpath deployments both work.
       const errorPage = await readFile(resolve(root, "404.html"), "utf8");
       await writeFile(
         resolve(outDir, "404.html"),

@@ -3,7 +3,7 @@
 This is the one-time operator runbook for a POSIX PHP/MySQL shared host. It does
 not change the application architecture or automate production deployment.
 Release generation and deployment remain separately approved manual actions.
-For an already provisioned host, current production facts, ParsPack access,
+For an already provisioned host, current production facts, host access,
 non-destructive recovery, and deployment verification are authoritative in
 [`../OPERATIONS.md`](../OPERATIONS.md). Do not rerun provisioning merely because
 the web-runtime config pointer is missing.
@@ -17,9 +17,9 @@ the web-runtime config pointer is missing.
 - An empty MySQL database plus its host, port, database name, username, and
   password. The database account needs DDL and DML rights on that database.
 - The absolute public document-root path used by the domain.
-- An absolute private persistent root outside the document root, such as
-  `/home/account/private/lcafe`.
-- The production HTTPS origin, normally `https://l-cafe.ir`.
+- An absolute private persistent root outside the document root, sourced from
+  the approved private operator record.
+- The approved production HTTPS origin.
 - The hosting-provider mechanism for setting `LCAFE_PRIVATE_CONFIG` for web PHP
   outside release-owned files. Confirm that PHP-FPM/LiteSpeed passes that value
   to `getenv()`.
@@ -56,10 +56,10 @@ the host's real absolute paths; quote an option if its path contains spaces.
 
 ```text
 php bin/provision-admin.php \
-  --config=/home/account/private/lcafe/config.php \
-  --private-root=/home/account/private/lcafe \
-  --document-root=/home/account/public_html \
-  --origin=https://l-cafe.ir
+  --config=<private-config-path> \
+  --private-root=<private-runtime-root> \
+  --document-root=<document-root> \
+  --origin=<https-origin>
 ```
 
 The command:
@@ -85,7 +85,7 @@ Use placeholders in tracked documentation; keep the real absolute path in the
 host/operator configuration only:
 
 ```text
-LCAFE_PRIVATE_CONFIG=/home/account/private/lcafe/config.php
+LCAFE_PRIVATE_CONFIG=<private-config-path>
 ```
 
 The value is a path, not a secret, but it is host-specific and should normally

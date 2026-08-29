@@ -542,7 +542,7 @@ const MenuFooter = memo(function MenuFooter() {
     <footer className="foot">
       <div className="foot-inner">
         <img
-          src={sitePath("uploads/L_Cafe_Full_NoTagline_White.svg")}
+          src={sitePath("assets/brand/l-cafe-full-white.svg")}
           alt="ال کافه"
         />
         <div className="foot-contact">
