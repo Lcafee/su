@@ -28,8 +28,118 @@ import {
   updateItem,
 } from "./document";
 import { LoginForm } from "./components/LoginForm";
-import { MenuEditor } from "./components/MenuEditor";
+import {
+  clearMenuEditorViewState,
+  menuEditorViewStorageKey,
+  MenuEditor,
+} from "./components/MenuEditor";
 import { PublishPanel } from "./components/PublishPanel";
+
+const faNumber = new Intl.NumberFormat("fa-IR");
+
+function numericRevision(value) {
+  const revision = Number(value);
+  return Number.isFinite(revision) && revision > 0 ? revision : 0;
+}
+
+function publicationStateText(status, editRevision, publishedRevision, isOwner) {
+  if (status?.state === "published_status_pending") {
+    return isOwner
+      ? "فایل عمومی برای مشتریان به‌روز شده است؛ ثبت وضعیت انتشار را از بخش بالا بازیابی کنید."
+      : "فایل عمومی برای مشتریان به‌روز شده است؛ مالک باید ثبت وضعیت انتشار را بازیابی کند.";
+  }
+  if (
+    status?.state === "failed"
+    || status?.state === "pending"
+    || publishedRevision < editRevision
+  ) {
+    const audienceState = publishedRevision
+      ? `مشتریان فعلاً نسخه عمومی ${faNumber.format(publishedRevision)} را می‌بینند.`
+      : "هنوز نسخه عمومی برای مشتریان وجود ندارد.";
+    const recovery = isOwner
+      ? "بازیابی انتشار از بخش وضعیت انتشار در دسترس است."
+      : "برای بازیابی انتشار، وضعیت را به مالک اطلاع دهید.";
+    return `${audienceState} ${recovery}`;
+  }
+  if (status?.state === "not_published" || !publishedRevision) {
+    return "هنوز نسخه عمومی برای مشتریان ساخته نشده است.";
+  }
+  return `مشتریان نسخه عمومی ${faNumber.format(publishedRevision)} را می‌بینند؛ نسخه ذخیره‌شده و عمومی هماهنگ‌اند.`;
+}
+
+function saveStatePresentation({
+  draft,
+  publishStatus,
+  hasUnsavedChanges,
+  changeCount,
+  isOwner,
+}) {
+  const editRevision = numericRevision(publishStatus?.editRevision ?? draft?.revision);
+  const publishedRevision = numericRevision(
+    publishStatus?.publishedRevision ?? draft?.publishedRevision,
+  );
+  const publicationText = publicationStateText(
+    publishStatus,
+    editRevision,
+    publishedRevision,
+    isOwner,
+  );
+
+  if (hasUnsavedChanges) {
+    return {
+      tone: "dirty",
+      title: `${faNumber.format(changeCount)} بخش فقط روی این صفحه تغییر کرده و هنوز در MySQL ذخیره نشده است.`,
+      detail: `آخرین ویرایش ذخیره‌شده نسخه ${faNumber.format(editRevision)} است. ${publicationText}`,
+    };
+  }
+  if (publishStatus?.state === "failed") {
+    return {
+      tone: "error",
+      title: `ویرایش نسخه ${faNumber.format(editRevision)} در MySQL ذخیره شده است.`,
+      detail: publicationText,
+    };
+  }
+  if (
+    publishStatus?.state === "pending"
+    || publishStatus?.state === "published_status_pending"
+    || publishedRevision < editRevision
+  ) {
+    return {
+      tone: "pending",
+      title: `ویرایش نسخه ${faNumber.format(editRevision)} در MySQL ذخیره شده است.`,
+      detail: publicationText,
+    };
+  }
+  return {
+    tone: "saved",
+    title: `ویرایش نسخه ${faNumber.format(editRevision)} در MySQL ذخیره شده است.`,
+    detail: publicationText,
+  };
+}
+
+function saveResultNotice(result, isOwner) {
+  const revision = faNumber.format(result.revision);
+  if (result.publishState === "published_status_pending") {
+    return {
+      tone: "pending",
+      message: isOwner
+        ? `ویرایش نسخه ${revision} در MySQL ذخیره و فایل عمومی به‌روز شد؛ ثبت وضعیت انتشار را از بخش بالا بازیابی کنید.`
+        : `ویرایش نسخه ${revision} در MySQL ذخیره و فایل عمومی به‌روز شد؛ مالک باید ثبت وضعیت انتشار را بازیابی کند.`,
+    };
+  }
+  if (result.published && result.publishState === "published") {
+    return {
+      tone: "success",
+      message: `ویرایش نسخه ${revision} در MySQL ذخیره و در منوی عمومی منتشر شد.`,
+    };
+  }
+  return {
+    tone: result.publishState === "failed" ? "error" : "pending",
+    message: isOwner
+      ? `ویرایش نسخه ${revision} در MySQL ذخیره شد؛ منوی عمومی به‌روز نشد و از بخش وضعیت انتشار قابل بازیابی است.`
+      : `ویرایش نسخه ${revision} در MySQL ذخیره شد؛ منوی عمومی به‌روز نشد و مالک باید انتشار را بازیابی کند.`,
+  };
+}
 
 function messageForError(error) {
   const messages = {
@@ -116,6 +226,8 @@ export function AdminApp() {
       setSession(nextSession);
       if (nextSession.authenticated) {
         applyEditorData(await fetchEditorData());
+      } else {
+        clearMenuEditorViewState();
       }
       setPhase("ready");
     } catch (error) {
@@ -160,16 +272,25 @@ export function AdminApp() {
   const uploadInProgress = uploadingIds.size > 0;
   const editorDisabled = saving || conflict !== null;
   const isOwner = session?.user?.role === "owner";
+  const menuEditorStorageKey = menuEditorViewStorageKey(session?.user);
+  const savePresentation = saveStatePresentation({
+    draft,
+    publishStatus,
+    hasUnsavedChanges,
+    changeCount,
+    isOwner,
+  });
 
   const handleSessionExpiry = useCallback((error) => {
     if (!(error instanceof ApiError) || error.status !== 401) return false;
+    clearMenuEditorViewState(menuEditorStorageKey);
     setSession({ authenticated: false });
     setSavedDocument(null);
     setDraft(null);
     setPublishStatus(null);
     setLoginError("نشست شما پایان یافته است. دوباره وارد شوید.");
     return true;
-  }, []);
+  }, [menuEditorStorageKey]);
 
   const handleLogin = useCallback(async (username, password) => {
     setLoginBusy(true);
@@ -270,7 +391,10 @@ export function AdminApp() {
         mediaId: response.media.id,
         media: response.media,
       }));
-      setNotice({ tone: "success", message: "تصویر آماده است. برای اعمال در منوی عمومی، ذخیره را بزنید." });
+      setNotice({
+        tone: "success",
+        message: "تصویر آماده است. برای ذخیره در MySQL و اعمال در منوی عمومی، ذخیره و انتشار را بزنید.",
+      });
     } catch (error) {
       if (!handleSessionExpiry(error)) {
         setNotice({ tone: "error", message: messageForError(error) });
@@ -331,12 +455,7 @@ export function AdminApp() {
         state: result.publishState,
         error: result.published ? null : "نسخه قبلی منوی عمومی همچنان فعال است.",
       });
-      setNotice({
-        tone: result.published ? "success" : "pending",
-        message: result.published
-          ? "تغییرات ذخیره و در منوی عمومی منتشر شد."
-          : "تغییرات ذخیره شد، اما انتشار نیاز به تلاش دوباره دارد.",
-      });
+      setNotice(saveResultNotice(result, isOwner));
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         setConflict({ currentRevision: error.details.currentRevision });
@@ -346,7 +465,7 @@ export function AdminApp() {
     } finally {
       setSaving(false);
     }
-  }, [draft, handleSessionExpiry, hasUnsavedChanges, session, uploadInProgress]);
+  }, [draft, handleSessionExpiry, hasUnsavedChanges, isOwner, session, uploadInProgress]);
 
   useEffect(() => {
     function handleSaveShortcut(event) {
@@ -393,8 +512,8 @@ export function AdminApp() {
       setNotice({
         tone: status.state === "published" ? "success" : "pending",
         message: status.state === "published"
-          ? "منوی عمومی با موفقیت منتشر شد."
-          : "انتشار هنوز کامل نشده است.",
+          ? "نسخه ذخیره‌شده و منوی عمومی مشتریان دوباره هماهنگ شدند."
+          : "بازیابی انتشار هنوز کامل نشده است؛ وضعیت نسخه عمومی در بخش بالا نمایش داده می‌شود.",
       });
     } catch (error) {
       if (!handleSessionExpiry(error)) {
@@ -415,11 +534,12 @@ export function AdminApp() {
         return;
       }
     }
+    clearMenuEditorViewState(menuEditorStorageKey);
     setSession({ authenticated: false });
     setSavedDocument(null);
     setDraft(null);
     setPublishStatus(null);
-  }, [handleSessionExpiry, hasUnsavedChanges, session]);
+  }, [handleSessionExpiry, hasUnsavedChanges, menuEditorStorageKey, session]);
 
   if (phase === "loading") return <LoadingScreen />;
   if (phase === "error") return <ErrorScreen message={systemError} onRetry={initialize} />;
@@ -444,25 +564,34 @@ export function AdminApp() {
       </header>
 
       <main className="admin-main">
-        {isOwner ? (
-          <section className="owner-workspace" aria-labelledby="owner-tools-title">
-            <div className="owner-workspace-heading">
-              <div>
-                <h2 id="owner-tools-title">کنترل مالک</h2>
-                <p>وضعیت انتشار و تنظیمات پیشرفته فقط در حساب مالک نمایش داده می‌شود.</p>
-              </div>
-              <span className="role-chip">دسترسی کامل</span>
+        <section className="owner-workspace role-workspace" aria-labelledby="role-workspace-title">
+          <div className="owner-workspace-heading">
+            <div>
+              <h2 id="role-workspace-title">{isOwner ? "کنترل مالک" : "کار روزانه صندوق‌دار"}</h2>
+              <p>
+                {isOwner
+                  ? "ویرایش کامل منو، تنظیمات پیشرفته و بازیابی انتشار در دسترس مالک است."
+                  : "عملیات روزانه منو و ذخیره و انتشار در دسترس است؛ تنظیمات پیشرفته و بازیابی انتشار فقط با مالک انجام می‌شود."}
+              </p>
             </div>
+            <span className="role-chip">{isOwner ? "دسترسی کامل" : "عملیات روزانه"}</span>
+          </div>
+          {isOwner ? (
             <section className="overview" aria-label="خلاصه منو">
               <div><strong>{counts.categories}</strong><span>دسته‌بندی</span></div>
               <div><strong>{counts.activeItems}</strong><span>آیتم فعال</span></div>
               <div><strong>{counts.archivedItems}</strong><span>آیتم آرشیوی</span></div>
               <div><strong>{draft.revision}</strong><span>نسخه ویرایش</span></div>
             </section>
+          ) : null}
 
-            <PublishPanel status={publishStatus} retrying={retrying} onRetry={handleRetryPublish} />
-          </section>
-        ) : null}
+          <PublishPanel
+            status={publishStatus}
+            retrying={retrying}
+            onRetry={handleRetryPublish}
+            canRetry={isOwner}
+          />
+        </section>
 
         {notice ? (
           <p className={`notice tone-${notice.tone}`} role="status">{notice.message}</p>
@@ -493,11 +622,13 @@ export function AdminApp() {
         ) : null}
 
         <MenuEditor
+          key={menuEditorStorageKey}
           document={draft}
           categoryChoices={categoryChoices}
           uploadingIds={uploadingIds}
           disabled={editorDisabled}
           advanced={isOwner}
+          storageKey={menuEditorStorageKey}
           focusTarget={focusTarget}
           onUpdateCategory={handleUpdateCategory}
           onUpdateItem={handleUpdateItem}
@@ -512,11 +643,10 @@ export function AdminApp() {
 
       <footer className="save-bar">
         <div className="save-state">
-          <span className={`dirty-dot${hasUnsavedChanges ? " is-dirty" : ""}`} aria-hidden="true" />
-          <span>
-            {hasUnsavedChanges
-              ? `${new Intl.NumberFormat("fa-IR").format(changeCount)} بخش تغییر کرده و ذخیره نشده است`
-              : "همه تغییرات ذخیره شده‌اند"}
+          <span className={`dirty-dot is-${savePresentation.tone}`} aria-hidden="true" />
+          <span className="save-state-copy">
+            <strong>{savePresentation.title}</strong>
+            <span>{savePresentation.detail}</span>
           </span>
         </div>
         <div className="save-actions">
@@ -538,7 +668,7 @@ export function AdminApp() {
             {saving
               ? "در حال ذخیره و انتشار…"
               : uploadInProgress
-                ? `در حال بارگذاری ${new Intl.NumberFormat("fa-IR").format(uploadingIds.size)} تصویر…`
+                ? `در حال بارگذاری ${faNumber.format(uploadingIds.size)} تصویر…`
                 : "ذخیره و انتشار"}
           </button>
         </div>

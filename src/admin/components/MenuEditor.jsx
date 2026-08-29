@@ -22,6 +22,62 @@ const FILTERS = [
 ];
 
 const faNumber = new Intl.NumberFormat("fa-IR");
+const validVisibilities = new Set(FILTERS.map((filter) => filter.value));
+const viewStoragePrefix = "l-cafe-admin:view:v1:";
+
+export function menuEditorViewStorageKey(user) {
+  if (!user?.username || !user?.role) return null;
+  return `${viewStoragePrefix}${encodeURIComponent(user.username)}:${encodeURIComponent(user.role)}`;
+}
+
+export function clearMenuEditorViewState(storageKey = null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (storageKey) {
+      window.sessionStorage.removeItem(storageKey);
+      return;
+    }
+    for (let index = window.sessionStorage.length - 1; index >= 0; index -= 1) {
+      const key = window.sessionStorage.key(index);
+      if (key?.startsWith(viewStoragePrefix)) window.sessionStorage.removeItem(key);
+    }
+  } catch {
+    // Session storage can be unavailable; view continuity must never block editing.
+  }
+}
+
+function readMenuEditorViewState(storageKey, advanced) {
+  const fallback = {
+    query: "",
+    visibility: advanced ? "all" : "active",
+    quickCategoryId: "",
+  };
+  if (!storageKey || typeof window === "undefined") return fallback;
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(storageKey));
+    if (!stored || typeof stored !== "object") return fallback;
+    return {
+      query: typeof stored.query === "string" ? stored.query : fallback.query,
+      visibility: validVisibilities.has(stored.visibility) ? stored.visibility : fallback.visibility,
+      quickCategoryId: typeof stored.quickCategoryId === "string" ? stored.quickCategoryId : "",
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function writeMenuEditorViewState(storageKey, viewState) {
+  if (!storageKey || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(storageKey, JSON.stringify({
+      query: viewState.query,
+      visibility: viewState.visibility,
+      quickCategoryId: viewState.quickCategoryId,
+    }));
+  } catch {
+    // Editing remains available when session storage is disabled or full.
+  }
+}
 
 function itemMatches(item, query) {
   return [item.name, item.price, item.description]
@@ -35,6 +91,7 @@ export function MenuEditor({
   uploadingIds,
   disabled,
   advanced,
+  storageKey,
   focusTarget,
   onUpdateCategory,
   onUpdateItem,
@@ -45,19 +102,28 @@ export function MenuEditor({
   onCreateCategory,
   onCreateItem,
 }) {
-  const [query, setQuery] = useState("");
-  const [visibility, setVisibility] = useState(advanced ? "all" : "active");
+  const defaultVisibility = advanced ? "all" : "active";
+  const [viewState, setViewState] = useState(() => readMenuEditorViewState(storageKey, advanced));
+  const { query, visibility, quickCategoryId } = viewState;
   const availableCategories = useMemo(
     () => categoryChoices.filter((category) => !category.archived),
     [categoryChoices],
   );
-  const [quickCategoryId, setQuickCategoryId] = useState(() => availableCategories[0]?.id || "");
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLocaleLowerCase("fa");
 
   useEffect(() => {
+    writeMenuEditorViewState(storageKey, viewState);
+  }, [storageKey, viewState]);
+
+  useEffect(() => {
     if (availableCategories.some((category) => category.id === quickCategoryId)) return;
-    setQuickCategoryId(availableCategories[0]?.id || "");
+    const fallbackCategoryId = availableCategories[0]?.id || "";
+    setViewState((current) => (
+      current.quickCategoryId === fallbackCategoryId
+        ? current
+        : { ...current, quickCategoryId: fallbackCategoryId }
+    ));
   }, [availableCategories, quickCategoryId]);
 
   const sensors = useSensors(
@@ -85,6 +151,7 @@ export function MenuEditor({
   }), [document.categories, normalizedQuery, visibility]);
 
   const reorderDisabled = disabled || Boolean(normalizedQuery) || visibility !== "all";
+  const hasFilteredView = Boolean(normalizedQuery) || visibility !== "all";
   const categoryDragIds = visibleCategories.map(({ category }) => `category:${category.id}`);
   const visibleItemCount = visibleCategories.reduce((total, entry) => total + entry.visibleItems.length, 0);
 
@@ -112,16 +179,26 @@ export function MenuEditor({
   }
 
   function handleCreateCategory() {
-    setQuery("");
-    setVisibility(advanced ? "all" : "active");
+    prepareViewForCreatedEntity();
     onCreateCategory();
   }
 
-  function handleQuickCreateItem() {
-    if (!quickCategoryId) return;
-    setQuery("");
-    setVisibility(advanced ? "all" : "active");
-    onCreateItem(quickCategoryId);
+  function prepareViewForCreatedEntity() {
+    setViewState((current) => ({
+      ...current,
+      query: current.query.trim() ? "" : current.query,
+      visibility: current.visibility === "archived" ? defaultVisibility : current.visibility,
+    }));
+  }
+
+  function handleCreateItem(categoryId) {
+    if (!categoryId) return;
+    prepareViewForCreatedEntity();
+    onCreateItem(categoryId);
+  }
+
+  function handleResetView() {
+    setViewState((current) => ({ ...current, query: "", visibility: "all" }));
   }
 
   return (
@@ -143,7 +220,7 @@ export function MenuEditor({
             <input
               type="search"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => setViewState((current) => ({ ...current, query: event.target.value }))}
               placeholder="نام آیتم، دسته یا قیمت"
             />
           </label>
@@ -157,7 +234,7 @@ export function MenuEditor({
                   type="button"
                   className={visibility === filter.value ? "is-active" : ""}
                   aria-pressed={visibility === filter.value}
-                  onClick={() => setVisibility(filter.value)}
+                  onClick={() => setViewState((current) => ({ ...current, visibility: filter.value }))}
                 >
                   {filter.label}
                 </button>
@@ -170,7 +247,10 @@ export function MenuEditor({
               <span>افزودن سریع آیتم به</span>
               <select
                 value={quickCategoryId}
-                onChange={(event) => setQuickCategoryId(event.target.value)}
+                onChange={(event) => setViewState((current) => ({
+                  ...current,
+                  quickCategoryId: event.target.value,
+                }))}
                 disabled={disabled || availableCategories.length === 0}
               >
                 {availableCategories.map((category) => (
@@ -181,7 +261,7 @@ export function MenuEditor({
             <button
               type="button"
               className="primary-button"
-              onClick={handleQuickCreateItem}
+              onClick={() => handleCreateItem(quickCategoryId)}
               disabled={disabled || !quickCategoryId}
             >
               آیتم جدید
@@ -191,16 +271,13 @@ export function MenuEditor({
 
         <div className="editor-results-bar" aria-live="polite">
           <span>{faNumber.format(visibleCategories.length)} دسته و {faNumber.format(visibleItemCount)} آیتم</span>
-          {reorderDisabled && !disabled ? (
+          {hasFilteredView ? (
             <button
               type="button"
               className="text-button"
-              onClick={() => {
-                setQuery("");
-                setVisibility("all");
-              }}
+              onClick={handleResetView}
             >
-              نمایش همه برای تغییر ترتیب
+              پاک کردن جست‌وجو و نمایش همه
             </button>
           ) : (
             <span className="reorder-hint">برای تغییر ترتیب از دستگیره یا دکمه‌های جابجایی استفاده کنید.</span>
@@ -236,7 +313,7 @@ export function MenuEditor({
                   onMoveItem={onMoveItem}
                   onUpload={onUpload}
                   onMoveCategoryByOffset={onMoveCategoryByOffset}
-                  onCreateItem={onCreateItem}
+                  onCreateItem={handleCreateItem}
                 />
               );
             })}

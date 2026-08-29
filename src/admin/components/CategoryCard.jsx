@@ -59,10 +59,7 @@ function CategoryCardComponent({
     return () => cancelAnimationFrame(frame);
   }, [category.id, focusTarget]);
 
-  useEffect(() => {
-    if (autoExpand) setExpanded(true);
-  }, [autoExpand]);
-
+  const displayExpanded = autoExpand || expanded;
   const countLabel = visibleItems.length === category.items.length
     ? `${faNumber.format(category.items.length)} آیتم`
     : `${faNumber.format(visibleItems.length)} از ${faNumber.format(category.items.length)} آیتم`;
@@ -88,15 +85,19 @@ function CategoryCardComponent({
         <button
           type="button"
           className="category-toggle"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((current) => !current)}
+          aria-expanded={displayExpanded}
+          aria-disabled={autoExpand || undefined}
+          title={autoExpand ? "نتیجه‌های جست‌وجو موقتاً باز هستند" : undefined}
+          onClick={() => {
+            if (!autoExpand) setExpanded((current) => !current);
+          }}
         >
           <span className="category-title-line">
             <strong>{category.title || "دسته بدون نام"}</strong>
             {category.archived ? <span className="archive-badge">آرشیو شده</span> : null}
           </span>
           <span className="category-count">{countLabel}</span>
-          <span className="chevron" aria-hidden="true">{expanded ? "−" : "+"}</span>
+          <span className="chevron" aria-hidden="true">{displayExpanded ? "−" : "+"}</span>
         </button>
         <div className="category-header-actions">
           <button
@@ -124,7 +125,7 @@ function CategoryCardComponent({
         </div>
       </header>
 
-      {expanded ? (
+      {displayExpanded ? (
         <div className="category-body">
           {category.archived ? (
             <p className="archive-explainer">این دسته و همه آیتم‌هایش در منوی عمومی نمایش داده نمی‌شوند.</p>
