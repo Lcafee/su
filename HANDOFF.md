@@ -1,5 +1,7 @@
 # L Cafe handoff
 
+Mutable state is authoritative in `PROJECT_STATE.md`.
+
 ## Active architecture
 
 ```text
@@ -33,6 +35,9 @@ excluded from active build, release, provisioning, and deployment paths.
   document root.
 - The tracked snapshot under `src/menu/fixtures/` supports local Vite
   development only and is independent of archived menu inputs.
+- Root `.htaccess` is composite: release code owns the public rules and ParsPack
+  owns the final fenced runtime block. Deployment preserves the block; manual
+  ZIPs omit the root file.
 
 `MenuApp` owns category navigation; memoized category/product boundaries and a
 shared `ResizeObserver` manage rendering. Variants are informational rows, not
@@ -53,7 +58,9 @@ explicitly approved, `npm run release:generate -- --approve <full-sha>` builds
 that commit in a detached worktree and atomically updates ignored
 `release/current/`. Its manifests bind the SHA, base path, inputs, and generated
 hashes. `package.py` and `deploy.py` accept only that approved artifact and omit
-the internal manifests from public output.
+the internal manifests from public output. File-manager packages also omit root
+`.htaccess`; FTPS deployment composes its release-owned portion with the opaque
+host runtime block.
 
 Approved generation is a hard stop. Deployment requires separate explicit
 authorization. Code deployment never publishes menu changes or owns persistent
@@ -69,6 +76,8 @@ normal category/item/media/order/archive/save-and-publish operations, while
 advanced category fields and item metadata/options are hidden and rejected by
 the API if changed. Accounts are created only with the interactive host CLI.
 Do not edit JSX, archived inputs, or the local fixture to change the live menu.
+Both roles and migrations `001_menu_admin` and `002_admin_roles` are active in
+production; the exact mutable record remains in `PROJECT_STATE.md`.
 
 For UI/code changes, edit source, validate, commit, push, obtain exact-SHA
 approval, generate the release, then stop at the approval boundary. For host or

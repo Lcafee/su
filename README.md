@@ -3,6 +3,9 @@
 React + Vite frontend with a PHP/MySQL menu-admin control plane and static
 snapshot delivery for the public menu.
 
+Current mutable source, release, production, migration, phase, and blocker state
+is authoritative in [`PROJECT_STATE.md`](PROJECT_STATE.md).
+
 ## Development
 
 ```sh
@@ -110,8 +113,9 @@ py deploy.py --check-remote
 py deploy.py
 ```
 
-`package.py` archives exactly the public contents of `release/current/`.
-`deploy.py` uploads that same served file set. Both refuse missing, edited, or
+`package.py` archives the file-manager-safe public contents of
+`release/current/`; it deliberately excludes root `.htaccess`. `deploy.py`
+uploads the approved served set. Both refuse missing, edited, or
 unknown-commit release artifacts. The internal `.lcafe-build.json` and
 `.lcafe-release.json` manifests are intentionally excluded from the public
 upload ZIP and FTPS upload.
@@ -122,6 +126,9 @@ compares every release-owned file by SHA-256, and verifies staging protection;
 it makes no remote change and never writes `.deploy-state.json`.
 
 Deploy-owned temporary files are denied by `.htaccess` before staging begins.
+The release owns its code-managed portion; ParsPack owns one final fenced
+runtime block. Deployment preserves that block byte-for-byte and fails safely
+on missing, malformed, or duplicate ownership markers.
 On a host that still has the older `.htaccess`, the first deploy will stop before
 creating any temporary upload. After confirming the FTP document root with the
 read-only `--check-remote` command or the ParsPack file manager, run the one-time
@@ -133,12 +140,13 @@ py deploy.py --bootstrap-htaccess
 
 Future deploys verify the remote protection automatically and clean abandoned
 `.lcafe-uploading` files before and after interrupted deployments. A genuinely
-empty first-upload directory passed with `--new` bootstraps the same protection
-automatically.
+empty first-upload directory must be provisioned with its host runtime block
+before deployment; `--new` does not bypass this requirement. The bootstrap
+installs only release rules and never creates or reconstructs private content.
 
 Host-specific PHP runtime settings remain outside release ownership. Never add
-the private-config path or another host-only runtime override to a generated
-release.
+the private-config path, bootstrap path, or host-only runtime block to Git or a
+generated release.
 
 The canonical ParsPack runbook, current live-state record, persistent-data
 boundaries, API recovery procedure, and deployment checklist are in

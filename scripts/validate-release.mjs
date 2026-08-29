@@ -9,6 +9,7 @@ const readText = (path) => readFileSync(resolve(root, path), "utf8");
 const PUBLIC_MENU_URL = "https://l-cafe.ir/menu";
 const PHONE_DISPLAY = "09130005767";
 const PHONE_E164 = "+989130005767";
+const PLACE_ID = "ChIJHwiIQwA3vD8RouGWwXbq5GI";
 const OLD_PHONE_TOKENS = [
   "+989130005768",
   "09130005768",
@@ -52,6 +53,15 @@ for (const [file, text] of publicTexts) {
 if (!indexHtml.includes(`"telephone": "${PHONE_E164}"`)) {
   fail("index.html JSON-LD telephone is not the approved E.164 number");
 }
+for (const [file, text] of [
+  ["index.html", indexHtml],
+  ["src/landing/LandingApp.jsx", landingSource],
+]) {
+  if (!text.includes(PLACE_ID)) fail(`${file} does not use the canonical Google Place ID`);
+  if (/destination=32\.|[?&](?:lat|lng|query)=32\./.test(text)) {
+    fail(`${file} publishes unverified coordinates`);
+  }
+}
 if (!indexHtml.includes(`"hasMenu": "${PUBLIC_MENU_URL}"`)) {
   fail("index.html JSON-LD hasMenu is not the canonical menu URL");
 }
@@ -87,6 +97,15 @@ for (const requiredRule of [
   "RewriteRule ^menu$ menu.html [L]",
 ]) {
   if (!htaccess.includes(requiredRule)) fail(`.htaccess is missing ${requiredRule}`);
+}
+for (const forbidden of [
+  "LCAFE-HOST-RUNTIME-BEGIN",
+  "LCAFE-HOST-RUNTIME-END",
+  "php_value auto_prepend_file",
+]) {
+  if (htaccess.includes(forbidden)) {
+    fail(`release-owned .htaccess contains host-only token ${forbidden}`);
+  }
 }
 
 console.log("release validation: ok");

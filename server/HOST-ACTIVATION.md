@@ -80,7 +80,9 @@ parent directory out of the web root, Git checkout, and release directory.
 
 ## 3. Set the web-runtime config pointer
 
-Using the host's provider-supported site environment configuration, set:
+Set the private config pointer through the host's approved runtime mechanism.
+Use placeholders in tracked documentation; keep the real absolute path in the
+host/operator configuration only:
 
 ```text
 LCAFE_PRIVATE_CONFIG=/home/account/private/lcafe/config.php
@@ -102,11 +104,11 @@ absent/unusable in web PHP. Restore the existing path; do not create a
 replacement config or re-import the menu when persistent snapshots/database
 already exist.
 
-Current ParsPack details and the temporary marked host-only `.htaccess` recovery
-block are recorded in `../OPERATIONS.md`. Because `.htaccess` is otherwise
-release-owned, do not deploy over that block or normalize the difference until
-the pointer is moved to a provider-managed layer or preservation is explicitly
-approved.
+ParsPack requires a direct `.htaccess` `php_value auto_prepend_file` override.
+It is permanent host-owned state inside the final fenced runtime block described
+in `../OPERATIONS.md`. The block's private path/content is never copied into Git
+or a release. Deployment owns only the surrounding code-managed rules and must
+preserve the fenced bytes exactly.
 
 ## 4. Create additional role-assigned accounts
 
@@ -141,9 +143,8 @@ private config, sessions, revision archives, managed snapshots, originals, or
 managed media. Future menu edits use the online admin and publish static data
 without Git, release generation, or deployment.
 
-The live host was already provisioned before 2026-08-29: published revisions 3
-and 4 and their managed media were present. cPanel confirmed the existing
-private config at `/home/h415280/private/lcafe/config.php` and document root at
-`/home/h415280/public_html`. The later web-runtime pointer recovery is host
-state, not release content; preserve it and all persistent paths when applying
-the role migration and future code releases.
+The live host is already provisioned. Migrations `001_menu_admin` and
+`002_admin_roles` and owner/cashier roles are active. The private config and
+runtime pointer are host state, not release content; preserve them and all
+persistent paths during future code releases. See `../PROJECT_STATE.md` for the
+current mutable record.

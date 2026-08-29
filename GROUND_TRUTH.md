@@ -1,7 +1,7 @@
 # L Cafe SEO Ground Truth
 
 Status: **Ground truth materially complete; measurement access unresolved.**
-Last verified: 2026-08-29 (Asia/Tehran)
+Last verified: 2026-08-30 (Asia/Tehran)
 
 ## Canonical business facts
 
@@ -22,7 +22,7 @@ Last verified: 2026-08-29 (Asia/Tehran)
 | maps_listing | Google place ID `ChIJHwiIQwA3vD8RouGWwXbq5GI` (`LCafe - ال کافه`) | FACT | owner confirmation + fresh public Maps capture | High | Similarly named Esfahanak listing explicitly rejected by owner |
 | public_maps_rating | `5.0` | FACT (mutable observation) | fresh public Maps capture | High | Recapture before every baseline/report lock |
 | public_maps_review_count | `3` | FACT (mutable observation) | fresh public Maps capture | High | Small sample; not a quality conclusion |
-| coordinates | not yet captured from an authoritative first-party/public place record | UNKNOWN | — | — | Do not fabricate |
+| coordinates | not independently verified | UNKNOWN | — | — | Source and schema must not publish `geo` or use coordinates as Maps identity |
 
 ## Production / search surface
 
@@ -33,7 +33,9 @@ Last verified: 2026-08-29 (Asia/Tehran)
 - FACT — root and menu pages have self-referential canonical tags in source.
 - FACT — `.htaccess` redirects HTTP → HTTPS, non-apex hosts → apex, `/menu.html` → `/menu`, and `/menu/` → `/menu`.
 - FACT — root page publishes `CafeOrCoffeeShop` JSON-LD with name, alternateName, URL, image, telephone, opening hours, address, map, menu and Instagram.
-- FACT — current JSON-LD does **not** define the stable entity `@id` requested by the SEO spec and does not currently publish verified `geo` coordinates.
+- FACT — current JSON-LD defines stable entity `https://l-cafe.ir/#business`,
+  explicit daily hours, and the canonical Place-ID Maps target; it intentionally
+  omits `geo`.
 - FACT — `/menu` source HTML is a JavaScript shell; categories/items are fetched from `managed-menu/current.json` and inserted after client execution.
 - FACT — production menu state is independent of deploy artifacts; `managed-menu/current.json` was revision 4 with 12 categories / 94 items in the latest repository operations record.
 - FACT — repository search found no common GA4/GTM/site-verification tokens. This does **not** prove analytics or Search Console are absent because verification/instrumentation may exist outside tracked source.
@@ -48,6 +50,8 @@ Last verified: 2026-08-29 (Asia/Tehran)
 
 ## Material conflicts
 
-No unresolved material **business-fact conflict** remains. The Maps identity conflict was resolved by owner confirmation in favor of the Metropol / Chahar Bagh-e Bala listing.
+No unresolved material **business-fact conflict** remains. The Maps identity is
+the owner-confirmed Metropol / Chahar Bagh-e Bala Place ID. Coordinates remain
+unknown rather than conflicting and are not published as authoritative facts.
 
 Measurement availability is an access dependency, not a business-fact conflict.

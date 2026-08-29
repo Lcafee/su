@@ -1,7 +1,7 @@
 # L Cafe Entity Specification
 
 Status: **Canonical identity locked; coordinate-dependent fields pending verification.**
-Last verified: 2026-08-29
+Last verified: 2026-08-30
 
 ## Canonical entity
 
@@ -17,6 +17,9 @@ Last verified: 2026-08-29
 - Hours: daily `07:00–23:00`
 - Menu: `https://l-cafe.ir/menu`
 - Maps identity: Google place ID `ChIJHwiIQwA3vD8RouGWwXbq5GI`, public name `LCafe - ال کافه`
+- Maps URL contract: use a Google Maps URL carrying that Place ID; do not use
+  coordinates as the identity key.
+- Coordinates / `geo`: unverified and omitted until independently authoritative.
 - Instagram: `https://www.instagram.com/lcafe.esf/`
 
 The owner confirmed this Metropol / Chahar Bagh-e Bala listing as the canonical business and explicitly rejected the similarly named Esfahanak listing.
@@ -76,14 +79,12 @@ Fresh Maps capture on 2026-08-29:
 
 These are mutable observations, not permanent entity properties. Recapture before Day 30/60/90 reports and do not embed rating/review schema unless policy, source authority and visible-content requirements are independently satisfied.
 
-## Current schema delta
+## Current schema contract
 
-Current homepage already includes a truthful `CafeOrCoffeeShop` object with name, alternateName, URL, image, telephone, hours, address, map, menu and Instagram.
+The homepage publishes the stable `@id`, normalized NAP, explicit daily
+`openingHoursSpecification`, canonical Place-ID Maps target, menu, image, and
+Instagram. It intentionally omits `geo`.
 
-Required next changes after roadmap/release gate:
-
-1. add the stable `@id`;
-2. replace/augment compact opening-hours string with explicit `openingHoursSpecification`;
-3. reuse the same entity ID from `/location` and other relevant pages;
-4. add `geo` only after authoritative coordinates are captured;
-5. never add unverified facilities, price ranges, cuisine, service modes, awards, aggregate ratings or other attributes.
+Future relevant pages must reuse the same entity ID. Never add coordinates,
+facilities, price ranges, cuisine, service modes, awards, aggregate ratings, or
+other attributes without separate authoritative evidence.

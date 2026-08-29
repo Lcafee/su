@@ -102,6 +102,8 @@ def guard_untracked():
 HTML_ENTRY_POINTS = {"index.html", "menu.html", "404.html"}
 STAGING_SUFFIX = ".lcafe-uploading"
 STAGING_DENY_MARKER = b"LCAFE-DEPLOY-STAGING-DENY"
+HOST_RUNTIME_BEGIN = b"# LCAFE-HOST-RUNTIME-BEGIN"
+HOST_RUNTIME_END = b"# LCAFE-HOST-RUNTIME-END"
 
 
 def deploy_order_key(name):
@@ -143,13 +145,62 @@ def read_remote_file(ftp, remote):
     return b"".join(chunks)
 
 
+def release_htaccess_payload():
+    """Return the release-owned portion and reject host state in Git output."""
+    with open(package.source_path(".htaccess"), "rb") as source:
+        payload = source.read()
+    if HOST_RUNTIME_BEGIN in payload or HOST_RUNTIME_END in payload:
+        fail("approved release .htaccess contains host-runtime ownership markers")
+    if b"php_value auto_prepend_file" in payload:
+        fail("approved release .htaccess contains a host-only runtime override")
+    if STAGING_DENY_MARKER not in payload:
+        fail("approved release .htaccess is missing the staging deny rule")
+    return payload
+
+
+def split_host_runtime_block(payload):
+    """Return (code-owned bytes, fenced host block), failing on unsafe syntax.
+
+    The host block must be the final non-whitespace block. Its bytes from the
+    begin marker through the end marker are opaque and are never interpreted,
+    logged, hashed into release metadata, or sourced from Git.
+    """
+    if payload is None:
+        fail("remote .htaccess is missing; install the host runtime block first")
+    lines = payload.splitlines(keepends=True)
+    begin = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == HOST_RUNTIME_BEGIN]
+    end = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == HOST_RUNTIME_END]
+    if len(begin) != 1 or len(end) != 1:
+        fail(
+            "remote .htaccess must contain exactly one fenced host runtime block; "
+            "nothing was changed"
+        )
+    start, finish = begin[0], end[0]
+    if finish <= start:
+        fail("remote .htaccess host runtime markers are out of order; nothing was changed")
+    if b"".join(lines[finish + 1:]).strip():
+        fail("remote .htaccess has content after the host runtime block; nothing was changed")
+    code_owned = b"".join(lines[:start]).rstrip(b"\r\n") + b"\n"
+    host_owned = b"".join(lines[start:finish + 1])
+    return code_owned, host_owned
+
+
+def compose_htaccess(code_owned, host_owned):
+    """Compose a deterministic live file without changing host-owned bytes."""
+    return code_owned.rstrip(b"\r\n") + b"\n\n" + host_owned + b"\n"
+
+
+def remote_htaccess_state(ftp):
+    payload = read_remote_file(ftp, ".htaccess")
+    code_owned, host_owned = split_host_runtime_block(payload)
+    return payload, code_owned, host_owned
+
+
 def remote_staging_protected(ftp):
-    """Prove the live .htaccess denies deploy-owned temporary files."""
-    current = read_remote_file(ftp, ".htaccess")
-    if current is None:
-        return False
+    """Prove valid host ownership and denial of deploy temporary files."""
+    _, code_owned, _ = remote_htaccess_state(ftp)
     return all(
-        token in current
+        token in code_owned
         for token in (
             STAGING_DENY_MARKER,
             b'<FilesMatch "\\.lcafe-uploading$">',
@@ -159,7 +210,7 @@ def remote_staging_protected(ftp):
 
 
 def install_staging_protection(ftp):
-    """One-time live .htaccess bootstrap before any temporary file is staged.
+    """Install release rules while preserving the required host block.
 
     This intentionally writes the final .htaccess path directly rather than
     creating a public temporary file before the deny rule exists. It is only
@@ -167,22 +218,23 @@ def install_staging_protection(ftp):
     The previous file is kept in memory and restored on a verified failure while
     the control connection is still available.
     """
-    path = package.source_path(".htaccess")
-    with open(path, "rb") as fh:
-        payload = fh.read()
-    if STAGING_DENY_MARKER not in payload:
-        fail("approved release .htaccess is missing the staging deny rule")
-
     previous = read_remote_file(ftp, ".htaccess")
+    _, host_owned = split_host_runtime_block(previous)
+    payload = compose_htaccess(release_htaccess_payload(), host_owned)
     try:
         ftp.storbinary("STOR .htaccess", io.BytesIO(payload))
         actual = ftp.size(".htaccess")
         if actual != len(payload):
             raise RuntimeError("remote .htaccess is %r bytes; expected %d" % (actual, len(payload)))
         installed = read_remote_file(ftp, ".htaccess")
-        if installed is None or STAGING_DENY_MARKER not in installed:
-            raise RuntimeError("remote .htaccess does not contain the staging deny marker")
-    except (ftplib.Error, OSError, RuntimeError) as e:
+        if installed is None:
+            raise RuntimeError("remote .htaccess became unreadable")
+        installed_code, installed_host = split_host_runtime_block(installed)
+        if installed_code != release_htaccess_payload():
+            raise RuntimeError("remote .htaccess code-managed portion did not verify")
+        if installed_host != host_owned:
+            raise RuntimeError("remote .htaccess host runtime block changed")
+    except (ftplib.Error, OSError, RuntimeError, SystemExit) as e:
         try:
             if previous is None:
                 remove_if_present(ftp, ".htaccess")
@@ -200,8 +252,8 @@ def ensure_staging_protection(ftp, allow_bootstrap):
     if not allow_bootstrap:
         fail(
             "remote .htaccess does not yet deny *.lcafe-uploading files.\n"
-            "        Run once with --bootstrap-htaccess (after confirming the target "
-            "directory), then normal deploys will verify the protection automatically."
+            "        After confirming the target and its fenced host runtime block, "
+            "run once with --bootstrap-htaccess to install only the release-owned rules."
         )
     install_staging_protection(ftp)
     if not remote_staging_protected(ftp):
@@ -223,16 +275,20 @@ def cleanup_staging_files(ftp, names):
     return leftover
 
 
-def stage_file(ftp, name):
+def stage_file(ftp, name, payload=None):
     """Upload one complete file without touching its live path."""
     path = package.source_path(name)
     staged = staging_name(name)
     remove_if_present(ftp, staged)
 
-    with open(path, "rb") as fh:
-        ftp.storbinary("STOR " + staged, fh)
+    if payload is None:
+        with open(path, "rb") as fh:
+            ftp.storbinary("STOR " + staged, fh)
+        expected = os.path.getsize(path)
+    else:
+        ftp.storbinary("STOR " + staged, io.BytesIO(payload))
+        expected = len(payload)
 
-    expected = os.path.getsize(path)
     try:
         actual = ftp.size(staged)
     except (ftplib.Error, OSError) as e:
@@ -290,6 +346,14 @@ def check_remote_release(ftp, names, local):
         if payload is None:
             missing.append(name)
             result = "missing/unreadable"
+        elif name == ".htaccess":
+            code_owned, _ = split_host_runtime_block(payload)
+            if bytes_digest(code_owned) != local[name]:
+                mismatched.append(name)
+                result = "CODE PORTION DIFFERS"
+            else:
+                matched.append(name)
+                result = "matches; host runtime block preserved"
         elif bytes_digest(payload) != local[name]:
             mismatched.append(name)
             result = "DIFFERS"
@@ -470,8 +534,8 @@ def main():
         "--bootstrap-htaccess",
         action="store_true",
         help=(
-            "one-time install of the staging-deny .htaccess before any temporary "
-            "upload; use only after confirming the remote document root"
+            "one-time install of release-owned .htaccess rules while preserving "
+            "an existing fenced host runtime block"
         ),
     )
     args = ap.parse_args()
@@ -488,7 +552,7 @@ def main():
         fail(str(error))
     print("deploy: approved release %s" % release["gitCommit"])
 
-    names = package.collect()
+    names = package.collect(include_host_owned=True)
     missing = [n for n in names if not os.path.isfile(package.source_path(n))]
     if missing:
         fail("missing locally, refusing to upload:\n  " + "\n  ".join(missing))
@@ -544,9 +608,7 @@ def main():
         # live .htaccess is proven to deny direct HTTP requests for the suffix.
         # A first/new deployment can bootstrap the rule explicitly; otherwise an
         # unprotected remote configuration is a hard stop before staging begins.
-        bootstrapped = ensure_staging_protection(
-            ftp, args.bootstrap_htaccess or args.new
-        )
+        bootstrapped = ensure_staging_protection(ftp, args.bootstrap_htaccess)
         if bootstrapped:
             state[".htaccess"] = local[".htaccess"]
             if ".htaccess" in changed:
@@ -564,7 +626,11 @@ def main():
         # A dropped data connection cannot corrupt a live file in this phase.
         pending_staged = set()
         for index, name in enumerate(changed, 1):
-            staged = stage_file(ftp, name)
+            payload = None
+            if name == ".htaccess":
+                _, _, host_owned = remote_htaccess_state(ftp)
+                payload = compose_htaccess(release_htaccess_payload(), host_owned)
+            staged = stage_file(ftp, name, payload=payload)
             pending_staged.add(name)
             print("  staged [%d/%d] %s" % (index, len(changed), name))
 

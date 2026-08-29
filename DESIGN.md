@@ -1,18 +1,17 @@
 ---
 name: L Cafe
-description: Two continuous Persian RTL canvases for the QR-to-menu path.
+description: Mobile-first Persian hospitality across atmospheric public pages and a practical menu control plane.
 colors:
   landing-maroon: "#471019"
   menu-scarlet: "#681F2D"
   ivory: "#F3F1EC"
-  mark-fill: "#E6E5E1"
-  ivory-strong: "rgba(243,241,236,.82)"
-  ivory-soft: "rgba(243,241,236,.72)"
-  menu-ink-strong: "rgba(104,31,45,.88)"
-  menu-ink-soft: "rgba(104,31,45,.76)"
-  menu-ink-dim: "rgba(104,31,45,.66)"
-  menu-line: "rgba(104,31,45,.14)"
-  menu-line-strong: "rgba(104,31,45,.24)"
+  ivory-deep: "#E6E5E1"
+  admin-paper: "#FFFDF9"
+  admin-ink: "#35141B"
+  admin-muted: "#76676A"
+  success: "#246B4A"
+  pending: "#8A5B12"
+  error: "#A22A38"
 typography:
   display:
     fontFamily: "Sahel, Vazirmatn, system-ui, sans-serif"
@@ -20,225 +19,208 @@ typography:
   body:
     fontFamily: "Vazirmatn, system-ui, sans-serif"
     fontWeight: 400
+  hero-latin:
+    fontFamily: "Fahkwang, Vazirmatn, system-ui, sans-serif"
+    fontWeight: 600
 rounded:
-  edge: "2px"
-  tile-desktop: "12px"
-  tile-mobile: "2px"
-  category-desktop: "14px"
+  editorial-edge: "2px"
+  public-surface: "12px"
+  admin-control: "10px"
+  admin-panel: "16px"
   pill: "999px"
 spacing:
   landing-gutter: "clamp(20px, 6vw, 80px)"
   menu-gutter: "clamp(14px, 4vw, 48px)"
   landing-flow: "clamp(52px, 7vw, 80px)"
+  public-measure: "900px"
+components:
+  landing-primary:
+    backgroundColor: "{colors.ivory}"
+    textColor: "{colors.landing-maroon}"
+    rounded: "{rounded.editorial-edge}"
+    height: "44px"
+    padding: "0 30px"
+  menu-search:
+    backgroundColor: "{colors.ivory}"
+    textColor: "{colors.menu-scarlet}"
+    rounded: "{rounded.public-surface}"
+    height: "46px"
+  admin-primary:
+    backgroundColor: "{colors.menu-scarlet}"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.admin-control}"
+    height: "44px"
+  admin-field:
+    backgroundColor: "{colors.admin-paper}"
+    textColor: "{colors.admin-ink}"
+    rounded: "{rounded.admin-control}"
 ---
 
 # Design System: L Cafe
 
-## Product mode
+## Overview
 
-Landing is a short brand reception; Menu is an operate surface for a customer
-already seated at the café. Mobile is the primary use scene. The Landing may
-pause for atmosphere, while the Menu prioritizes category access, item names,
-descriptions, and prices.
+**Creative North Star: "The Metropole Pause"**
 
-The two pages share typography, RTL behavior, brand marks, restrained motion,
-and the maroon/ivory relationship. They deliberately invert their canvases:
+L Cafe uses one restrained hospitality identity at three different working
+speeds. Landing is an atmospheric reception, Menu is a fast customer lookup
+surface, and Admin is a dense but calm operating workspace. The public pages
+share maroon, ivory, RTL typography, brand marks, and restrained motion; Admin
+extends those cues with paper surfaces and semantic status colors so operators
+can work safely for longer sessions.
 
-- Landing is ivory typography over a full-bleed `#471019` patterned field.
-- Menu is scarlet typography over a full-bleed `#F3F1EC` field with a very faint
-  scarlet brand pattern.
+Landing and Menu are continuous viewport canvases rather than cards inside a
+white browser. Admin is intentionally different: it uses bounded panels,
+explicit controls, persistent save state, and recovery messaging because the
+operator is editing production-backed content.
 
-Neither page is a card inside the browser. The page color belongs to `html`,
-`body`, and the viewport; React roots and content wrappers remain transparent.
+**Key Characteristics:**
 
-## Full-page canvas and safe areas
+- Mobile-first Persian RTL across every surface.
+- Landing atmosphere, Menu scanability, and Admin operational clarity.
+- Maroon and ivory remain the brand anchors; Admin status colors are semantic.
+- Text and essential controls remain usable without decorative motion or WebGL.
+- Current source implementation is the visual authority; menu data is not.
 
-Both HTML entries use `viewport-fit=cover`. `html`, `body`, each React root,
-and the primary page wrapper own a minimum height of `100vh` with `100dvh` as
-the modern override. The page colors therefore continue behind notches, home
-indicators, and browser chrome instead of exposing a default white gutter.
+## Colors
 
-Horizontal content padding remains intentional. Physical left and right
-padding use the larger of the design gutter and the matching
-`safe-area-inset-*`. Bottom actions and footers add
-`safe-area-inset-bottom`; the Menu masthead adds `safe-area-inset-top`.
-There are no device-specific dimensions or user-agent branches.
+Landing uses deep maroon as the room and ivory as light. Menu reverses that
+relationship: ivory is the page and scarlet is ink, navigation, rules, and the
+footer field. Admin uses ivory/paper with dark maroon ink and reserves green,
+amber, and red for success, pending, and error state only.
 
-The Landing pattern is one fixed plane. The Menu watermark is also fixed at
-the page level. Neither pattern restarts per section.
+**The Public Two-Hue Rule.** Landing and Menu do not introduce a third accent
+hue. Secondary public values are alpha variants of their current foreground.
 
-## Color
+**The Semantic Admin Rule.** Admin status colors communicate system state; they
+must not become decorative brand accents or substitute for text labels.
 
-The palette remains the brand pair, with two calibrated maroons serving their
-different surfaces:
-
-- Landing maroon `#471019` is the dark room and browser theme color.
-- Menu scarlet `#681F2D` is the readable foreground, active state, footer
-  field, and faint watermark source on ivory.
-- Ivory `#F3F1EC` is Landing foreground, Menu page background, and the Menu
-  footer foreground.
-
-Secondary values are alpha variants of the foreground already used on that
-surface. Do not introduce a third accent hue. The Metal-FX shader is filtered
-back into the Menu’s scarlet/ivory range rather than acting as a rainbow
-accent.
+**The Host-State Rule.** Visual source never embeds production menu facts or
+private runtime values to make a screen look complete.
 
 ## Typography
 
-Sahel is used only at its shipped 700 weight for display moments and category
-headings. Vazirmatn carries body copy, item names, prices, controls, and Latin
-brand text. Fahkwang SemiBold is reserved for the landing's `YOUR DAILY PAUSE`
-phrase. All three are self-hosted with swap behavior.
+**Display Font:** Sahel Bold with Vazirmatn fallback.  
+**Body Font:** Vazirmatn.  
+**Hero Latin Font:** Fahkwang SemiBold, reserved for `YOUR DAILY PAUSE`.
 
-On Menu mobile:
+Sahel is used at its shipped 700 weight for Persian display moments. Vazirmatn
+carries item names, prices, controls, metadata, form fields, and operating copy.
+Admin hierarchy relies more on weight and spacing than oversized headings.
 
-- Category title: Sahel 700, `28px / 1.35`.
-- Item name: Vazirmatn 600, `clamp(14px, 4.2vw, 15.5px) / 1.5`.
-- Description: Vazirmatn 400, `12px / 1.75` at the narrow breakpoint.
-- Disclosure: Vazirmatn 500, `11.75px / 1.45`.
-- Table-of-contents link: Vazirmatn 500, `13px / 1.45`; active is 600.
+- **Display:** Sahel 700 for Landing section and Menu category headings.
+- **Title:** Vazirmatn 600 for menu items, admin panel headings, and key states.
+- **Body:** Vazirmatn 400 with generous Persian line-height for descriptive copy.
+- **Label:** Vazirmatn 500–600 for navigation, fields, filters, roles, and status.
+- **Price:** bare Persian numerals, visually prominent, with no unit or separator.
 
-Prices stay exactly as supplied: bare Persian numerals with no currency word,
-unit, separator, or inferred value.
+**The Bare Numeral Rule.** Menu prices remain exactly as supplied; typography
+must never add a currency word, unit, separator, or inferred value.
 
-## Landing composition
+## Layout
 
-The opening is a full small-viewport-height hero with the English phrase at
-center in Fahkwang SemiBold and a quiet vertical scroll cue. It intentionally
-has no top logo or menu control. The fixed brand field is atmospheric but never
-gates readable content.
+Landing is one patterned maroon plane. Its centered small-viewport hero leads
+to an editorial introduction, intrinsic-ratio feature image, single Menu CTA,
+and compact contact close. The feature image has a branded fallback state rather
+than an empty or permanently loading frame.
 
-The editorial introduction becomes one column below 640px. The café image is
-full-bleed on mobile and retains its intrinsic `1586 / 992` ratio; it is not
-cropped into a portrait frame. The Menu CTA remains the only primary button.
-The contact close is compact, right-aligned, and padded clear of the bottom
-safe area.
+Menu is an edge-to-edge ivory canvas with a transparent content measure capped
+at 900px. It opens with the compact back/mark masthead, then a discovery region
+containing search and recovery state. Categories retain the two-column product
+grid on mobile. Search filters rendered categories without mutating source data;
+no-result and fallback-snapshot states remain in normal document flow.
 
-## Menu composition
+Admin is an Operate surface. The top bar identifies the operator; owner-only
+controls are grouped separately; daily editing starts with search, active/
+archived filters, quick creation, and category/item work areas. Archive/restore,
+undo, conflict recovery, and a persistent save bar remain visible where the
+operator needs them. Narrow layouts stack controls without removing their
+labels or recovery actions.
 
-The Menu canvas is ivory from edge to edge. Content is width-constrained to
-`900px`, but no central wrapper paints a separate background, border, radius,
-or shadow.
+Safe-area padding belongs to page-level gutters and fixed actions. No surface
+uses device-model branches. Public anchors, category tracking, and search
+feedback depend on stable document geometry.
 
-The opening signature is deliberately small: a `بازگشت` link to the landing
-page and the standalone Latin `L` mark share one baseline row, divided from the
-first category by one hairline. It is navigation and orientation, not a second
-hero.
+## Elevation & Depth
 
-Every category retains the existing two-column product grid. Mobile grid
-columns never collapse or reflow; only spacing and tile radii tighten. Menu
-data, item order, variants, images, and routes remain external to the visual
-system and are rendered unchanged.
+Landing and Menu are flat by default. Depth comes from their continuous fields,
+fine rules, tonal fills, image layers, and restrained blur—not general-purpose
+card shadows. Metal-FX is decorative and appears only on the Menu category rule
+and the mobile index trigger, always over a complete static fallback.
 
-## Category header and Metal-FX rule
+Admin uses a single soft maroon-tinted shadow for bounded operational panels and
+the save bar. Status panels use tonal backgrounds plus borders and text labels.
 
-Every category uses the same reusable `CategoryMetalRule` treatment immediately
-above its heading:
+**The Flat Public Rule.** Do not turn Landing or Menu into centered page cards.
 
-- A complete 2px scarlet-alpha base line is always present.
-- Real `metal-fx` renders a high-contrast silver reflection over the line on
-  mobile, with a tighter shader scale so local highlights visibly travel.
-- The mobile shader canvas is filtered into the L Cafe palette without the old
-  multiply blend that flattened its brightest reflections.
-- A low-opacity Metal-FX catch-light is enabled on mobile; it adds depth without
-  becoming a neon halo. Desktop keeps the previous restrained treatment.
-- The rule has no frame, box, or animated category-container border.
-- All instances share the package’s WebGL renderer. Package-level viewport
-  observation suspends offscreen copying.
-- `prefers-reduced-motion` pauses every rule while preserving its visible base
-  line and a static reflection frame.
+**The Fallback-First Rule.** Animated reflections, image reveals, and loading
+effects enhance an already visible static structure; they never replace it.
 
-Do not wrap `.cat`, `.cat-head`, or any product-grid container in Metal-FX.
-The only Metal-FX hosts are the thin category rule tracks and, on mobile, the
-fixed category trigger described below.
+## Shapes
 
-## Category table of contents
+Landing’s primary action uses a sharp editorial 2px edge. Menu product imagery
+and search/navigation surfaces use quiet 12–14px rounding; disclosure remains a
+plain underlined word with an expanded hit area. Pills are reserved for compact
+state, role, and option labels.
 
-The fixed bottom trigger is a compact, almost-square editorial control. It
-shows “فهرست” and the current category without changing document or grid
-geometry.
+Admin controls use consistent medium rounding, while work panels use a larger
+radius. Destructive actions remain textually explicit and are not disguised as
+neutral controls. Borders are thin and structural; nested boxes are avoided.
 
-On mobile, the same real Metal-FX silver shader draws a living perimeter over
-the trigger. The button’s ordinary 1px outline remains underneath as a complete
-fallback, while the animated layer is decorative and pointer-transparent.
-Reduced motion pauses the reflection in place. The Metal-FX overlay is not
-mounted on desktop, preserving the existing desktop trigger.
+## Components
 
-The popover is a bordered ivory table of contents with one category per row on
-mobile and two columns on wider screens. Each row keeps a 44px minimum target,
-a fine divider, and a short scarlet rule marker. The current row uses a quiet
-tonal fill, stronger text, the extended marker, and `aria-current="location"`.
+### Landing reception
 
-Behavioral contract:
+- The hero has no logo/header/menu control; the English phrase and scroll cue
+  are the opening signature.
+- The feature photo preserves its intrinsic ratio and exposes a branded error
+  fallback with an accessible description.
+- The contact close presents canonical NAP, hours, phone, Place-ID Maps target,
+  and Instagram. Menu CTA is the only primary action.
 
-- IntersectionObserver keeps the trigger and list synchronized with the
-  category in view.
-- Selecting a row writes the category hash, closes the popover, focuses the
-  category heading, and scrolls it to the top offset.
-- The focused heading receives a restrained outline sized to its text rather
-  than a full-width box.
-- Opening focuses the current category link.
-- Outside pointer-down and Escape both close the popover and return focus to
-  the trigger.
-- Short screens scroll the one-column list; the last category remains
-  reachable.
-- Reduced-motion users receive an immediate jump rather than smooth scrolling.
+### Menu discovery and navigation
 
-## Product disclosure
+- Search is a labeled native search field with a clear action and live result
+  feedback; it does not change the managed snapshot.
+- The fixed index trigger and popover track the current category. Selecting a
+  category closes the popover, moves focus, and respects reduced motion.
+- Fallback-snapshot, loading, error, empty-search, and retry states explain the
+  available recovery action in plain Persian.
 
-Descriptions default to a reliable two-line `max-height` clamp while the full
-text remains in the DOM. A shared ResizeObserver plus a font-ready measurement
-shows “بیشتر” only when the rendered paragraph actually overflows. Expanding
-switches to “کمتر”, removes the clamp, preserves `aria-expanded` and
-`aria-controls`, and does not affect other items.
+### Menu product content
 
-The disclosure remains a plain underlined word with no filled control surface.
-Its small visible form has an expanded pseudo-element hit area, so the control
-does not steal a full 44px row from the product tile.
+- Product tiles retain the two-column grid, square image, name, description,
+  informational option rows, add-ons, and bare price.
+- Description disclosure appears only when rendered copy overflows and preserves
+  `aria-expanded`, `aria-controls`, and independent item state.
+- Category Metal-FX remains a thin rule; it never frames a card or section.
 
-## Menu footer
+### Admin controls and recovery
 
-The close is a full-bleed scarlet field, not a card. Inside the same `900px`
-measure, the white brand mark sits beside phone and Instagram links; the return
-link occupies a final hairline-separated row. Mobile bottom padding reserves
-space for the fixed category trigger as well as the safe-area inset, so the
-return link is unobscured at the true end of the document.
+- Primary buttons commit/create; secondary and quiet buttons navigate or reveal;
+  danger actions explicitly say archive/remove/restore.
+- Fields keep persistent labels. Search and visibility filters sit before the
+  editor results; keyboard and button reordering remain available.
+- Owner-only metadata/options and publish recovery are grouped under clear owner
+  context. Cashier UI omits those controls, matching the backend boundary.
+- Archive badges, upload progress, undo status, conflict draft download/reload,
+  unsaved-change state, and the save bar use text plus semantic color.
 
-## Motion and performance
+## Do's and Don'ts
 
-Landing reveal motion is armed only after JavaScript confirms a safe path;
-content is readable by default. Menu image arrival uses opacity only and keeps
-intrinsic dimensions to prevent layout shift.
+### Do:
 
-`content-visibility: auto` is intentionally not used on categories. The long
-Menu could benefit in isolation, but category anchors, IntersectionObserver
-tracking, jump positions, and Metal-FX visibility all depend on stable section
-geometry. No measured benefit currently outweighs those interaction risks.
+- **Do** preserve RTL, visible focus, skip links, and 44px effective targets.
+- **Do** keep Landing copy and imagery readable when animation fails or is reduced.
+- **Do** keep Menu search, category anchors, and fallback states in stable flow.
+- **Do** make Admin role, save, conflict, archive, and upload state explicit.
+- **Do** use current source components and CSS as authority for future refreshes.
 
-## Accessibility contract
+### Don't:
 
-- Persian document language and RTL direction live on the HTML elements.
-- Skip links remain available on both pages.
-- Interactive controls retain visible focus and 44px effective targets.
-- Category state is exposed with `aria-current`; the current label duplicated
-  in the trigger is decorative to assistive technology.
-- Disclosure state is exposed with `aria-expanded` and `aria-controls`.
-- Motion respects `prefers-reduced-motion` without hiding content or rules.
-- Page and content backgrounds extend through safe areas without removing
-  intentional reading gutters.
-
-## Guardrails
-
-- Do not change the managed menu, development fixture, or archived menu inputs
-  to solve layout problems.
-- Do not collapse or restructure the two-column product grid on mobile.
-- Do not turn the Menu masthead into a hero.
-- Do not place Metal-FX around a category, header, card, grid, navigation
-  popover, or navigation-list row. The mobile trigger itself is the deliberate
-  exception documented above.
-- Do not allow an animated reflection to replace the category rule’s complete
-  static base line.
-- Do not hide text pending animation or font loading.
-- Do not add speculative `content-visibility` optimization.
-- Do not introduce white outer gutters, a centered page-card background, or
-  device-model-specific safe-area hacks.
+- **Don't** change managed menu data, fixtures, or archived inputs for layout work.
+- **Don't** collapse the Menu product grid to one column on mobile.
+- **Don't** turn the Menu masthead into a hero or wrap categories in Metal-FX.
+- **Don't** expose owner controls to cashiers or rely on UI hiding as authorization.
+- **Don't** hide content pending JavaScript, fonts, WebGL, or animation.
+- **Don't** reintroduce the retired maroon Menu card/rail system from the old sidecar.

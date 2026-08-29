@@ -31,6 +31,8 @@ active owner with `password_hash(..., PASSWORD_DEFAULT)`.
 For an existing production host, use [`../OPERATIONS.md`](../OPERATIONS.md) for
 the current observed state, ParsPack document root and upload methods,
 non-destructive API recovery, and pre/post-deployment checks.
+Use [`../PROJECT_STATE.md`](../PROJECT_STATE.md) for the authoritative production
+SHA, migration, role, phase, and blocker state.
 
 The public snapshot publisher owns `managed-menu/current.json` and
 `managed-menu/previous.json`. Immutable recovery copies live in the private
@@ -44,6 +46,10 @@ overwritten by the operator workflow.
 Cashiers can perform normal category, item, media, ordering, archive, save, and
 publish work; the API rejects changes to category layout/introduction and item
 metadata/options even if the UI is bypassed.
+
+Production has both migrations and both roles active. Host-specific config and
+the direct ParsPack `.htaccess` runtime override remain persistent host state;
+their paths and contents do not belong in source or release artifacts.
 
 After provisioning or migration, create additional accounts only from an
 interactive host terminal:

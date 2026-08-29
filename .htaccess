@@ -1,4 +1,5 @@
-# ال کافه — site delivery and menu-admin API. Apache/LiteSpeed shared hosting.
+# ال کافه — release-owned site rules. Production appends one opaque, host-owned
+# LCAFE-HOST-RUNTIME fenced block. Never put its private path or contents here.
 
 # One origin. The certificate covers the apex, www and mail, and both hostnames
 # resolve, so without this the same page answers on four addresses. The

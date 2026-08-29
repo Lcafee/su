@@ -348,7 +348,7 @@ function ClosingSection({ footerRef }) {
             </a>
             <a
               className="contact-link"
-              href="https://www.google.com/maps/dir/?api=1&destination=32.6399905%2C51.6666685"
+              href="https://www.google.com/maps/dir/?api=1&destination=L%20Cafe&destination_place_id=ChIJHwiIQwA3vD8RouGWwXbq5GI"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="مسیر ال کافه روی گوگل مپ (در برگه جدید باز می‌شود)"

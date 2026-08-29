@@ -19,6 +19,7 @@ RELEASE = os.path.join(HERE, "release", "current")
 OUT = os.path.join(HERE, "lcafe-site.zip")
 RELEASE_MANIFEST = os.path.join(RELEASE, ".lcafe-release.json")
 INTERNAL_RELEASE_FILES = {".lcafe-build.json", ".lcafe-release.json"}
+HOST_OWNED_FILES = {".htaccess"}
 
 
 def digest(path):
@@ -98,8 +99,13 @@ def verify_release():
     return manifest
 
 
-def collect():
-    """Return every public file in the approved release."""
+def collect(include_host_owned=True):
+    """Return approved files, optionally omitting host-owned live paths.
+
+    The release .htaccess is the hash-bound code-managed portion. deploy.py
+    composes it with the fenced host runtime block. A file-manager ZIP cannot
+    do that safely, so it must never contain the live root .htaccess path.
+    """
     if not os.path.isdir(RELEASE):
         raise SystemExit("approved release is missing; generate it first")
 
@@ -110,6 +116,8 @@ def collect():
             path = os.path.join(directory, filename)
             relative = os.path.relpath(path, RELEASE).replace(os.sep, "/")
             if relative in INTERNAL_RELEASE_FILES:
+                continue
+            if not include_host_owned and relative in HOST_OWNED_FILES:
                 continue
             names.append(relative)
     return names
@@ -122,7 +130,7 @@ def source_path(name):
 
 def main():
     release = verify_release()
-    names = collect()
+    names = collect(include_host_owned=False)
     if not names:
         raise SystemExit("approved release is empty; regenerate it")
 
@@ -152,7 +160,8 @@ def main():
     photos = sum(1 for entry in entries if entry.startswith("assets/menu/opt/"))
     size = os.path.getsize(OUT) / 1048576.0
     print(
-        "%s: release %.12s, %d files (%d menu photos), %.1f MB"
+        "%s: release %.12s, %d files (%d menu photos), %.1f MB; "
+        "root .htaccess excluded (host-owned runtime block preserved)"
         % (os.path.basename(OUT), release["gitCommit"], len(entries), photos, size)
     )
 
