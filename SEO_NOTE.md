@@ -1,0 +1,1 @@
+Temporary note: Search Console/analytics access status is being verified before KPI baseline lock.
