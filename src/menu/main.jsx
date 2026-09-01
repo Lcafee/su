@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useState } from "react";
+import { StrictMode, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { MenuApp, MenuMasthead } from "./MenuApp";
@@ -35,12 +35,14 @@ function MenuLoadingState() {
   );
 }
 
-function MenuMessageState({ onRetry, status }) {
+function MenuMessageState({ headingRef, onRetry, status }) {
   const empty = status === "empty";
   return (
     <section className="menu-runtime-state menu-runtime-message">
       <div className="menu-runtime-copy">
-        <h1>{empty ? "منو در حال به‌روزرسانی است" : "منو در دسترس نیست"}</h1>
+        <h1 ref={headingRef} tabIndex="-1">
+          {empty ? "منو در حال به‌روزرسانی است" : "منو در دسترس نیست"}
+        </h1>
         <p>
           {empty
             ? "در حال حاضر موردی برای نمایش ثبت نشده است. کمی بعد دوباره بررسی کنید."
@@ -56,20 +58,35 @@ function MenuMessageState({ onRetry, status }) {
 
 function MenuRuntime() {
   const [requestVersion, setRequestVersion] = useState(0);
-  const [state, setState] = useState({ status: "loading", result: null });
+  const [state, setState] = useState({
+    status: "loading",
+    result: null,
+    restoreFocus: false,
+  });
+  const requestGenerationRef = useRef(0);
+  const focusAfterRequestRef = useRef(false);
+  const messageHeadingRef = useRef(null);
 
   useEffect(() => {
     let active = true;
+    const generation = requestGenerationRef.current + 1;
+    requestGenerationRef.current = generation;
     loadMenuSnapshot({ force: requestVersion > 0 }).then(
       (result) => {
-        if (!active) return;
+        if (!active || generation !== requestGenerationRef.current) return;
+        const restoreFocus = focusAfterRequestRef.current;
+        focusAfterRequestRef.current = false;
         setState({
           status: hasMenuItems(result.snapshot) ? "ready" : "empty",
           result,
+          restoreFocus,
         });
       },
       () => {
-        if (active) setState({ status: "unavailable", result: null });
+        if (!active || generation !== requestGenerationRef.current) return;
+        const restoreFocus = focusAfterRequestRef.current;
+        focusAfterRequestRef.current = false;
+        setState({ status: "unavailable", result: null, restoreFocus });
       },
     );
     return () => {
@@ -77,8 +94,19 @@ function MenuRuntime() {
     };
   }, [requestVersion]);
 
+  useEffect(() => {
+    if (!state.restoreFocus || state.status === "loading" || state.status === "ready") {
+      return undefined;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      messageHeadingRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [state.restoreFocus, state.status]);
+
   const refreshMenu = () => {
-    setState({ status: "loading", result: null });
+    focusAfterRequestRef.current = true;
+    setState({ status: "loading", result: null, restoreFocus: false });
     setRequestVersion((current) => current + 1);
   };
 
@@ -86,6 +114,7 @@ function MenuRuntime() {
     return (
       <MenuApp
         categories={state.result.snapshot.categories}
+        focusOnMount={state.restoreFocus}
         snapshotSource={state.result.source}
         onRefresh={refreshMenu}
       />
@@ -97,7 +126,11 @@ function MenuRuntime() {
       {state.status === "loading" ? (
         <MenuLoadingState />
       ) : (
-        <MenuMessageState status={state.status} onRetry={refreshMenu} />
+        <MenuMessageState
+          headingRef={messageHeadingRef}
+          status={state.status}
+          onRetry={refreshMenu}
+        />
       )}
     </main>
   );

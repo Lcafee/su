@@ -182,6 +182,15 @@ neutral controls. Borders are thin and structural; nested boxes are avoided.
 
 - Search is a labeled native search field with a clear action and live result
   feedback; it does not change the managed snapshot.
+- Only categories containing public items participate in rendering, navigation,
+  deep links, or current-category state.
+- URL-selected and currently visible categories are distinct state. Explicit
+  category selection adds one history entry; passive scrolling may replace the
+  current hash, while local search never mutates URL category state.
+- Missing or non-renderable category hashes resolve to the first renderable
+  category. History, filtering, and refresh reconciliation use the latest
+  navigation intent and restore focus only to a control or destination that
+  remains rendered.
 - The fixed index trigger and popover track the current category. Selecting a
   category closes the popover, moves focus, and respects reduced motion.
 - Fallback-snapshot, loading, error, empty-search, and retry states explain the

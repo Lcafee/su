@@ -576,7 +576,7 @@ a:focus-visible,button:focus-visible{
   margin:0;
   color:var(--ink);
   font:600 clamp(14.5px,3.8vw,17px)/1.5 var(--font);
-  overflow-wrap:break-word;
+  overflow-wrap:anywhere;
 }
 .item-heading{
   min-width:0;
@@ -667,6 +667,7 @@ a:focus-visible,button:focus-visible{
   padding:0;
 }
 .addons>div{
+  min-width:0;
   min-height:48px;
   display:flex;
   align-items:center;
@@ -677,11 +678,14 @@ a:focus-visible,button:focus-visible{
 }
 .addons>div:last-child{border-bottom:0}
 .addons dt{
+  min-width:0;
   margin:0;
   color:var(--ink-strong);
   font:500 clamp(13px,3.4vw,15px)/1.55 var(--font);
+  overflow-wrap:anywhere;
 }
 .addons dd{
+  flex:0 0 auto;
   margin:0;
   color:var(--ink-soft);
   font:500 clamp(12.5px,3.2vw,14px)/1.55 var(--font);
@@ -869,7 +873,7 @@ a:focus-visible,button:focus-visible{
     font-size:28px;
     line-height:1.35;
     letter-spacing:-.015em;
-    overflow-wrap:normal;
+    overflow-wrap:anywhere;
     word-break:normal;
   }
   .cat-head p{

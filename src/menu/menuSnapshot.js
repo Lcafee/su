@@ -54,10 +54,11 @@ function normalizeSnapshot(snapshot) {
   };
 }
 
-async function fetchSnapshot(url) {
+async function fetchSnapshot(url, signal) {
   const response = await fetch(url, {
     cache: "no-cache",
     credentials: "same-origin",
+    signal,
   });
   if (!response.ok) {
     throw new Error(`Menu snapshot request failed with status ${response.status}.`);
@@ -65,16 +66,17 @@ async function fetchSnapshot(url) {
   return normalizeSnapshot(await response.json());
 }
 
-async function fetchManagedSnapshot() {
+async function fetchManagedSnapshot(signal) {
   try {
     return {
-      snapshot: await fetchSnapshot(CURRENT_SNAPSHOT_URL),
+      snapshot: await fetchSnapshot(CURRENT_SNAPSHOT_URL, signal),
       source: "current",
     };
   } catch (currentError) {
+    if (signal.aborted) throw currentError;
     try {
       return {
-        snapshot: await fetchSnapshot(PREVIOUS_SNAPSHOT_URL),
+        snapshot: await fetchSnapshot(PREVIOUS_SNAPSHOT_URL, signal),
         source: "previous",
       };
     } catch (previousError) {
@@ -87,8 +89,26 @@ async function fetchManagedSnapshot() {
 }
 
 let snapshotRequest;
+let snapshotController;
+let snapshotGeneration = 0;
 
 export function loadMenuSnapshot({ force = false } = {}) {
-  if (force || !snapshotRequest) snapshotRequest = fetchManagedSnapshot();
+  if (!force && snapshotRequest) return snapshotRequest;
+
+  snapshotGeneration += 1;
+  const generation = snapshotGeneration;
+  if (force) snapshotController?.abort();
+  const controller = new AbortController();
+  snapshotController = controller;
+
+  const request = fetchManagedSnapshot(controller.signal).then((result) => {
+    if (generation !== snapshotGeneration) {
+      throw new DOMException("Menu snapshot request was superseded.", "AbortError");
+    }
+    return result;
+  }).finally(() => {
+    if (generation === snapshotGeneration) snapshotController = undefined;
+  });
+  snapshotRequest = request;
   return snapshotRequest;
 }
