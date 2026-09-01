@@ -39,6 +39,42 @@ The public snapshot publisher owns `managed-menu/current.json` and
 snapshot archive. Managed image URLs contain their source hash and are never
 overwritten by the operator workflow.
 
+## Managed-media lifecycle foundation
+
+Migration `003_media_lifecycle` adds non-destructive orphan-candidate and
+revision-retention bookkeeping. `MediaLifecycle.php` provides one
+connection-scoped MySQL/MariaDB advisory lock shared by media upload, complete
+menu save/publish, publish retry, and lifecycle maintenance. Lock acquisition
+must succeed before any participating database/filesystem mutation begins.
+
+Run the CLI from the release-owned `bin/` directory with the private config:
+
+```text
+php media-lifecycle.php --config=/absolute/private/lcafe/config.php --dry-run
+php media-lifecycle.php --config=/absolute/private/lcafe/config.php --dry-run --json
+php media-lifecycle.php --config=/absolute/private/lcafe/config.php --apply
+```
+
+Dry-run is the default. The inventory treats every current or archived
+`menu_items.media_id`, public `current.json`/`previous.json`, and every private
+revision archive as an authoritative reference source. Snapshot JSON is scanned
+recursively for managed-media URLs. Unsafe paths, symlinks, malformed or
+unreadable sources, unknown ownership, and contradictory hashes make the plan
+unsafe; uncertain assets are retained.
+
+`--apply` is limited to setting `orphan_candidate_at` after a complete safe scan
+or clearing it when an asset is referenced again. It cannot delete originals,
+renditions, snapshot archives, database media rows, or any other file. The CLI
+reports a deterministic plan SHA-256 for a later separately authorized cleanup
+phase.
+
+The optional `media_lifecycle` config structure deliberately defaults
+destructive cleanup to disabled and leaves the backup/retention values unset.
+The documented `180 days / 50 published revisions` values are a
+non-authoritative recommendation only. Destructive eligibility remains gated
+until the owner confirms the production backup horizon and a coordinated
+database, snapshot, original, and rendition restore contract.
+
 ## Roles and account creation
 
 `admin_users.role` is either `owner` or `cashier`. Existing accounts receive

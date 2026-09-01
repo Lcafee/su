@@ -35,7 +35,9 @@ function existing_media_by_hash(PDO $pdo, array $config, string $sha): ?array
     if (!is_array($row)) {
         return null;
     }
-    $pdo->prepare('UPDATE media_assets SET retired_at = NULL WHERE id = ?')->execute([(string) $row['id']]);
+    $pdo->prepare(
+        'UPDATE media_assets SET retired_at = NULL, orphan_candidate_at = NULL WHERE id = ?'
+    )->execute([(string) $row['id']]);
     return media_payload($config, $row);
 }
 
@@ -268,5 +270,8 @@ function upload_media(PDO $pdo, array $config): array
     if ($tempPath === '' || !is_uploaded_file($tempPath)) {
         throw new ApiException(422, 'upload_failed', 'The uploaded file is invalid.');
     }
-    return import_media_file($pdo, $config, $tempPath);
+    return with_media_lifecycle_lock(
+        $pdo,
+        static fn (): array => import_media_file($pdo, $config, $tempPath)
+    );
 }

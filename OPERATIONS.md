@@ -50,6 +50,46 @@ persistent snapshot. `src/menu/fixtures/current.json` is a standalone local
 development fixture. Pre-admin JSON/Excel/import/generator artifacts live only
 under `legacy/` and have no runtime or operational role.
 
+## Managed-media lifecycle maintenance
+
+Source migration `003_media_lifecycle` and the release-owned
+`bin/media-lifecycle.php` provide the non-destructive lifecycle foundation. Do
+not run the CLI until that migration is confirmed active for the target
+environment. The CLI uses the same connection-scoped advisory lock as media
+upload, menu save/publish, and publish retry, and must hold it for the complete
+reference scan and any bookkeeping transaction.
+
+Default dry-run examples:
+
+```text
+php bin/media-lifecycle.php --config=/absolute/private/lcafe/config.php
+php bin/media-lifecycle.php --config=/absolute/private/lcafe/config.php --dry-run --json
+```
+
+The report identifies database, current/previous snapshot, and retained private
+revision references; lifecycle classifications; orphan candidates;
+uncertainties; observed bytes; policy; proposed bookkeeping; and a deterministic
+plan SHA-256. Any malformed/unreadable source, symlink, path escape, ownership
+conflict, unknown managed-media reference, or archive mismatch fails closed.
+
+The only mutating mode is explicit bookkeeping apply:
+
+```text
+php bin/media-lifecycle.php --config=/absolute/private/lcafe/config.php --apply
+```
+
+It may set or clear `orphan_candidate_at` in one database transaction. It does
+not prune archives, delete originals or renditions, delete media rows, or modify
+menu content. Never schedule it with cron and never run it concurrently with
+out-of-band database, snapshot, or media restoration.
+
+Destructive cleanup is disabled regardless of configured retention values. The
+recommended 180-day archive horizon and 50-published-revision floor are not
+production facts. Before any future destructive phase, the owner must confirm
+the actual backup retention horizon and that database, snapshots, originals,
+and renditions are captured and restored as one coordinated generation. Record
+that decision and every lifecycle run in the private operator record.
+
 Admin authorization is database-backed. Owners have the complete editor and
 publish recovery; cashiers retain normal category/item/media/order/archive/save
 and publish work while PHP protects advanced category fields, item

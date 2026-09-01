@@ -537,7 +537,11 @@ function persist_menu_document(PDO $pdo, array $document, array $oldMedia): void
         'UPDATE media_assets SET retired_at = COALESCE(retired_at, UTC_TIMESTAMP(6)) WHERE id IN',
         $retired
     );
-    execute_for_ids($pdo, 'UPDATE media_assets SET retired_at = NULL WHERE id IN', $active);
+    execute_for_ids(
+        $pdo,
+        'UPDATE media_assets SET retired_at = NULL, orphan_candidate_at = NULL WHERE id IN',
+        $active
+    );
 }
 
 function snapshot_timestamp(PDO $pdo, int $revision): string
@@ -670,6 +674,20 @@ function mark_publish_failure(PDO $pdo, int $revision): void
  */
 function save_menu_document(PDO $pdo, array $config, array $actor, array $input): array
 {
+    return with_media_lifecycle_lock(
+        $pdo,
+        static fn (): array => save_menu_document_with_lifecycle_lock($pdo, $config, $actor, $input)
+    );
+}
+
+/**
+ * @param array<string, mixed> $config
+ * @param array{id:int|null,username:string,role:string} $actor
+ * @param array<string, mixed> $input
+ * @return array<string, mixed>
+ */
+function save_menu_document_with_lifecycle_lock(PDO $pdo, array $config, array $actor, array $input): array
+{
     $document = normalize_menu_input($input);
     $prepared = null;
     $revision = 0;
@@ -764,6 +782,15 @@ function publish_status(PDO $pdo): array
 
 /** @param array<string, mixed> $config @return array<string, mixed> */
 function retry_snapshot_publish(PDO $pdo, array $config): array
+{
+    return with_media_lifecycle_lock(
+        $pdo,
+        static fn (): array => retry_snapshot_publish_with_lifecycle_lock($pdo, $config)
+    );
+}
+
+/** @param array<string, mixed> $config @return array<string, mixed> */
+function retry_snapshot_publish_with_lifecycle_lock(PDO $pdo, array $config): array
 {
     $prepared = null;
     $revision = 0;

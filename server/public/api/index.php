@@ -12,6 +12,7 @@ $appDirectory = str_contains($release, '__LCAFE_')
 require $appDirectory . DIRECTORY_SEPARATOR . 'Http.php';
 require $appDirectory . DIRECTORY_SEPARATOR . 'Bootstrap.php';
 require $appDirectory . DIRECTORY_SEPARATOR . 'Auth.php';
+require $appDirectory . DIRECTORY_SEPARATOR . 'MediaLifecycle.php';
 require $appDirectory . DIRECTORY_SEPARATOR . 'SnapshotPublisher.php';
 require $appDirectory . DIRECTORY_SEPARATOR . 'MenuRepository.php';
 require $appDirectory . DIRECTORY_SEPARATOR . 'MediaService.php';

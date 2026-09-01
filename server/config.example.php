@@ -39,4 +39,13 @@ return [
         'rendition_sizes' => [300, 600],
         'webp_quality' => 82,
     ],
+    'media_lifecycle' => [
+        // The foundation can only scan and mark orphan candidates. Destructive
+        // eligibility remains disabled until the owner confirms the production
+        // backup horizon and coordinated database/media restore contract.
+        'destructive_cleanup_enabled' => false,
+        'backup_horizon_days' => null,
+        'revision_retention_days' => null,
+        'published_revision_floor' => null,
+    ],
 ];
