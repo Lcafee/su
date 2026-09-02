@@ -285,16 +285,11 @@ a:focus-visible,button:focus-visible{
   text-wrap:balance;
 }
 .menu-brand-mark{
-  direction:ltr;
-  width:24px;
   height:24px;
-  flex:0 0 24px;
-  display:grid;
-  place-items:center;
-  color:var(--ink-soft);
-  font:600 20px/1 var(--font);
-  letter-spacing:0;
-  white-space:nowrap;
+  width:auto;
+  flex:0 0 auto;
+  align-self:center;
+  display:block;
 }
 
 .menu-fallback-notice{
@@ -868,7 +863,7 @@ a:focus-visible,button:focus-visible{
 }
 @media (min-width:760px){
   .cat-head{grid-template-columns:220px minmax(0,1fr)}
-  .menu-brand-mark{width:26px;height:26px;flex-basis:26px}
+  .menu-brand-mark{height:26px}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
