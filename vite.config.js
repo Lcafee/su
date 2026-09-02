@@ -46,6 +46,7 @@ const buildInputFiles = [
   "admin/index.html",
   "index.html",
   "menu.html",
+  "menu2.html",
   "package.json",
   "package-lock.json",
   "robots.txt",
@@ -179,6 +180,7 @@ export default defineConfig({
       input: {
         landing: resolve(root, "index.html"),
         menu: resolve(root, "menu.html"),
+        menu2: resolve(root, "menu2.html"),
       },
     },
   },

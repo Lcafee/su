@@ -1,3 +1,5 @@
+/* Recovered two-column presentation from d2a87a274e9bb9304abb79d2bb3aa0e89445d51a.
+   Runtime, snapshot, resilience, and navigation behavior remain current. */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --font:'Vazirmatn',system-ui,sans-serif;
@@ -428,11 +430,6 @@ a:focus-visible,button:focus-visible{
   gap:0;
   text-align:right;
 }
-.item-body{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-}
 .item-photo{
   position:relative;
   aspect-ratio:1;
@@ -845,17 +842,8 @@ a:focus-visible,button:focus-visible{
   .menu-loading-heading{display:block;margin-bottom:24px}
   .menu-loading-heading span:first-child{width:54%;height:30px}
   .menu-loading-heading span:last-child{width:86%;height:42px;margin-top:10px}
-  .menu-loading-grid{grid-template-columns:1fr;gap:0}
-  .menu-loading-card{
-    display:grid;
-    grid-template-columns:108px minmax(0,1fr);
-    align-items:start;
-    gap:12px;
-    padding:16px 0;
-  }
-  .menu-loading-card+.menu-loading-card{border-top:1px solid var(--line)}
-  .menu-loading-card:first-child{padding-top:0}
-  .menu-loading-copy{margin-top:2px}
+  .menu-loading-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .menu-loading-copy{margin-top:10px}
   .menu-fallback-notice{
     grid-template-columns:1fr;
     align-items:start;
@@ -863,27 +851,7 @@ a:focus-visible,button:focus-visible{
   }
   .menu-fallback-notice button{justify-self:start}
   .cat{padding-top:22px;padding-bottom:42px}
-  .grid{grid-template-columns:1fr;row-gap:0}
-  .item{
-    display:grid;
-    grid-template-columns:108px minmax(0,1fr);
-    align-items:start;
-    gap:12px;
-    padding:16px 0;
-  }
-  .item+.item{border-top:1px solid var(--line)}
-  .item:first-child{padding-top:0}
-  .item:last-child{padding-bottom:0}
-  .item-photo{width:100%;margin:0}
-  .item-body{padding-top:1px}
-  .item-heading{margin:0 0 4px;gap:7px}
-  .item h3{font-size:15px;line-height:1.55;text-wrap:pretty}
-  .item p{margin:0;font-size:12.5px;line-height:1.75}
-  .item-heading strong{font-size:13.5px;font-weight:700}
-  .item .more{margin-top:3px}
-  .opts{margin:8px 0 0}
-  .opts-option-label{font-size:11.5px}
-  .opts-option-price{font-size:12.5px;font-weight:600}
+  .item p{font-size:12px}
   .menu-discovery{
     right:max(12px,env(safe-area-inset-right,0px));
     left:auto;

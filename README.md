@@ -36,6 +36,8 @@ generated from, or synchronized with, production menu data.
 - `/` and `/index.html` — Landing
 - `/menu` — Menu (canonical public URL; Apache/LiteSpeed serves the internal
   `menu.html` build entry and permanently redirects legacy `/menu.html` visits)
+- `/menu2` — noncanonical, `noindex` two-column Menu comparison; its canonical
+  link points to `/menu` and physical `/menu2.html` visits redirect to `/menu2`
 - `/admin/` — separately built authenticated menu editor
 
 The admin has two database-backed roles. Owners receive the complete editor and
@@ -44,14 +46,17 @@ ordering, archive, save, and publish work while advanced category fields, item
 metadata/options, and publish retry remain owner-only. PHP enforces this
 boundary independently of the React UI.
 
-Vite builds both HTML files as separate React entry points. The physical
-`menu.html` file remains an internal static-hosting detail; public links, QR
-codes, metadata, and crawlers use `/menu`.
+Vite builds Landing, canonical Menu, and comparison Menu as separate public
+React entry points. The physical `menu.html` and `menu2.html` files remain
+internal static-hosting details; public links, QR codes, metadata, and crawlers
+continue to use `/menu` as the only canonical Menu.
 
 ## Source ownership
 
 - `src/landing/` owns the Landing components and motion.
-- `src/menu/` owns Menu rendering and interaction state.
+- `src/menu/` owns canonical Menu rendering plus shared snapshot/runtime and
+  category-navigation behavior.
+- `src/menu2/` owns the independent historical two-column presentation.
 - `src/admin/` owns the isolated admin bundle.
 - `src/styles/` preserves the approved visual system.
 - `assets/` owns code-managed fonts, brand assets, icons, and public imagery.

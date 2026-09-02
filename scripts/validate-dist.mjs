@@ -8,14 +8,14 @@ const fail = (message) => {
 };
 
 if (!existsSync(dist)) fail("dist/ is missing; run npm run build first");
-for (const file of ["index.html", "menu.html", "404.html", ".lcafe-build.json"]) {
+for (const file of ["index.html", "menu.html", "menu2.html", "404.html", ".lcafe-build.json"]) {
   if (!existsSync(resolve(dist, file))) fail(`${file} is missing from dist`);
 }
 
 const errorPage = readFileSync(resolve(dist, "404.html"), "utf8");
 if (errorPage.includes("__BASE_PATH__")) fail("404 base-path marker was not replaced");
 
-const htmlFiles = ["index.html", "menu.html", "404.html"];
+const htmlFiles = ["index.html", "menu.html", "menu2.html", "404.html"];
 for (const file of htmlFiles) {
   const text = readFileSync(resolve(dist, file), "utf8");
   if (text.includes("lcafe-esf.ir")) fail(`${file} contains the old public domain`);
@@ -39,6 +39,7 @@ const PHONE_DISPLAY = "09130005767";
 const PHONE_E164 = "+989130005767";
 const builtIndex = readFileSync(resolve(dist, "index.html"), "utf8");
 const builtMenu = readFileSync(resolve(dist, "menu.html"), "utf8");
+const builtMenu2 = readFileSync(resolve(dist, "menu2.html"), "utf8");
 const built404 = readFileSync(resolve(dist, "404.html"), "utf8");
 const builtSitemap = readFileSync(resolve(dist, "sitemap.xml"), "utf8");
 const builtRobots = readFileSync(resolve(dist, "robots.txt"), "utf8");
@@ -50,6 +51,7 @@ const publicScripts = [...files]
 const searchablePublicOutput = [
   builtIndex,
   builtMenu,
+  builtMenu2,
   built404,
   builtSitemap,
   publicScripts,
@@ -77,7 +79,17 @@ if (!builtMenu.includes(`<link rel="canonical" href="${PUBLIC_MENU_URL}"`)) {
 if (!builtMenu.includes(`<meta property="og:url" content="${PUBLIC_MENU_URL}"`)) {
   fail("built menu og:url is incorrect");
 }
-if (!builtSitemap.includes(`<loc>${PUBLIC_MENU_URL}</loc>`) || builtSitemap.includes("menu.html")) {
+if (!builtMenu2.includes(`<link rel="canonical" href="${PUBLIC_MENU_URL}"`)) {
+  fail("built menu2 canonical link is incorrect");
+}
+if (!builtMenu2.includes(`<meta name="robots" content="noindex,follow"`)) {
+  fail("built menu2 must be noindex,follow");
+}
+if (
+  !builtSitemap.includes(`<loc>${PUBLIC_MENU_URL}</loc>`)
+  || builtSitemap.includes("menu.html")
+  || builtSitemap.includes("menu2")
+) {
   fail("built sitemap does not expose only the canonical menu URL");
 }
 if (!built404.includes(`href="${PUBLIC_MENU_URL}"`)) {
@@ -96,6 +108,9 @@ for (const requiredRule of [
   "# LCAFE-PUBLIC-MENU-CANONICAL",
   "RewriteRule ^menu\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
   "RewriteRule ^menu$ menu.html [L]",
+  "# LCAFE-PUBLIC-MENU2-COMPARISON",
+  "RewriteRule ^menu2\\.html$ https://l-cafe.ir/menu2 [R=301,L,NE]",
+  "RewriteRule ^menu2$ menu2.html [L]",
 ]) {
   if (!builtHtaccess.includes(requiredRule)) {
     fail(`built .htaccess is missing ${requiredRule}`);

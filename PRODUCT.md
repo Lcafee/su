@@ -41,6 +41,8 @@
 ## Public behavior
 
 - `/` لندینگ و `/menu` آدرس canonical منو است؛ `menu.html` جزئیات داخلی build.
+- `/menu2` نمایش مقایسه‌ای دو‌ستونه و `noindex,follow` است؛ canonical آن همیشه
+  به `/menu` اشاره می‌کند و در sitemap، QR یا ناوبری اصلی قرار نمی‌گیرد.
 - مشتری فقط اطلاعات را می‌بیند. variantهای چندقیمتی ردیف اطلاعاتی‌اند و state
   انتخاب ندارند.
 - قیمت به‌صورت عدد فارسی بدون واحد و جداکننده نمایش داده می‌شود؛ «تومان» یا
@@ -51,9 +53,11 @@
 
 ## Source and release ownership
 
-- رابط: `src/landing/`, `src/menu/`, `src/admin/` و stylesheetهای `src/styles/`.
+- رابط: `src/landing/`, `src/menu/`, `src/menu2/`, `src/admin/` و stylesheetهای
+  `src/styles/`.
 - backend: `server/app/`, `server/public/api/`, migrationها و ابزارهای `server/bin/`.
-- `index.html`, `menu.html` و `admin/index.html` فقط entryهای سبک Vite هستند.
+- `index.html`, `menu.html`, `menu2.html` و `admin/index.html` فقط entryهای سبک
+  Vite هستند.
 - `dist/` خروجی disposable محلی است و هرگز release تأییدشده یا deployable نیست.
 - فقط `release/current/` که از یک commit کاملِ push‌شده و صریحاً تأییدشده ساخته
   شده، ورودی `package.py` و `deploy.py` است.

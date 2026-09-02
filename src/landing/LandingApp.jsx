@@ -23,40 +23,63 @@ const MENU_HREF =
 
 function RevealBlock({ children, className }) {
   const blockRef = useRef(null);
-  const [shown, setShown] = useState(false);
+  const [motionState, setMotionState] = useState("idle");
+  const [reducedMotion, setReducedMotion] = useState(
+    () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+  );
+
+  useEffect(() => {
+    const preference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!preference) return undefined;
+    const update = () => setReducedMotion(preference.matches);
+    preference.addEventListener?.("change", update);
+    return () => preference.removeEventListener?.("change", update);
+  }, []);
 
   useEffect(() => {
     const block = blockRef.current;
     if (!block) return undefined;
 
-    if (!("IntersectionObserver" in window)) {
-      setShown(true);
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      setMotionState("idle");
       return undefined;
     }
 
+    let hasEntered = false;
+    let fallback = 0;
+    setMotionState("armed");
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShown(true);
-        observer.disconnect();
+        if (!entry) return;
+        if (entry.isIntersecting) {
+          hasEntered = true;
+          setMotionState("shown");
+          if (fallback) window.clearTimeout(fallback);
+          return;
+        }
+        if (hasEntered) setMotionState("hiding");
       },
-      { rootMargin: "0px 0px -15% 0px" },
+      { rootMargin: "-8% 0px -15% 0px", threshold: 0.12 },
     );
     observer.observe(block);
 
-    const fallback = window.setTimeout(() => setShown(true), REVEAL_TIMEOUT_MS);
+    fallback = window.setTimeout(
+      () => setMotionState((current) => (current === "armed" ? "shown" : current)),
+      REVEAL_TIMEOUT_MS,
+    );
     return () => {
       window.clearTimeout(fallback);
       observer.disconnect();
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div
       ref={blockRef}
       className={className}
-      data-armed=""
-      data-shown={shown ? "" : undefined}
+      data-armed={motionState === "idle" ? undefined : ""}
+      data-shown={motionState === "shown" ? "" : undefined}
+      data-hiding={motionState === "hiding" ? "" : undefined}
     >
       {children}
     </div>

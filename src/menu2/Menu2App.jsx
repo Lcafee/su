@@ -9,9 +9,9 @@ import {
   useState,
 } from "react";
 
+import { MenuBrandMark } from "../menu/MenuBrandMark";
+import { useMenuNavigation } from "../menu/MenuRuntime";
 import { sitePath } from "../sitePath";
-import { MenuBrandMark } from "./MenuBrandMark";
-import { useMenuNavigation } from "./MenuRuntime";
 
 const LazyMetalFx = lazy(() =>
   import("metal-fx").then(({ MetalFx }) => ({ default: MetalFx })),
@@ -56,7 +56,6 @@ function supportsMetalFx() {
       || canvas.getContext("experimental-webgl", {
         failIfMajorPerformanceCaveat: true,
       });
-
     metalFxCapability = Boolean(gl);
     gl?.getExtension("WEBGL_lose_context")?.loseContext();
   } catch {
@@ -91,7 +90,6 @@ class MetalFxBoundary extends Component {
 
 function SafeMetalFx(props) {
   if (!supportsMetalFx()) return null;
-
   return (
     <MetalFxBoundary>
       <Suspense fallback={null}>
@@ -109,51 +107,16 @@ function useDeferredEnhancement(enabled) {
       setReady(false);
       return undefined;
     }
-
     const reveal = () => setReady(true);
     if ("requestIdleCallback" in window) {
       const idleCallback = window.requestIdleCallback(reveal, { timeout: 1400 });
       return () => window.cancelIdleCallback(idleCallback);
     }
-
     const fallback = window.setTimeout(reveal, 700);
     return () => window.clearTimeout(fallback);
   }, [enabled]);
 
   return ready;
-}
-
-let sharedDescriptionObserver;
-const descriptionMeasurements = new Map();
-
-function observeDescription(element, measure) {
-  if (!("ResizeObserver" in window)) return () => {};
-
-  if (!sharedDescriptionObserver) {
-    sharedDescriptionObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        descriptionMeasurements.get(entry.target)?.();
-      }
-    });
-  }
-
-  descriptionMeasurements.set(element, measure);
-  sharedDescriptionObserver.observe(element);
-
-  return () => {
-    sharedDescriptionObserver?.unobserve(element);
-    descriptionMeasurements.delete(element);
-    if (descriptionMeasurements.size === 0) {
-      sharedDescriptionObserver?.disconnect();
-      sharedDescriptionObserver = undefined;
-    }
-  };
-}
-
-function hasDisplayText(value) {
-  return value !== null
-    && value !== undefined
-    && String(value).trim().length > 0;
 }
 
 function useMediaQuery(queryText) {
@@ -170,6 +133,37 @@ function useMediaQuery(queryText) {
   }, [queryText]);
 
   return matches;
+}
+
+let sharedDescriptionObserver;
+const descriptionMeasurements = new Map();
+
+function observeDescription(element, measure) {
+  if (!("ResizeObserver" in window)) return () => {};
+
+  if (!sharedDescriptionObserver) {
+    sharedDescriptionObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        descriptionMeasurements.get(entry.target)?.();
+      }
+    });
+  }
+  descriptionMeasurements.set(element, measure);
+  sharedDescriptionObserver.observe(element);
+  return () => {
+    sharedDescriptionObserver?.unobserve(element);
+    descriptionMeasurements.delete(element);
+    if (descriptionMeasurements.size === 0) {
+      sharedDescriptionObserver?.disconnect();
+      sharedDescriptionObserver = undefined;
+    }
+  };
+}
+
+function hasDisplayText(value) {
+  return value !== null
+    && value !== undefined
+    && String(value).trim().length > 0;
 }
 
 const CategoryMetalRule = memo(function CategoryMetalRule({
@@ -219,9 +213,7 @@ const CategoryHeader = memo(function CategoryHeader({
         metalFxReady={metalFxReady}
         reducedMotion={reducedMotion}
       />
-      <h2 id={category.id} tabIndex="-1">
-        {category.title}
-      </h2>
+      <h2 id={category.id} tabIndex="-1">{category.title}</h2>
       <p>{category.intro}</p>
     </div>
   );
@@ -284,7 +276,6 @@ function ProductDescription({ description, itemName, slotId }) {
   const [expanded, setExpanded] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
   const descriptionId = `description-${slotId}`;
-
   const measure = useCallback(() => {
     const paragraph = paragraphRef.current;
     if (!paragraph || expanded) return;
@@ -339,22 +330,19 @@ function VariantList({ item }) {
 const ProductCard = memo(function ProductCard({ eager, item, priority }) {
   const hasOptions = item.options.length > 0;
   const hasPrice = hasDisplayText(item.price);
-
   return (
     <article className="item">
       <ProductPhoto eager={eager} item={item} priority={priority} />
-      <div className="item-body">
-        <div className="item-heading">
-          <h3>{item.name}</h3>
-          {!hasOptions && hasPrice ? <strong>{item.price}</strong> : null}
-        </div>
-        <ProductDescription
-          description={item.description}
-          itemName={item.name}
-          slotId={item.id}
-        />
-        {hasOptions ? <VariantList item={item} /> : null}
+      <div className="item-heading">
+        <h3>{item.name}</h3>
+        {!hasOptions && hasPrice ? <strong>{item.price}</strong> : null}
       </div>
+      <ProductDescription
+        description={item.description}
+        itemName={item.name}
+        slotId={item.id}
+      />
+      {hasOptions ? <VariantList item={item} /> : null}
     </article>
   );
 });
@@ -468,14 +456,9 @@ const MenuFooter = memo(function MenuFooter() {
   return (
     <footer className="foot">
       <div className="foot-inner">
-        <img
-          src={sitePath("assets/brand/l-cafe-full-white.svg")}
-          alt="ال کافه"
-        />
+        <img src={sitePath("assets/brand/l-cafe-full-white.svg")} alt="ال کافه" />
         <div className="foot-contact">
-          <a href="tel:+989130005767">
-            <bdi dir="ltr">09130005767</bdi>
-          </a>
+          <a href="tel:+989130005767"><bdi dir="ltr">09130005767</bdi></a>
           <a
             href="https://www.instagram.com/lcafe.esf/"
             target="_blank"
@@ -493,7 +476,7 @@ const MenuFooter = memo(function MenuFooter() {
   );
 });
 
-export const MenuMasthead = memo(function MenuMasthead() {
+export const Menu2Masthead = memo(function Menu2Masthead() {
   return (
     <header className="menu-masthead">
       <a className="menu-back-link" href={sitePath("index.html")}>بازگشت</a>
@@ -548,7 +531,7 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
   );
 });
 
-export function MenuApp({
+export function Menu2App({
   categories,
   focusOnMount = false,
   onRefresh,
@@ -565,9 +548,7 @@ export function MenuApp({
 
   return (
     <>
-      <a className="skip" href="#menu">
-        رفتن به منو
-      </a>
+      <a className="skip" href="#menu">رفتن به منو</a>
       <div ref={navigation.discoveryRef} className="menu-discovery">
         <MenuIndexTrigger
           activeTitle={navigation.activeTitle}
@@ -580,20 +561,15 @@ export function MenuApp({
         />
       </div>
       <main id="menu">
-        <MenuMasthead />
+        <Menu2Masthead />
         {snapshotSource === "previous" ? (
-          <aside
-            className="menu-fallback-notice"
-            aria-labelledby="menu-fallback-title"
-          >
+          <aside className="menu-fallback-notice" aria-labelledby="menu-fallback-title">
             <div>
               <h2 id="menu-fallback-title">آخرین نسخه ذخیره‌شده</h2>
               <p>نسخه تازه منو موقتاً در دسترس نیست؛ آخرین نسخه ذخیره‌شده نمایش داده می‌شود.</p>
             </div>
             {onRefresh ? (
-              <button type="button" onClick={onRefresh}>
-                به‌روزرسانی منو
-              </button>
+              <button type="button" onClick={onRefresh}>به‌روزرسانی منو</button>
             ) : null}
           </aside>
         ) : null}

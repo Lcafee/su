@@ -12,10 +12,12 @@
   --meta-size:clamp(13px,1.2vw,14px);
   --utility-size:clamp(12px,1.1vw,13.5px);
   --utility-leading:1.65;
-  /* The landing now moves as one editorial sequence. This single shared gap
-     keeps adjacent moments connected without reintroducing section-sized voids. */
-  --flow:clamp(52px,7vw,80px);
-  --flow-close:clamp(72px,9vw,108px);
+  /* Semantic boundaries make the page read as one composed sequence rather
+     than repeating one generic section gap at every transition. */
+  --space-hero-intro:clamp(96px,12vw,160px);
+  --space-intro-photo:clamp(88px,10vw,144px);
+  --space-photo-menu:clamp(96px,11vw,156px);
+  --space-menu-close:clamp(40px,5vw,64px);
   --tile:clamp(200px,46vw,346px);
 
   /* One restrained motion voice for copy, image arrival and page handoff. */
@@ -108,7 +110,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 /* The introduction is composed as headline plus reading column on wide screens,
    and folds back to one measured column on mobile. */
 .about{
-  padding-top:clamp(72px,11vw,124px);
+  padding-top:var(--space-hero-intro);
   padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
   padding-bottom:0;
   padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
@@ -141,7 +143,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
    With the ratio matched, object-fit:cover is a no-op and stays only as a
    guard — contain would letterbox on the maroon and read as a bug. */
 .photo{aspect-ratio:1586/992;background:var(--ink);overflow:hidden;
-  margin-block-start:var(--flow);margin-block-end:var(--flow-close);
+  margin-block-start:var(--space-intro-photo);margin-block-end:var(--space-photo-menu);
   margin-inline-start:clamp(0px,8vw,140px)}
 
 /* The menu entry is a quiet handoff, not another display-heading moment. Its
@@ -149,7 +151,7 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .menu{
   padding:0 max(var(--gutter),env(safe-area-inset-left,0px));
   padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  margin:0 auto var(--flow-close);
+  margin:0 auto var(--space-menu-close);
   max-width:1180px;
   text-align:center;
 }
@@ -168,10 +170,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   z-index:2;
   padding-top:0;
   padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  padding-bottom:calc(clamp(18px,2.6vw,28px) + env(safe-area-inset-bottom,0px));
+  padding-bottom:calc(clamp(14px,2vw,22px) + env(safe-area-inset-bottom,0px));
   padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
 }
-.contact .inner{width:min(100%,1180px);margin:0 auto;padding-top:clamp(18px,2.6vw,26px);
+.contact .inner{width:min(100%,1180px);margin:0 auto;padding-top:clamp(14px,2vw,20px);
   border-top:1px solid rgba(243,241,236,.15);text-align:right;display:grid;
   grid-template-columns:minmax(120px,.42fr) minmax(0,1.58fr);
   gap:clamp(20px,3vw,44px);align-items:start}
@@ -315,7 +317,12 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   .t-skel-skeleton.is-pulsing>*{animation:none!important}
 }
 @media (max-width:640px){
-  :root{--flow-close:clamp(72px,20vw,84px)}
+  :root{
+    --space-hero-intro:clamp(76px,24vw,104px);
+    --space-intro-photo:clamp(72px,21vw,96px);
+    --space-photo-menu:clamp(80px,23vw,108px);
+    --space-menu-close:clamp(32px,10vw,44px);
+  }
   .about .inner{display:block}
   .about-headline{margin-bottom:clamp(20px,6vw,26px)}
   /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
@@ -330,11 +337,11 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      own ratio is 238px on a 375px phone: shorter than 62vh and the whole
      picture. If it needs to be taller than that, it needs a taller photograph,
      not a narrower crop of this one. */
-  .photo{margin-block-start:var(--flow);margin-inline-start:0}
+  .photo{margin-inline-start:0}
   .contact{padding-top:0}
   .contact .inner{grid-template-columns:minmax(84px,.42fr) minmax(0,1fr);
     gap:clamp(12px,3.6vw,16px) clamp(14px,4vw,18px);
-    padding-top:clamp(18px,5.5vw,22px)}
+    padding-top:clamp(14px,4vw,18px)}
   .contact-body{display:block}
   .contact-title{font-size:clamp(19px,5.5vw,22px);line-height:1.35}
   .contact-address{font-size:var(--meta-size);line-height:1.8}

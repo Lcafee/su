@@ -7,6 +7,7 @@ Mutable state is authoritative in `PROJECT_STATE.md`.
 ```text
 /          -> index.html       -> src/landing/main.jsx -> LandingApp
 /menu      -> menu.html        -> src/menu/main.jsx    -> managed snapshot
+/menu2     -> menu2.html       -> src/menu2/main.jsx   -> shared managed snapshot
 /admin/    -> admin/index.html -> src/admin/main.jsx   -> /api
 /api       -> server/public/api/index.php
                               -> api/_app/<approved-sha>/app
@@ -15,9 +16,10 @@ Mutable state is authoritative in `PROJECT_STATE.md`.
 
 The public and admin UIs are separate React + Vite entry points. Production has
 no Node server. Apache/LiteSpeed exposes physical `menu.html` canonically as
-`/menu`. The PHP/MySQL control plane edits and publishes menu state; public menu
-requests never query MySQL and instead fetch `managed-menu/current.json`, then
-`previous.json` as recovery.
+`/menu`. `/menu2` is a noindex comparison route whose canonical points to
+`/menu`. The PHP/MySQL control plane edits and publishes menu state; both public
+Menu views fetch `managed-menu/current.json`, then `previous.json` as recovery,
+and never query MySQL.
 
 The retired generated frontend, pre-admin JSON/Excel/import/generator
 implementation, and Summer Pause campaign are isolated under `legacy/` as
@@ -26,7 +28,8 @@ deployment, and product-maintenance paths.
 
 ## Ownership
 
-- `src/landing/`, `src/menu/`, `src/admin/`, and `src/styles/` own UI behavior.
+- `src/landing/`, `src/menu/`, `src/menu2/`, `src/admin/`, and `src/styles/` own
+  UI behavior.
 - `server/app/`, `server/public/api/`, `server/migrations/`, and `server/bin/`
   own the control plane, schema migrations, provisioning, and secure account
   creation.
@@ -40,10 +43,13 @@ deployment, and product-maintenance paths.
   owns the final fenced runtime block. Deployment preserves the block; manual
   ZIPs omit the root file.
 
-`MenuApp` owns category navigation; memoized category/product boundaries and a
-shared `ResizeObserver` manage rendering. Variants are informational rows, not
-selections. `metal-fx` is a capability-gated decorative enhancement: ordinary
-React/CSS content remains usable when WebGL is absent or initialization fails.
+`MenuRuntime` owns shared snapshot loading, fallback, retry, and hardened
+category-navigation state. `MenuApp` and `Menu2App` own independent canonical
+row and historical two-column presentations. Memoized category/product
+boundaries and shared-per-view `ResizeObserver` instances manage rendering.
+Variants are informational rows, not selections. `metal-fx` is a
+capability-gated decorative enhancement: ordinary React/CSS content remains
+usable when WebGL is absent or initialization fails.
 
 ## Build and release
 

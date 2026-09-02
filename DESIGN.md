@@ -31,7 +31,10 @@ rounded:
 spacing:
   landing-gutter: "clamp(20px, 6vw, 80px)"
   menu-gutter: "clamp(14px, 4vw, 48px)"
-  landing-flow: "clamp(52px, 7vw, 80px)"
+  landing-hero-intro: "clamp(96px, 12vw, 160px)"
+  landing-intro-photo: "clamp(88px, 10vw, 144px)"
+  landing-photo-menu: "clamp(96px, 11vw, 156px)"
+  landing-menu-close: "clamp(40px, 5vw, 64px)"
   public-measure: "900px"
 components:
   landing-primary:
@@ -40,11 +43,11 @@ components:
     rounded: "{rounded.editorial-edge}"
     height: "44px"
     padding: "0 30px"
-  menu-search:
+  menu-index:
     backgroundColor: "{colors.ivory}"
     textColor: "{colors.menu-scarlet}"
-    rounded: "{rounded.public-surface}"
-    height: "46px"
+    rounded: "{rounded.editorial-edge}"
+    height: "44px"
   admin-primary:
     backgroundColor: "{colors.menu-scarlet}"
     textColor: "{colors.ivory}"
@@ -125,10 +128,11 @@ and compact contact close. The feature image has a branded fallback state rather
 than an empty or permanently loading frame.
 
 Menu is an edge-to-edge ivory canvas with a transparent content measure capped
-at 900px. It opens with the compact back/mark masthead, then a discovery region
-containing search and recovery state. Categories retain the two-column product
-grid on mobile. Search filters rendered categories without mutating source data;
-no-result and fallback-snapshot states remain in normal document flow.
+at 900px. It opens with the compact back/mark masthead and keeps the category
+index as its only fixed discovery control. The canonical `/menu` uses the
+single-column row treatment on small phones; `/menu2` preserves the historical
+two-column card presentation as a noncanonical, noindex comparison route.
+Fallback-snapshot states remain in normal document flow on both presentations.
 
 Admin is an Operate surface. The top bar identifies the operator; owner-only
 controls are grouped separately; daily editing starts with search, active/
@@ -138,8 +142,8 @@ operator needs them. Narrow layouts stack controls without removing their
 labels or recovery actions.
 
 Safe-area padding belongs to page-level gutters and fixed actions. No surface
-uses device-model branches. Public anchors, category tracking, and search
-feedback depend on stable document geometry.
+uses device-model branches. Public anchors and category tracking depend on
+stable document geometry.
 
 ## Elevation & Depth
 
@@ -159,7 +163,7 @@ effects enhance an already visible static structure; they never replace it.
 ## Shapes
 
 Landing’s primary action uses a sharp editorial 2px edge. Menu product imagery
-and search/navigation surfaces use quiet 12–14px rounding; disclosure remains a
+and navigation surfaces use quiet 12–14px rounding; disclosure remains a
 plain underlined word with an expanded hit area. Pills are reserved for compact
 state, role, and option labels.
 
@@ -180,26 +184,27 @@ neutral controls. Borders are thin and structural; nested boxes are avoided.
 
 ### Menu discovery and navigation
 
-- Search is a labeled native search field with a clear action and live result
-  feedback; it does not change the managed snapshot.
+- Public Menu discovery is category navigation only; search, result feedback,
+  and category counts are intentionally absent.
 - Only categories containing public items participate in rendering, navigation,
   deep links, or current-category state.
 - URL-selected and currently visible categories are distinct state. Explicit
   category selection adds one history entry; passive scrolling may replace the
-  current hash, while local search never mutates URL category state.
+  current hash.
 - Missing or non-renderable category hashes resolve to the first renderable
-  category. History, filtering, and refresh reconciliation use the latest
+  category. History and refresh reconciliation use the latest
   navigation intent and restore focus only to a control or destination that
   remains rendered.
 - The fixed index trigger and popover track the current category. Selecting a
   category closes the popover, moves focus, and respects reduced motion.
-- Fallback-snapshot, loading, error, empty-search, and retry states explain the
+- Fallback-snapshot, loading, error, empty, and retry states explain the
   available recovery action in plain Persian.
 
 ### Menu product content
 
-- Product tiles retain the two-column grid, square image, name, description,
-  informational option rows, add-ons, and bare price.
+- Canonical `/menu` retains row-style single-column cards on small phones;
+  `/menu2` retains the historical two-column square-image cards. Both preserve
+  name, description, informational option rows, add-ons, and bare price.
 - Description disclosure appears only when rendered copy overflows and preserves
   `aria-expanded`, `aria-controls`, and independent item state.
 - Category Metal-FX remains a thin rule; it never frames a card or section.
@@ -221,14 +226,14 @@ neutral controls. Borders are thin and structural; nested boxes are avoided.
 
 - **Do** preserve RTL, visible focus, skip links, and 44px effective targets.
 - **Do** keep Landing copy and imagery readable when animation fails or is reduced.
-- **Do** keep Menu search, category anchors, and fallback states in stable flow.
+- **Do** keep Menu category anchors and fallback states in stable flow.
 - **Do** make Admin role, save, conflict, archive, and upload state explicit.
 - **Do** use current source components and CSS as authority for future refreshes.
 
 ### Don't:
 
 - **Don't** change managed menu data, fixtures, or archived inputs for layout work.
-- **Don't** collapse the Menu product grid to one column on mobile.
+- **Don't** merge `/menu2` presentation rules into canonical `/menu`.
 - **Don't** turn the Menu masthead into a hero or wrap categories in Metal-FX.
 - **Don't** expose owner controls to cashiers or rely on UI hiding as authorization.
 - **Don't** hide content pending JavaScript, fonts, WebGL, or animation.

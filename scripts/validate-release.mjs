@@ -17,7 +17,7 @@ const OLD_PHONE_TOKENS = [
   "۰۹۱۳۰۰۰۵۷۶۸",
 ];
 
-for (const file of ["index.html", "menu.html", "robots.txt", "sitemap.xml"]) {
+for (const file of ["index.html", "menu.html", "menu2.html", "robots.txt", "sitemap.xml"]) {
   const text = readText(file);
   if (text.includes("lcafe-esf.ir")) fail(`${file} still references lcafe-esf.ir`);
   if (text.includes("lcafee.github.io")) fail(`${file} still references GitHub Pages`);
@@ -30,18 +30,22 @@ if (!source404.includes("__BASE_PATH__")) {
 
 const indexHtml = readText("index.html");
 const menuHtml = readText("menu.html");
+const menu2Html = readText("menu2.html");
 const sitemap = readText("sitemap.xml");
 const robots = readText("robots.txt");
 const htaccess = readText(".htaccess");
 const landingSource = readText("src/landing/LandingApp.jsx");
 const menuSource = readText("src/menu/MenuApp.jsx");
+const menu2Source = readText("src/menu2/Menu2App.jsx");
 const publicTexts = new Map([
   ["index.html", indexHtml],
   ["menu.html", menuHtml],
+  ["menu2.html", menu2Html],
   ["404.html", source404],
   ["sitemap.xml", sitemap],
   ["src/landing/LandingApp.jsx", landingSource],
   ["src/menu/MenuApp.jsx", menuSource],
+  ["src/menu2/Menu2App.jsx", menu2Source],
 ]);
 
 for (const [file, text] of publicTexts) {
@@ -71,7 +75,17 @@ if (!menuHtml.includes(`<link rel="canonical" href="${PUBLIC_MENU_URL}" />`)) {
 if (!menuHtml.includes(`<meta property="og:url" content="${PUBLIC_MENU_URL}" />`)) {
   fail("menu.html og:url is not the canonical menu URL");
 }
-if (!sitemap.includes(`<loc>${PUBLIC_MENU_URL}</loc>`) || sitemap.includes("menu.html")) {
+if (!menu2Html.includes(`<link rel="canonical" href="${PUBLIC_MENU_URL}" />`)) {
+  fail("menu2.html canonical link is not the canonical menu URL");
+}
+if (!menu2Html.includes(`<meta name="robots" content="noindex,follow" />`)) {
+  fail("menu2.html must be noindex,follow");
+}
+if (
+  !sitemap.includes(`<loc>${PUBLIC_MENU_URL}</loc>`)
+  || sitemap.includes("menu.html")
+  || sitemap.includes("menu2")
+) {
   fail("sitemap.xml does not expose only the canonical menu URL");
 }
 if (!source404.includes(`href="${PUBLIC_MENU_URL}"`)) {
@@ -83,6 +97,7 @@ if (landingSource.includes('sitePath("menu.html")')) {
 for (const [file, text] of [
   ["src/landing/LandingApp.jsx", landingSource],
   ["src/menu/MenuApp.jsx", menuSource],
+  ["src/menu2/Menu2App.jsx", menu2Source],
 ]) {
   if (!text.includes(`href="tel:${PHONE_E164}"`) || !text.includes(PHONE_DISPLAY)) {
     fail(`${file} does not contain the approved phone display and tel target`);
@@ -95,6 +110,9 @@ for (const requiredRule of [
   "# LCAFE-PUBLIC-MENU-CANONICAL",
   "RewriteRule ^menu\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
   "RewriteRule ^menu$ menu.html [L]",
+  "# LCAFE-PUBLIC-MENU2-COMPARISON",
+  "RewriteRule ^menu2\\.html$ https://l-cafe.ir/menu2 [R=301,L,NE]",
+  "RewriteRule ^menu2$ menu2.html [L]",
 ]) {
   if (!htaccess.includes(requiredRule)) fail(`.htaccess is missing ${requiredRule}`);
 }
