@@ -31,10 +31,10 @@ rounded:
 spacing:
   landing-gutter: "clamp(20px, 6vw, 80px)"
   menu-gutter: "clamp(14px, 4vw, 48px)"
-  landing-hero-intro: "clamp(96px, 12vw, 160px)"
-  landing-intro-photo: "clamp(88px, 10vw, 144px)"
-  landing-photo-menu: "clamp(96px, 11vw, 156px)"
-  landing-menu-close: "clamp(40px, 5vw, 64px)"
+  landing-hero-intro: "clamp(120px, 14vw, 208px)"
+  landing-intro-photo: "clamp(112px, 12vw, 176px)"
+  landing-photo-menu: "clamp(160px, 16vw, 240px)"
+  landing-menu-close: "clamp(36px, 4vw, 56px)"
   public-measure: "900px"
 components:
   landing-primary:

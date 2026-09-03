@@ -14,10 +14,10 @@
   --utility-leading:1.65;
   /* Semantic boundaries make the page read as one composed sequence rather
      than repeating one generic section gap at every transition. */
-  --space-hero-intro:clamp(96px,12vw,160px);
-  --space-intro-photo:clamp(88px,10vw,144px);
-  --space-photo-menu:clamp(96px,11vw,156px);
-  --space-menu-close:clamp(40px,5vw,64px);
+  --space-hero-intro:clamp(120px,14vw,208px);
+  --space-intro-photo:clamp(112px,12vw,176px);
+  --space-photo-menu:clamp(160px,16vw,240px);
+  --space-menu-close:clamp(36px,4vw,56px);
   --tile:clamp(200px,46vw,346px);
 
   /* One restrained motion voice for copy, image arrival and page handoff. */
@@ -180,7 +180,9 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 .contact-title{max-width:12ch;margin:0;font-family:var(--display);
   font-weight:700;font-size:clamp(20px,2.2vw,24px);line-height:1.35;
   letter-spacing:-.005em;color:var(--ink);text-wrap:balance}
-.contact-body{min-width:0;display:grid;grid-template-columns:minmax(240px,1fr) auto;
+/* Keep the intended grid stronger than the shared reveal line's fail-open
+   display declaration below. */
+.contact-body.t-stagger-line{min-width:0;display:grid;grid-template-columns:minmax(240px,1fr) auto;
   gap:clamp(16px,3vw,36px);align-items:start}
 .contact-location{min-width:0;display:grid;gap:2px}
 .contact-address{max-width:34ch;margin:0;color:var(--ink-strong);
@@ -318,10 +320,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 @media (max-width:640px){
   :root{
-    --space-hero-intro:clamp(76px,24vw,104px);
-    --space-intro-photo:clamp(72px,21vw,96px);
-    --space-photo-menu:clamp(80px,23vw,108px);
-    --space-menu-close:clamp(32px,10vw,44px);
+    --space-hero-intro:clamp(96px,28vw,128px);
+    --space-intro-photo:clamp(88px,25vw,116px);
+    --space-photo-menu:clamp(128px,36vw,168px);
+    --space-menu-close:clamp(28px,8vw,36px);
   }
   .about .inner{display:block}
   .about-headline{margin-bottom:clamp(20px,6vw,26px)}
@@ -339,13 +341,13 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
      not a narrower crop of this one. */
   .photo{margin-inline-start:0}
   .contact{padding-top:0}
-  .contact .inner{grid-template-columns:minmax(84px,.42fr) minmax(0,1fr);
-    gap:clamp(12px,3.6vw,16px) clamp(14px,4vw,18px);
-    padding-top:clamp(14px,4vw,18px)}
-  .contact-body{display:block}
-  .contact-title{font-size:clamp(19px,5.5vw,22px);line-height:1.35}
+  .contact .inner{display:block;padding-top:clamp(12px,3.6vw,16px)}
+  .contact-body.t-stagger-line{grid-template-columns:minmax(0,1.1fr) minmax(144px,1fr);
+    gap:clamp(14px,4vw,18px)}
+  .contact-title{margin-bottom:clamp(6px,2vw,8px);
+    font-size:clamp(19px,5.5vw,22px);line-height:1.35}
   .contact-address{font-size:var(--meta-size);line-height:1.8}
-  .contact-links{margin-top:4px;column-gap:clamp(10px,3vw,14px)}
+  .contact-links{column-gap:clamp(10px,3vw,14px)}
   .mark{height:108vh;top:-4vh}
 }
 @media (max-height:520px){
