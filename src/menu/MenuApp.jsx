@@ -122,6 +122,74 @@ function useDeferredEnhancement(enabled) {
   return ready;
 }
 
+function useElementFrame(elementRef, enabled) {
+  const [frame, setFrame] = useState(null);
+
+  useLayoutEffect(() => {
+    if (!enabled) {
+      setFrame(null);
+      return undefined;
+    }
+
+    const element = elementRef.current;
+    const anchor = element?.parentElement;
+    if (!element || !anchor) return undefined;
+
+    let animationFrame = 0;
+    const measure = () => {
+      animationFrame = 0;
+      const elementRect = element.getBoundingClientRect();
+      const anchorRect = anchor.getBoundingClientRect();
+      const nextFrame = {
+        position: "absolute",
+        left: elementRect.left - anchorRect.left,
+        top: elementRect.top - anchorRect.top,
+        width: elementRect.width,
+        height: elementRect.height,
+        pointerEvents: "none",
+      };
+
+      setFrame((currentFrame) => {
+        if (
+          currentFrame
+          && Math.abs(currentFrame.left - nextFrame.left) < 0.01
+          && Math.abs(currentFrame.top - nextFrame.top) < 0.01
+          && Math.abs(currentFrame.width - nextFrame.width) < 0.01
+          && Math.abs(currentFrame.height - nextFrame.height) < 0.01
+        ) {
+          return currentFrame;
+        }
+        return nextFrame;
+      });
+    };
+    const scheduleMeasure = () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(measure);
+    };
+    const resizeObserver = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(scheduleMeasure);
+
+    resizeObserver?.observe(element);
+    window.addEventListener("resize", scheduleMeasure, { passive: true });
+    window.visualViewport?.addEventListener("resize", scheduleMeasure, {
+      passive: true,
+    });
+    document.fonts?.addEventListener?.("loadingdone", scheduleMeasure);
+    measure();
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", scheduleMeasure);
+      window.visualViewport?.removeEventListener("resize", scheduleMeasure);
+      document.fonts?.removeEventListener?.("loadingdone", scheduleMeasure);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
+  }, [elementRef, enabled]);
+
+  return frame;
+}
+
 let sharedDescriptionObserver;
 const descriptionMeasurements = new Map();
 
@@ -526,10 +594,14 @@ export const MenuMasthead = memo(function MenuMasthead() {
 
 const MenuIndexTrigger = memo(function MenuIndexTrigger({
   activeTitle,
+  metalFxReady,
   navOpen,
   onToggle,
+  reducedMotion,
   triggerRef,
 }) {
+  const triggerFrame = useElementFrame(triggerRef, metalFxReady);
+
   return (
     <div className="category-trigger-anchor">
       <button
@@ -545,6 +617,24 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
           {activeTitle}
         </span>
       </button>
+      {triggerFrame ? (
+        <SafeMetalFx
+          variant="button"
+          preset="silver"
+          theme="light"
+          strength={0.94}
+          paused={reducedMotion}
+          borderRadius={2}
+          ringCssPx={1.15}
+          shaderScale={1.25}
+          normalizeHostStyles={false}
+          className="category-trigger-metal"
+          style={triggerFrame}
+          aria-hidden="true"
+        >
+          <span className="category-trigger-metal-host" />
+        </SafeMetalFx>
+      ) : null}
     </div>
   );
 });
@@ -560,10 +650,10 @@ const MenuViewSwitch = memo(function MenuViewSwitch({ onSelect, view }) {
         onClick={() => onSelect(MENU_VIEW_GRID)}
       >
         <svg viewBox="0 0 18 18" aria-hidden="true">
-          <rect x="2" y="2" width="5" height="5" rx="0.75" />
-          <rect x="11" y="2" width="5" height="5" rx="0.75" />
-          <rect x="2" y="11" width="5" height="5" rx="0.75" />
-          <rect x="11" y="11" width="5" height="5" rx="0.75" />
+          <rect x="2.5" y="2.5" width="5" height="5" rx="0.5" />
+          <rect x="10.5" y="2.5" width="5" height="5" rx="0.5" />
+          <rect x="2.5" y="10.5" width="5" height="5" rx="0.5" />
+          <rect x="10.5" y="10.5" width="5" height="5" rx="0.5" />
         </svg>
       </button>
       <button
@@ -574,9 +664,7 @@ const MenuViewSwitch = memo(function MenuViewSwitch({ onSelect, view }) {
         onClick={() => onSelect(MENU_VIEW_LIST)}
       >
         <svg viewBox="0 0 18 18" aria-hidden="true">
-          <rect x="2" y="2" width="14" height="3" rx="0.75" />
-          <rect x="2" y="7.5" width="14" height="3" rx="0.75" />
-          <rect x="2" y="13" width="14" height="3" rx="0.75" />
+          <path d="M3 4h12M3 9h12M3 14h12" />
         </svg>
       </button>
     </div>
@@ -591,7 +679,7 @@ export function MenuApp({
 }) {
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
-  const metalFxReady = useDeferredEnhancement(!reducedMotion);
+  const metalFxReady = useDeferredEnhancement(true);
   const [menuView, setMenuView] = useState(readMenuViewPreference);
   const viewAnchorRef = useRef(null);
   const navigation = useMenuNavigation({
@@ -628,8 +716,10 @@ export function MenuApp({
       <div ref={navigation.discoveryRef} className="menu-discovery">
         <MenuIndexTrigger
           activeTitle={navigation.activeTitle}
+          metalFxReady={metalFxReady}
           navOpen={navigation.navOpen}
           onToggle={navigation.toggleNavigation}
+          reducedMotion={reducedMotion}
           triggerRef={navigation.triggerRef}
         />
         <MenuViewSwitch onSelect={selectMenuView} view={menuView} />
