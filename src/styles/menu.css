@@ -819,7 +819,7 @@ a:focus-visible,button:focus-visible{
   .menu-discovery{
     right:max(10px,env(safe-area-inset-right,0px));
     bottom:calc(10px + env(safe-area-inset-bottom,0px));
-    width:min(286px,calc(100% - 20px));
+    width:min(266px,calc(100% - 20px));
   }
   .cat + .cat{padding-top:clamp(30px,7vw,42px)}
   .cat-head{
