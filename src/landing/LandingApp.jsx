@@ -56,7 +56,7 @@ function RevealBlock({ children, className }) {
         }
         if (hasEntered) setMotionState("hiding");
       },
-      { rootMargin: "-8% 0px -15% 0px", threshold: 0.12 },
+      { rootMargin: "-8% 0px -8% 0px", threshold: 0.12 },
     );
     observer.observe(block);
 
