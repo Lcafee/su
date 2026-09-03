@@ -43,8 +43,8 @@ reuses this same fixture and does not change the production snapshot boundary.
 - `/` and `/index.html` — Landing
 - `/menu` — Menu (canonical public URL; Apache/LiteSpeed serves the internal
   `menu.html` build entry and permanently redirects legacy `/menu.html` visits)
-- `/menu2` — noncanonical, `noindex` two-column Menu comparison; its canonical
-  link points to `/menu` and physical `/menu2.html` visits redirect to `/menu2`
+- `/menu2` — retired noncanonical compatibility route; production and the
+  static Pages entry redirect to the unified canonical `/menu`
 - `/admin/` — separately built authenticated menu editor
 
 The admin has two database-backed roles. Owners receive the complete editor and
@@ -53,17 +53,17 @@ ordering, archive, save, and publish work while advanced category fields, item
 metadata/options, and publish retry remain owner-only. PHP enforces this
 boundary independently of the React UI.
 
-Vite builds Landing, canonical Menu, and comparison Menu as separate public
-React entry points. The physical `menu.html` and `menu2.html` files remain
-internal static-hosting details; public links, QR codes, metadata, and crawlers
-continue to use `/menu` as the only canonical Menu.
+Vite builds Landing and the canonical Menu as public React entry points.
+`menu2.html` is a lightweight compatibility redirect for static hosts. Public
+links, QR codes, metadata, and crawlers continue to use `/menu` as the only
+canonical Menu.
 
 ## Source ownership
 
 - `src/landing/` owns the Landing components and motion.
-- `src/menu/` owns canonical Menu rendering plus shared snapshot/runtime and
-  category-navigation behavior.
-- `src/menu2/` owns the independent historical two-column presentation.
+- `src/menu/` owns the unified grid/list Menu rendering plus shared snapshot,
+  preference, runtime, and category-navigation behavior.
+- `src/menu2/` owns only the legacy compatibility redirect.
 - `src/admin/` owns the isolated admin bundle.
 - `src/styles/` preserves the approved visual system.
 - `assets/` owns code-managed fonts, brand assets, icons, and public imagery.

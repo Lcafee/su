@@ -108,9 +108,9 @@ for (const requiredRule of [
   "# LCAFE-PUBLIC-MENU-CANONICAL",
   "RewriteRule ^menu\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
   "RewriteRule ^menu$ menu.html [L]",
-  "# LCAFE-PUBLIC-MENU2-COMPARISON",
-  "RewriteRule ^menu2\\.html$ https://l-cafe.ir/menu2 [R=301,L,NE]",
-  "RewriteRule ^menu2$ menu2.html [L]",
+  "# LCAFE-PUBLIC-MENU2-COMPATIBILITY",
+  "RewriteRule ^menu2\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
+  "RewriteRule ^menu2$ https://l-cafe.ir/menu [R=301,L,NE]",
 ]) {
   if (!builtHtaccess.includes(requiredRule)) {
     fail(`built .htaccess is missing ${requiredRule}`);

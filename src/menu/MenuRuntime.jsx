@@ -323,6 +323,7 @@ export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
     navRef,
     registerSection,
     renderableCategories,
+    sectionRefs,
     selectCategory,
     toggleNavigation,
     triggerRef,

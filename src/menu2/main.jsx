@@ -1,12 +1,7 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { sitePath } from "../sitePath";
 
-import { MenuRuntime } from "../menu/MenuRuntime";
-import { Menu2App, Menu2Masthead } from "./Menu2App";
-import "../styles/menu2.css";
-
-createRoot(document.getElementById("menu-root")).render(
-  <StrictMode>
-    <MenuRuntime AppComponent={Menu2App} MastheadComponent={Menu2Masthead} />
-  </StrictMode>,
+const canonicalMenuPath = sitePath(
+  import.meta.env.BASE_URL === "/" ? "menu" : "menu/",
 );
+
+window.location.replace(`${canonicalMenuPath}${window.location.hash}`);

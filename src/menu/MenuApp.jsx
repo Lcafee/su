@@ -5,6 +5,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -36,13 +37,11 @@ const METAL_RULE_STYLE = {
   height: "100%",
   pointerEvents: "none",
 };
-const METAL_TRIGGER_STYLE = {
-  position: "absolute",
-  inset: 0,
-  width: "100%",
-  height: "100%",
-  pointerEvents: "none",
-};
+const MENU_VIEW_STORAGE_KEY = "l-cafe.menu-view";
+const MENU_VIEW_STORAGE_VERSION = 1;
+const MENU_VIEW_GRID = "grid";
+const MENU_VIEW_LIST = "list";
+const VALID_MENU_VIEWS = new Set([MENU_VIEW_GRID, MENU_VIEW_LIST]);
 
 let metalFxCapability;
 
@@ -170,6 +169,29 @@ function useMediaQuery(queryText) {
   }, [queryText]);
 
   return matches;
+}
+
+function readMenuViewPreference() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(MENU_VIEW_STORAGE_KEY));
+    return stored?.version === MENU_VIEW_STORAGE_VERSION
+      && VALID_MENU_VIEWS.has(stored.view)
+      ? stored.view
+      : MENU_VIEW_GRID;
+  } catch {
+    return MENU_VIEW_GRID;
+  }
+}
+
+function writeMenuViewPreference(view) {
+  try {
+    window.localStorage.setItem(
+      MENU_VIEW_STORAGE_KEY,
+      JSON.stringify({ version: MENU_VIEW_STORAGE_VERSION, view }),
+    );
+  } catch {
+    // The view still changes when storage is disabled or unavailable.
+  }
 }
 
 const CategoryMetalRule = memo(function CategoryMetalRule({
@@ -504,11 +526,8 @@ export const MenuMasthead = memo(function MenuMasthead() {
 
 const MenuIndexTrigger = memo(function MenuIndexTrigger({
   activeTitle,
-  enhancedMetalFx,
-  metalFxReady,
   navOpen,
   onToggle,
-  reducedMotion,
   triggerRef,
 }) {
   return (
@@ -526,24 +545,40 @@ const MenuIndexTrigger = memo(function MenuIndexTrigger({
           {activeTitle}
         </span>
       </button>
-      {enhancedMetalFx && metalFxReady ? (
-        <SafeMetalFx
-          variant="button"
-          preset="silver"
-          theme="light"
-          strength={0.94}
-          paused={reducedMotion}
-          borderRadius={2}
-          ringCssPx={1.15}
-          shaderScale={1.25}
-          normalizeHostStyles={false}
-          className="category-trigger-metal"
-          style={METAL_TRIGGER_STYLE}
-          aria-hidden="true"
-        >
-          <span className="category-trigger-metal-host" />
-        </SafeMetalFx>
-      ) : null}
+    </div>
+  );
+});
+
+const MenuViewSwitch = memo(function MenuViewSwitch({ onSelect, view }) {
+  return (
+    <div className="menu-view-switch" role="group" aria-label="نحوه نمایش منو">
+      <button
+        className="menu-view-option"
+        type="button"
+        aria-label="نمای دو ستونه"
+        aria-pressed={view === MENU_VIEW_GRID}
+        onClick={() => onSelect(MENU_VIEW_GRID)}
+      >
+        <svg viewBox="0 0 18 18" aria-hidden="true">
+          <rect x="2" y="2" width="5" height="5" rx="0.75" />
+          <rect x="11" y="2" width="5" height="5" rx="0.75" />
+          <rect x="2" y="11" width="5" height="5" rx="0.75" />
+          <rect x="11" y="11" width="5" height="5" rx="0.75" />
+        </svg>
+      </button>
+      <button
+        className="menu-view-option"
+        type="button"
+        aria-label="نمای فهرستی"
+        aria-pressed={view === MENU_VIEW_LIST}
+        onClick={() => onSelect(MENU_VIEW_LIST)}
+      >
+        <svg viewBox="0 0 18 18" aria-hidden="true">
+          <rect x="2" y="2" width="14" height="3" rx="0.75" />
+          <rect x="2" y="7.5" width="14" height="3" rx="0.75" />
+          <rect x="2" y="13" width="14" height="3" rx="0.75" />
+        </svg>
+      </button>
     </div>
   );
 });
@@ -557,11 +592,33 @@ export function MenuApp({
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
   const metalFxReady = useDeferredEnhancement(!reducedMotion);
+  const [menuView, setMenuView] = useState(readMenuViewPreference);
+  const viewAnchorRef = useRef(null);
   const navigation = useMenuNavigation({
     categories,
     focusOnMount,
     reducedMotion,
   });
+
+  const selectMenuView = useCallback((nextView) => {
+    if (!VALID_MENU_VIEWS.has(nextView) || nextView === menuView) return;
+
+    const activeSection = navigation.sectionRefs.current.get(navigation.activeId);
+    viewAnchorRef.current = activeSection
+      ? { element: activeSection, top: activeSection.getBoundingClientRect().top }
+      : null;
+    writeMenuViewPreference(nextView);
+    setMenuView(nextView);
+  }, [menuView, navigation.activeId, navigation.sectionRefs]);
+
+  useLayoutEffect(() => {
+    const anchor = viewAnchorRef.current;
+    viewAnchorRef.current = null;
+    if (!anchor?.element?.isConnected) return;
+
+    const topDelta = anchor.element.getBoundingClientRect().top - anchor.top;
+    if (Math.abs(topDelta) > 0.5) window.scrollBy(0, topDelta);
+  }, [menuView]);
 
   return (
     <>
@@ -571,15 +628,13 @@ export function MenuApp({
       <div ref={navigation.discoveryRef} className="menu-discovery">
         <MenuIndexTrigger
           activeTitle={navigation.activeTitle}
-          enhancedMetalFx={enhancedMetalFx}
-          metalFxReady={metalFxReady}
           navOpen={navigation.navOpen}
           onToggle={navigation.toggleNavigation}
-          reducedMotion={reducedMotion}
           triggerRef={navigation.triggerRef}
         />
+        <MenuViewSwitch onSelect={selectMenuView} view={menuView} />
       </div>
-      <main id="menu">
+      <main id="menu" data-menu-view={menuView}>
         <MenuMasthead />
         {snapshotSource === "previous" ? (
           <aside

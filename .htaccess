@@ -26,14 +26,16 @@
   RewriteCond %{THE_REQUEST} \s/+menu/+(?:[?\s]) [NC]
   RewriteRule ^menu/+$ https://l-cafe.ir/menu [R=301,L,NE]
 
-  # LCAFE-PUBLIC-MENU2-COMPARISON
-  # menu2 is a temporary public comparison route. Its HTML declares noindex
-  # and points canonical authority back to /menu.
+  # LCAFE-PUBLIC-MENU2-COMPATIBILITY
+  # menu2 is a retired comparison route. Redirect both public legacy spellings
+  # directly to the one canonical Menu; menu2.html remains only for static hosts.
   RewriteCond %{THE_REQUEST} \s/+menu2\.html(?:[?\s]) [NC]
-  RewriteRule ^menu2\.html$ https://l-cafe.ir/menu2 [R=301,L,NE]
+  RewriteRule ^menu2\.html$ https://l-cafe.ir/menu [R=301,L,NE]
 
   RewriteCond %{THE_REQUEST} \s/+menu2/+(?:[?\s]) [NC]
-  RewriteRule ^menu2/+$ https://l-cafe.ir/menu2 [R=301,L,NE]
+  RewriteRule ^menu2/+$ https://l-cafe.ir/menu [R=301,L,NE]
+
+  RewriteRule ^menu2$ https://l-cafe.ir/menu [R=301,L,NE]
 
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
@@ -51,7 +53,6 @@
 
   # Serve extensionless public routes from their Vite-built HTML entries.
   RewriteRule ^menu$ menu.html [L]
-  RewriteRule ^menu2$ menu2.html [L]
 </IfModule>
 
 ErrorDocument 404 /404.html

@@ -36,7 +36,7 @@ const robots = readText("robots.txt");
 const htaccess = readText(".htaccess");
 const landingSource = readText("src/landing/LandingApp.jsx");
 const menuSource = readText("src/menu/MenuApp.jsx");
-const menu2Source = readText("src/menu2/Menu2App.jsx");
+const menu2Source = readText("src/menu2/main.jsx");
 const publicTexts = new Map([
   ["index.html", indexHtml],
   ["menu.html", menuHtml],
@@ -45,7 +45,7 @@ const publicTexts = new Map([
   ["sitemap.xml", sitemap],
   ["src/landing/LandingApp.jsx", landingSource],
   ["src/menu/MenuApp.jsx", menuSource],
-  ["src/menu2/Menu2App.jsx", menu2Source],
+  ["src/menu2/main.jsx", menu2Source],
 ]);
 
 for (const [file, text] of publicTexts) {
@@ -97,7 +97,6 @@ if (landingSource.includes('sitePath("menu.html")')) {
 for (const [file, text] of [
   ["src/landing/LandingApp.jsx", landingSource],
   ["src/menu/MenuApp.jsx", menuSource],
-  ["src/menu2/Menu2App.jsx", menu2Source],
 ]) {
   if (!text.includes(`href="tel:${PHONE_E164}"`) || !text.includes(PHONE_DISPLAY)) {
     fail(`${file} does not contain the approved phone display and tel target`);
@@ -110,11 +109,14 @@ for (const requiredRule of [
   "# LCAFE-PUBLIC-MENU-CANONICAL",
   "RewriteRule ^menu\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
   "RewriteRule ^menu$ menu.html [L]",
-  "# LCAFE-PUBLIC-MENU2-COMPARISON",
-  "RewriteRule ^menu2\\.html$ https://l-cafe.ir/menu2 [R=301,L,NE]",
-  "RewriteRule ^menu2$ menu2.html [L]",
+  "# LCAFE-PUBLIC-MENU2-COMPATIBILITY",
+  "RewriteRule ^menu2\\.html$ https://l-cafe.ir/menu [R=301,L,NE]",
+  "RewriteRule ^menu2$ https://l-cafe.ir/menu [R=301,L,NE]",
 ]) {
   if (!htaccess.includes(requiredRule)) fail(`.htaccess is missing ${requiredRule}`);
+}
+if (!menu2Source.includes("window.location.replace") || !menu2Source.includes("canonicalMenuPath")) {
+  fail("src/menu2/main.jsx must redirect compatibility traffic to canonical /menu");
 }
 for (const forbidden of [
   "LCAFE-HOST-RUNTIME-BEGIN",

@@ -129,10 +129,10 @@ than an empty or permanently loading frame.
 
 Menu is an edge-to-edge ivory canvas with a transparent content measure capped
 at 900px. It opens with the compact back/mark masthead and keeps the category
-index as its only fixed discovery control. The canonical `/menu` uses the
-single-column row treatment on small phones; `/menu2` preserves the historical
-two-column card presentation as a noncanonical, noindex comparison route.
-Fallback-snapshot states remain in normal document flow on both presentations.
+index and compact two-option view switch together as its fixed discovery
+controls. Canonical `/menu` owns both the historical two-column grid and the
+row-list treatment in one stable component tree; grid is the first-use default.
+Fallback-snapshot states remain in normal document flow.
 
 Admin is an Operate surface. The top bar identifies the operator; owner-only
 controls are grouped separately; daily editing starts with search, active/
@@ -202,9 +202,10 @@ neutral controls. Borders are thin and structural; nested boxes are avoided.
 
 ### Menu product content
 
-- Canonical `/menu` retains row-style single-column cards on small phones;
-  `/menu2` retains the historical two-column square-image cards. Both preserve
-  name, description, informational option rows, add-ons, and bare price.
+- Canonical `/menu` switches between the historical two-column square-image
+  grid and row-style list through `data-menu-view`, while preserving the same
+  product nodes, name, description, informational option rows, add-ons, and
+  bare price.
 - Description disclosure appears only when rendered copy overflows and preserves
   `aria-expanded`, `aria-controls`, and independent item state.
 - Category Metal-FX remains a thin rule; it never frames a card or section.
@@ -233,7 +234,7 @@ neutral controls. Borders are thin and structural; nested boxes are avoided.
 ### Don't:
 
 - **Don't** change managed menu data, fixtures, or archived inputs for layout work.
-- **Don't** merge `/menu2` presentation rules into canonical `/menu`.
+- **Don't** reintroduce an independently mounted `/menu2` presentation.
 - **Don't** turn the Menu masthead into a hero or wrap categories in Metal-FX.
 - **Don't** expose owner controls to cashiers or rely on UI hiding as authorization.
 - **Don't** hide content pending JavaScript, fonts, WebGL, or animation.

@@ -7,7 +7,7 @@ Mutable state is authoritative in `PROJECT_STATE.md`.
 ```text
 /          -> index.html       -> src/landing/main.jsx -> LandingApp
 /menu      -> menu.html        -> src/menu/main.jsx    -> managed snapshot
-/menu2     -> menu2.html       -> src/menu2/main.jsx   -> shared managed snapshot
+/menu2     -> production redirect / static compatibility entry -> /menu
 /admin/    -> admin/index.html -> src/admin/main.jsx   -> /api
 /api       -> server/public/api/index.php
                               -> api/_app/<approved-sha>/app
@@ -16,10 +16,10 @@ Mutable state is authoritative in `PROJECT_STATE.md`.
 
 The public and admin UIs are separate React + Vite entry points. Production has
 no Node server. Apache/LiteSpeed exposes physical `menu.html` canonically as
-`/menu`. `/menu2` is a noindex comparison route whose canonical points to
-`/menu`. The PHP/MySQL control plane edits and publishes menu state; both public
-Menu views fetch `managed-menu/current.json`, then `previous.json` as recovery,
-and never query MySQL.
+`/menu`. `/menu2` redirects to that canonical route and its static compatibility
+entry is noindex. The PHP/MySQL control plane edits and publishes menu state;
+the unified Menu fetches `managed-menu/current.json`, then `previous.json` as
+recovery, and never queries MySQL.
 
 The retired generated frontend, pre-admin JSON/Excel/import/generator
 implementation, and Summer Pause campaign are isolated under `legacy/` as
@@ -45,9 +45,10 @@ deployment, and product-maintenance paths.
   ZIPs omit the root file.
 
 `MenuRuntime` owns shared snapshot loading, fallback, retry, and hardened
-category-navigation state. `MenuApp` and `Menu2App` own independent canonical
-row and historical two-column presentations. Memoized category/product
-boundaries and shared-per-view `ResizeObserver` instances manage rendering.
+category-navigation state. One `MenuApp` owns both grid and list presentations
+through a local versioned preference and `data-menu-view`; switching preserves
+the mounted product tree and the active section anchor. Memoized category/product
+boundaries and a shared `ResizeObserver` manage rendering.
 Variants are informational rows, not selections. `metal-fx` is a
 capability-gated decorative enhancement: ordinary React/CSS content remains
 usable when WebGL is absent or initialization fails.
