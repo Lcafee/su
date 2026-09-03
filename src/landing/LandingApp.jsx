@@ -16,10 +16,7 @@ const FEATURE_PHOTO_FALLBACK = sitePath(
 );
 const FEATURE_PHOTO_ALT =
   "چراغ آویز دست‌ساز ال کافه با پیکره‌های پرنده، مقابل دیوارنگاره و گیاهان سالن";
-const MENU_HREF =
-  import.meta.env.BASE_URL === "/"
-    ? sitePath("menu")
-    : "https://l-cafe.ir/menu";
+const MENU_HREF = sitePath(import.meta.env.BASE_URL === "/" ? "menu" : "menu/");
 
 function RevealBlock({ children, className }) {
   const blockRef = useRef(null);

@@ -37,7 +37,7 @@ const staticFiles = [
   "assets/l-cafe-sculptural-light-480.webp",
   "assets/menu/opt/item-placeholder-300.webp",
   "assets/menu/opt/item-placeholder.webp",
-  "assets/brand/l-cafe-symbol.png",
+  "assets/brand/l-cafe-symbol-122.png",
   "assets/brand/l-cafe-full-white.svg",
 ];
 

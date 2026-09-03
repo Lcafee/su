@@ -1,6 +1,6 @@
 # L Cafe project state
 
-Updated: 2026-09-01 (Asia/Tehran)
+Updated: 2026-09-03 (Asia/Tehran)
 
 This is the authoritative mutable state ledger. Stable architecture and
 procedures remain in `HANDOFF.md` and `OPERATIONS.md`; do not duplicate changing
@@ -18,7 +18,8 @@ SHAs or migration status elsewhere.
 | Public menu snapshot | `managed-menu/current.json` remains revision `6` with SHA-256 `556aec17b82c1326ce463e104e8dd07e38e736bd0fa34ac5d04a0ea2dd61e682`; `previous.json` remains present | owner-confirmed deployment result |
 | Architecture | React/Vite Landing, Menu, and Admin; PHP 8.1+/MySQL control plane; MySQL publishes persistent static menu snapshots; ParsPack LiteSpeed shared host | source-defined plus owner-confirmed production state |
 | Runtime ownership | Database, config, sessions, revisions, originals, managed snapshots/media, and the fenced ParsPack `.htaccess` runtime block are host-owned persistent state | owner-confirmed production state |
-| Repository governance | `Lcafee/su` is private; normal direct pushes to `main` remain allowed; deletion/force-push protection is unavailable on the current GitHub plan; no PR, approval, CI, status-check, workflow, merge-queue, or deployment-automation requirement was added; `backup-remote` is unchanged | GitHub-observed plus owner acceptance |
-| Blockers | No blocker remains for the completed consolidated production transition or the next roadmap work. Destructive archive/media cleanup remains intentionally deferred until the owner confirms the production backup retention horizon and coordinated database/snapshot/original/rendition restore contract. Missing private-repository branch protection remains an accepted residual governance risk. | owner directive plus unresolved destructive-cleanup gate |
+| Repository governance | `Lcafee/su` is public; normal direct pushes to `main` remain allowed; every push runs the frontend-only GitHub Pages preview workflow; Pages is pre-production only and does not approve, generate, or deploy a production release; `backup-remote` is unchanged | GitHub-observed plus source-defined workflow |
+| Preview state | GitHub Pages uses the project base `/su/`; the Pages artifact is restricted to Landing, `/menu/`, `/menu2/`, required public assets/fonts, and preview copies of the tracked development menu fixture; the complete preview is `noindex,nofollow` | source-defined workflow and build guard |
+| Blockers | No blocker remains for the completed consolidated production transition or the next roadmap work. Destructive archive/media cleanup remains intentionally deferred until the owner confirms the production backup retention horizon and coordinated database/snapshot/original/rendition restore contract. | owner directive plus unresolved destructive-cleanup gate |
 | Current phase | Consolidated production deployment complete; the non-destructive managed-media lifecycle foundation is active in production; destructive eligibility and cleanup remain disabled | owner-confirmed deployment result |
 | Next action | Resume the next separately authorized roadmap item. Do not begin destructive archive/media cleanup until the backup-retention and coordinated-restore contract is owner-confirmed. | current task boundary |

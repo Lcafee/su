@@ -13,6 +13,7 @@
     "validate:dist": "node scripts/validate-dist.mjs",
     "build": "npm run build:public && npm run build:admin",
     "build:public": "vite build",
+    "build:pages": "vite build --config vite.pages.config.js",
     "build:admin": "vite build --config vite.admin.config.js",
     "release:generate": "node scripts/generate-release.mjs",
     "preview": "vite preview"

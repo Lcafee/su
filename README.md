@@ -22,14 +22,21 @@ is needed in production. The project is pinned to Node 20.19+ or 22.12+ (CI
 uses Node 22), matching the Vite 8 runtime requirement.
 
 `VITE_BASE_PATH` controls the public base and defaults to `/` for the production
-domain. There is no active GitHub Pages deployment; the obsolete preview was
-disabled after its workflow was retired.
+domain. A separate `npm run build:pages` build is fixed to the GitHub project
+base `/su/` and publishes the frontend-only pre-production preview at
+`https://lcafee.github.io/su/` after every push to `main`. Its artifact contains
+only Landing, static `/menu/` and `/menu2/` directory routes, required public
+assets, and two byte-identical copies of the tracked development menu fixture.
+It applies preview-only `noindex,nofollow` metadata and robots disallow rules.
+It does not contain Admin, API/server code, `.htaccess`, production manifests,
+runtime state, release artifacts, or configuration.
 
 Local Vite development and preview serve the tracked
 `src/menu/fixtures/current.json` at the same `managed-menu/current.json` and
 `previous.json` paths used in production. No local database or PHP runtime is
 required. The fixture is a self-contained development artifact and is not
-generated from, or synchronized with, production menu data.
+generated from, or synchronized with, production menu data. The Pages build
+reuses this same fixture and does not change the production snapshot boundary.
 
 ## Public routes
 
@@ -84,6 +91,10 @@ git add <files>
 git commit -m "Describe the change"
 git push
 ```
+
+That push updates only the GitHub Pages pre-production preview. Production
+still requires owner approval of an exact pushed SHA, separate release
+generation, and a separately authorized deployment task.
 
 Only after a specific pushed commit is explicitly approved, generate its
 production artifact with the full SHA:

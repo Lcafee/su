@@ -37,8 +37,9 @@ deployment, and product-maintenance paths.
 - `managed-menu/` and `managed-media/` are public persistent runtime output;
   private config, sessions, revision archives, and originals remain outside the
   document root.
-- The tracked snapshot under `src/menu/fixtures/` supports local Vite
-  development only and is independent of archived menu inputs.
+- The tracked snapshot under `src/menu/fixtures/` supports local Vite and the
+  isolated GitHub Pages preview; it is independent of production runtime state
+  and archived menu inputs.
 - Root `.htaccess` is composite: release code owns the public rules and the host
   owns the final fenced runtime block. Deployment preserves the block; manual
   ZIPs omit the root file.
@@ -68,6 +69,14 @@ hashes. `package.py` and `deploy.py` accept only that approved artifact and omit
 the internal manifests from public output. File-manager packages also omit root
 `.htaccess`; FTPS deployment composes its release-owned portion with the opaque
 host runtime block.
+
+Every push to `main` separately runs `npm run build:pages` and deploys
+`dist-pages/` to the `/su/` GitHub Pages project path. That allowlisted artifact
+contains only Landing, static directory entries for `/menu/` and `/menu2/`,
+required public assets, and preview copies of the tracked fixture. Build guards
+reject Admin/server modules, production/runtime files, missing preview search
+isolation, and URLs outside `/su/`. This preview step never creates or deploys
+a production release.
 
 Approved generation is a hard stop. Deployment requires separate explicit
 authorization. Code deployment never publishes menu changes or owns persistent
