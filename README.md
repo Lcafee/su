@@ -126,6 +126,7 @@ never invoked by a build, release command, Git hook, or GitHub workflow:
 
 ```sh
 py package.py
+py merge_htaccess.py --live .live.htaccess
 py deploy.py --dry-run
 py deploy.py --check-remote
 py deploy.py
@@ -137,6 +138,14 @@ uploads the approved served set. Both refuse missing, edited, or
 unknown-commit release artifacts. The internal `.lcafe-build.json` and
 `.lcafe-release.json` manifests are intentionally excluded from the public
 upload ZIP and FTPS upload.
+
+For the File Manager path, first download the current live root `.htaccess` to
+the ignored `.live.htaccess` path. `merge_htaccess.py` combines the approved
+application rules with that file's single final host-owned runtime suffix and
+writes the separate ignored `lcafe-merged.htaccess` staging artifact. It refuses
+to overwrite the downloaded input and verifies that the opaque suffix is
+byte-identical. The composite is uploaded separately through private cPanel
+staging; it is never added to the public release ZIP or Git.
 
 `--dry-run` is a local-only release/upload preview and never reads credentials
 or connects. `--check-remote` connects read-only, confirms the existing target,

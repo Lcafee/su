@@ -34,7 +34,7 @@ Production has two deliberately separate layers:
    owns the code-managed portion; the production host owns exactly one final fenced block
    from `LCAFE-HOST-RUNTIME-BEGIN` through `LCAFE-HOST-RUNTIME-END`.
 
-`deploy.py` preserves the fenced block byte-for-byte and fails before mutation
+`deploy.py` and `merge_htaccess.py` preserve the fenced block byte-for-byte and fail before mutation
 when markers are missing, duplicated, reversed, or followed by unexpected
 content. The release source must never contain the block, its private path, or
 its `php_value auto_prepend_file` directive. `package.py` excludes root
@@ -130,7 +130,11 @@ The supported upload paths are:
 - fallback: create `lcafe-site.zip` with `py package.py`, upload it through the
   hosting file manager, and extract it into the existing site root without
   deleting or replacing persistent runtime directories. The ZIP intentionally
-  omits root `.htaccess`; never add it manually.
+  omits root `.htaccess`; never add the release copy manually. Before activation,
+  download the current live root `.htaccess` to a secure ignored local path and
+  generate a verified composite with `merge_htaccess.py`. Upload that composite
+  separately through private File Manager staging only after the tool verifies
+  the host-owned suffix byte-for-byte.
 
 The method used for the existing production upload is not confirmed. Do not
 turn the likely file-manager/ZIP history into a fact until private operator logs or an
@@ -144,8 +148,20 @@ Run local validations first:
 npm ci
 npm run validate:release
 py package.py
+py merge_htaccess.py --live .live.htaccess
 py deploy.py --dry-run
 ```
+
+For the File Manager fallback, `.live.htaccess` above is a freshly downloaded
+copy of the live root file, not a repository file. The merge command refuses a
+missing or malformed ownership fence, host content in the approved release
+rules, an in-place overwrite, or an existing output. It writes the ignored
+`lcafe-merged.htaccess` sidecar; the public ZIP remains unchanged and still has
+no root `.htaccess`. Upload the sidecar to a non-public deployment staging
+directory, then replace only the live composite root file. Re-open the live file
+and confirm that its application portion matches `release/current/.htaccess`
+and its opaque suffix matches the downloaded input before checking routes.
+Never retain or commit the downloaded or merged private files.
 
 `--dry-run` is deliberately local-only: it validates `release/current/` and
 shows the upload candidate set without reading credentials or connecting.

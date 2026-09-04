@@ -19,6 +19,8 @@ __pycache__/
 
 # Upload archive, rebuilt by package.py from files already tracked here.
 lcafe-site.zip
+lcafe-merged.htaccess
+.live.htaccess*
 
 # Host credentials. .deploy.ini.example is the tracked template; the real file
 # holds the FTP password and must never be committed. deploy.py checks this on

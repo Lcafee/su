@@ -164,6 +164,10 @@ def main():
         "root .htaccess excluded (host-owned runtime block preserved)"
         % (os.path.basename(OUT), release["gitCommit"], len(entries), photos, size)
     )
+    print(
+        "next: download the live root .htaccess securely, then run "
+        "py merge_htaccess.py --live <downloaded-live-.htaccess>"
+    )
 
 
 if __name__ == "__main__":

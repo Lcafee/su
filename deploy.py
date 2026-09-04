@@ -44,6 +44,13 @@ import subprocess
 import sys
 
 import package
+from htaccess_ownership import (
+    STAGING_DENY_MARKER,
+    HtaccessOwnershipError,
+    compose_htaccess as compose_owned_htaccess,
+    split_host_runtime_block as split_owned_host_runtime_block,
+    validate_release_payload,
+)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONF = os.path.join(HERE, ".deploy.ini")
@@ -101,9 +108,6 @@ def guard_untracked():
 
 HTML_ENTRY_POINTS = {"index.html", "menu.html", "404.html"}
 STAGING_SUFFIX = ".lcafe-uploading"
-STAGING_DENY_MARKER = b"LCAFE-DEPLOY-STAGING-DENY"
-HOST_RUNTIME_BEGIN = b"# LCAFE-HOST-RUNTIME-BEGIN"
-HOST_RUNTIME_END = b"# LCAFE-HOST-RUNTIME-END"
 
 
 def deploy_order_key(name):
@@ -149,13 +153,10 @@ def release_htaccess_payload():
     """Return the release-owned portion and reject host state in Git output."""
     with open(package.source_path(".htaccess"), "rb") as source:
         payload = source.read()
-    if HOST_RUNTIME_BEGIN in payload or HOST_RUNTIME_END in payload:
-        fail("approved release .htaccess contains host-runtime ownership markers")
-    if b"php_value auto_prepend_file" in payload:
-        fail("approved release .htaccess contains a host-only runtime override")
-    if STAGING_DENY_MARKER not in payload:
-        fail("approved release .htaccess is missing the staging deny rule")
-    return payload
+    try:
+        return validate_release_payload(payload)
+    except HtaccessOwnershipError as error:
+        fail(str(error))
 
 
 def split_host_runtime_block(payload):
@@ -165,29 +166,19 @@ def split_host_runtime_block(payload):
     begin marker through the end marker are opaque and are never interpreted,
     logged, hashed into release metadata, or sourced from Git.
     """
-    if payload is None:
-        fail("remote .htaccess is missing; install the host runtime block first")
-    lines = payload.splitlines(keepends=True)
-    begin = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == HOST_RUNTIME_BEGIN]
-    end = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == HOST_RUNTIME_END]
-    if len(begin) != 1 or len(end) != 1:
-        fail(
-            "remote .htaccess must contain exactly one fenced host runtime block; "
-            "nothing was changed"
-        )
-    start, finish = begin[0], end[0]
-    if finish <= start:
-        fail("remote .htaccess host runtime markers are out of order; nothing was changed")
-    if b"".join(lines[finish + 1:]).strip():
-        fail("remote .htaccess has content after the host runtime block; nothing was changed")
-    code_owned = b"".join(lines[:start]).rstrip(b"\r\n") + b"\n"
-    host_owned = b"".join(lines[start:finish + 1])
-    return code_owned, host_owned
+    try:
+        return split_owned_host_runtime_block(payload)
+    except HtaccessOwnershipError as error:
+        message = str(error).replace("live .htaccess", "remote .htaccess")
+        fail(message)
 
 
 def compose_htaccess(code_owned, host_owned):
     """Compose a deterministic live file without changing host-owned bytes."""
-    return code_owned.rstrip(b"\r\n") + b"\n\n" + host_owned + b"\n"
+    try:
+        return compose_owned_htaccess(code_owned, host_owned)
+    except HtaccessOwnershipError as error:
+        fail(str(error))
 
 
 def remote_htaccess_state(ftp):
