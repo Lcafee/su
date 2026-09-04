@@ -26,6 +26,7 @@ lcafe-merged.htaccess
 # holds the FTP password and must never be committed. deploy.py checks this on
 # every run rather than trusting the line above.
 .deploy.ini
+PRIVATE_ADMIN_CREDENTIALS.md
 
 # Which file contents deploy.py last put on the host. Local bookkeeping, and
 # per-machine: another clone has not uploaded anything yet.

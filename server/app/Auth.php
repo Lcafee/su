@@ -13,6 +13,7 @@ function clear_session_identity(): void
     unset(
         $_SESSION['user_id'],
         $_SESSION['username'],
+        $_SESSION['session_epoch'],
         $_SESSION['issued_at'],
         $_SESSION['last_seen'],
         $_SESSION['csrf_token']
@@ -26,9 +27,16 @@ function clear_session_identity(): void
 function session_user(PDO $pdo, array $config, bool $touch = true): ?array
 {
     $userId = $_SESSION['user_id'] ?? null;
+    $sessionEpoch = $_SESSION['session_epoch'] ?? null;
     $issuedAt = $_SESSION['issued_at'] ?? null;
     $lastSeen = $_SESSION['last_seen'] ?? null;
-    if (!is_int($userId) || !is_int($issuedAt) || !is_int($lastSeen)) {
+    if (
+        !is_int($userId)
+        || !is_string($sessionEpoch)
+        || preg_match('/^[1-9][0-9]*$/D', $sessionEpoch) !== 1
+        || !is_int($issuedAt)
+        || !is_int($lastSeen)
+    ) {
         clear_session_identity();
         return null;
     }
@@ -41,10 +49,12 @@ function session_user(PDO $pdo, array $config, bool $touch = true): ?array
         return null;
     }
 
-    $statement = $pdo->prepare('SELECT id, username, role FROM admin_users WHERE id = ? AND is_active = 1');
+    $statement = $pdo->prepare(
+        'SELECT id, username, role, session_epoch FROM admin_users WHERE id = ? AND is_active = 1'
+    );
     $statement->execute([$userId]);
     $user = $statement->fetch();
-    if (!is_array($user)) {
+    if (!is_array($user) || !hash_equals($sessionEpoch, (string) $user['session_epoch'])) {
         clear_session_identity();
         return null;
     }
@@ -120,7 +130,7 @@ function login(PDO $pdo, array $config, array $input): array
     }
 
     $statement = $pdo->prepare(
-        'SELECT id, username, password_hash, is_active, failed_login_count, locked_until '
+        'SELECT id, username, password_hash, session_epoch, is_active, failed_login_count, locked_until '
         . 'FROM admin_users WHERE username = ? LIMIT 1'
     );
     $statement->execute([$username]);
@@ -151,23 +161,43 @@ function login(PDO $pdo, array $config, array $input): array
                     ->modify('+' . max(60, (int) $config['security']['login_lock_seconds']) . ' seconds')
                     ->format('Y-m-d H:i:s.u');
             }
-            $update = $pdo->prepare('UPDATE admin_users SET failed_login_count = ?, locked_until = ? WHERE id = ?');
-            $update->execute([$failures, $lockValue, (int) $row['id']]);
+            $update = $pdo->prepare(
+                'UPDATE admin_users SET failed_login_count = ?, locked_until = ? '
+                . 'WHERE id = ? AND session_epoch = ?'
+            );
+            $update->execute([$failures, $lockValue, (int) $row['id'], (string) $row['session_epoch']]);
         }
         throw new ApiException(401, 'invalid_credentials', 'The username or password is incorrect.');
     }
 
-    $pdo->prepare(
-        'UPDATE admin_users SET failed_login_count = 0, locked_until = NULL, last_login_at = UTC_TIMESTAMP(6) WHERE id = ?'
-    )->execute([(int) $row['id']]);
+    $loginUpdate = $pdo->prepare(
+        'UPDATE admin_users SET failed_login_count = 0, locked_until = NULL, last_login_at = UTC_TIMESTAMP(6) '
+        . 'WHERE id = ? AND session_epoch = ? AND password_hash = ?'
+    );
+    $loginUpdate->execute([(int) $row['id'], (string) $row['session_epoch'], $hash]);
+    if ($loginUpdate->rowCount() !== 1) {
+        throw new ApiException(401, 'invalid_credentials', 'The username or password is incorrect.');
+    }
     if (password_needs_rehash($hash, PASSWORD_DEFAULT)) {
-        $pdo->prepare('UPDATE admin_users SET password_hash = ? WHERE id = ?')
-            ->execute([password_hash($password, PASSWORD_DEFAULT), (int) $row['id']]);
+        $rehash = $pdo->prepare(
+            'UPDATE admin_users SET password_hash = ? '
+            . 'WHERE id = ? AND session_epoch = ? AND password_hash = ?'
+        );
+        $rehash->execute([
+            password_hash($password, PASSWORD_DEFAULT),
+            (int) $row['id'],
+            (string) $row['session_epoch'],
+            $hash,
+        ]);
+        if ($rehash->rowCount() !== 1) {
+            throw new ApiException(401, 'invalid_credentials', 'The username or password is incorrect.');
+        }
     }
 
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $row['id'];
     $_SESSION['username'] = (string) $row['username'];
+    $_SESSION['session_epoch'] = (string) $row['session_epoch'];
     $_SESSION['issued_at'] = time();
     $_SESSION['last_seen'] = time();
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

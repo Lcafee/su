@@ -75,7 +75,7 @@ non-authoritative recommendation only. Destructive eligibility remains gated
 until the owner confirms the production backup horizon and a coordinated
 database, snapshot, original, and rendition restore contract.
 
-## Roles and account creation
+## Roles and account credentials
 
 `admin_users.role` is either `owner` or `cashier`. Existing accounts receive
 `owner` during migration. Owners have the full editor and publish-retry action.
@@ -103,6 +103,22 @@ on the command line. Use `--role=owner` only when another full-access account is
 required. The legacy importer and its JSON/Excel/generator inputs are retained
 only under `legacy/menu-import-history/`; they are not shipped or supported as
 an operational path. A blank installation creates its menu through `/admin/`.
+
+Migration `004_admin_session_epoch` binds every authenticated session to the
+credential generation that created it. After that migration is active, rotate
+an existing account only through the release-owned interactive CLI:
+
+```text
+php api/_app/<approved-commit>/bin/rotate-admin-password.php \
+  --config=/absolute/private-config.php \
+  --username=account-name
+```
+
+The command refuses command-line passwords, requires a different password,
+keeps `role`, `is_active`, and `last_login_at` unchanged, clears login lockout
+state, and increments `session_epoch`. Existing sessions are rejected on their
+next authenticated request. Do not update `password_hash` directly: changing
+the hash without incrementing the epoch bypasses session invalidation.
 
 ## API surface
 

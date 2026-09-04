@@ -513,6 +513,68 @@ function create_admin_user(PDO $pdo, string $username, string $role): void
     $statement->execute([$username, $hash, $role]);
 }
 
+/** @return array{username:string,role:string,isActive:bool} */
+function rotate_admin_password(PDO $pdo, string $username): array
+{
+    require_interactive_terminal();
+    $username = validated_admin_username($username);
+    if (!migration_is_applied($pdo, '004_admin_session_epoch')) {
+        throw new RuntimeException(
+            'Migration 004_admin_session_epoch must be applied before rotating an admin password.'
+        );
+    }
+
+    $lookup = $pdo->prepare(
+        'SELECT id, username, password_hash, role, is_active, session_epoch '
+        . 'FROM admin_users WHERE username = ? LIMIT 1'
+    );
+    $lookup->execute([$username]);
+    $user = $lookup->fetch();
+    if (!is_array($user)) {
+        throw new RuntimeException('The requested admin account does not exist.');
+    }
+    $role = (string) $user['role'];
+    if (!in_array($role, ['owner', 'cashier'], true)) {
+        throw new RuntimeException('The requested admin account has an invalid role.');
+    }
+
+    $hash = prompt_admin_password_hash("Existing $role account", (string) $user['password_hash']);
+    try {
+        apply_admin_password_rotation($pdo, $user, $hash);
+    } finally {
+        clear_sensitive_string($hash);
+    }
+
+    return [
+        'username' => (string) $user['username'],
+        'role' => $role,
+        'isActive' => (int) $user['is_active'] === 1,
+    ];
+}
+
+/** @param array<string, mixed> $user */
+function apply_admin_password_rotation(PDO $pdo, array $user, string $hash): void
+{
+    $update = $pdo->prepare(
+        'UPDATE admin_users SET password_hash = ?, failed_login_count = 0, locked_until = NULL, '
+        . 'session_epoch = session_epoch + 1 '
+        . 'WHERE id = ? AND password_hash = ? AND session_epoch = ? AND role = ? AND is_active = ?'
+    );
+    $update->execute([
+        $hash,
+        (int) $user['id'],
+        (string) $user['password_hash'],
+        (string) $user['session_epoch'],
+        (string) $user['role'],
+        (int) $user['is_active'],
+    ]);
+    if ($update->rowCount() !== 1) {
+        throw new RuntimeException(
+            'The admin account changed while its password was being entered; no password was rotated.'
+        );
+    }
+}
+
 function validated_admin_username(string $username): string
 {
     if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$/', $username) !== 1) {
@@ -523,18 +585,39 @@ function validated_admin_username(string $username): string
     return $username;
 }
 
-function prompt_admin_password_hash(string $label): string
+function clear_sensitive_string(string &$value): void
+{
+    if ($value !== '' && function_exists('sodium_memzero')) {
+        sodium_memzero($value);
+        return;
+    }
+    $value = '';
+}
+
+function prompt_admin_password_hash(string $label, ?string $disallowedHash = null): string
 {
     $password = prompt_hidden("$label password (hidden, at least 12 characters): ");
-    if (strlen($password) < 12 || strlen($password) > 4096 || preg_match('/[\x00-\x1F\x7F]/', $password) === 1) {
-        throw new RuntimeException('The admin password must contain 12-4096 characters and no control characters.');
-    }
-    $confirmation = prompt_hidden("Repeat $label password: ");
-    if (!hash_equals($password, $confirmation)) {
-        throw new RuntimeException('The admin passwords did not match.');
-    }
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-    $password = '';
     $confirmation = '';
-    return $hash;
+    try {
+        if (
+            strlen($password) < 12
+            || strlen($password) > 4096
+            || preg_match('/[\x00-\x1F\x7F]/', $password) === 1
+        ) {
+            throw new RuntimeException(
+                'The admin password must contain 12-4096 characters and no control characters.'
+            );
+        }
+        if ($disallowedHash !== null && password_verify($password, $disallowedHash)) {
+            throw new RuntimeException('The new admin password must differ from the current password.');
+        }
+        $confirmation = prompt_hidden("Repeat $label password: ");
+        if (!hash_equals($password, $confirmation)) {
+            throw new RuntimeException('The admin passwords did not match.');
+        }
+        return password_hash($password, PASSWORD_DEFAULT);
+    } finally {
+        clear_sensitive_string($password);
+        clear_sensitive_string($confirmation);
+    }
 }

@@ -92,7 +92,9 @@ are edited in `/admin/`, saved to MySQL, and published to the managed snapshot.
 Owners have the full editor and publish-retry control. Cashiers can perform
 normal category/item/media/order/archive/save-and-publish operations, while
 advanced category fields and item metadata/options are hidden and rejected by
-the API if changed. Accounts are created only with the interactive host CLI.
+the API if changed. Accounts are created and passwords are rotated only with
+interactive host CLIs; rotation preserves the role and invalidates prior
+sessions through `admin_users.session_epoch`.
 Do not edit JSX, archived inputs, or the local fixture to change the live menu.
 Both roles and migrations `001_menu_admin` and `002_admin_roles` are active in
 production; the exact mutable record remains in `PROJECT_STATE.md`.

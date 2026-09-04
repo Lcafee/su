@@ -93,8 +93,38 @@ that decision and every lifecycle run in the private operator record.
 Admin authorization is database-backed. Owners have the complete editor and
 publish recovery; cashiers retain normal category/item/media/order/archive/save
 and publish work while PHP protects advanced category fields, item
-metadata/options, and owner-only recovery actions. Accounts are created only by
-the release-owned interactive CLI.
+metadata/options, and owner-only recovery actions. Accounts are created and
+passwords are rotated only by release-owned interactive CLIs.
+
+## Admin password rotation
+
+Do not rotate a production password until source migration
+`004_admin_session_epoch` is confirmed active. The migration gives every
+account a monotonically increasing credential generation; authenticated
+sessions carry that generation and are rejected after it changes.
+
+Run rotation from the exact approved release's private `_app` directory:
+
+```text
+php api/_app/<approved-commit>/bin/rotate-admin-password.php \
+  --config=/absolute/private/lcafe/config.php \
+  --username=account-name
+```
+
+The command requires an interactive TTY, accepts no password option, prompts
+twice with terminal echo disabled, and refuses the current password. Its single
+conditional database update replaces the hash with `PASSWORD_DEFAULT`, resets
+`failed_login_count` and `locked_until`, increments `session_epoch`, and leaves
+the username, role, active state, and last-login timestamp unchanged. If the
+account changes while the operator is entering the password, the update fails
+closed instead of overwriting the newer state.
+
+Record the new plaintext password only in the approved private credential
+record; never in shell history, logs, source, or tracked operations notes. Do
+not update `password_hash` with ad-hoc SQL because session invalidation requires
+the epoch increment in the same atomic update. Existing sessions are rejected
+on their next API authentication check; one request authorized immediately
+before the database update may finish normally.
 
 ## Release boundary
 

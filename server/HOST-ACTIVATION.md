@@ -129,6 +129,21 @@ password on the command line. The pre-admin importer and its JSON/Excel tools
 are archived under `legacy/` and are not part of host activation. On a blank
 installation, the owner creates categories and items through `/admin/`.
 
+For an existing installation, apply migration `004_admin_session_epoch` before
+activating code that requires it. Afterward, rotate an existing password only
+from an interactive terminal:
+
+```text
+php bin/rotate-admin-password.php \
+  --config=/home/account/private/lcafe/config.php \
+  --username=account-name
+```
+
+The command preserves the account role and active state, resets failed-login
+lockout state, and invalidates every older session through the incremented
+session epoch. Never change `admin_users.password_hash` directly because a hash
+update without the matching epoch increment leaves existing sessions valid.
+
 ## 5. Manually deploy the approved release
 
 Only after provisioning/migrations and required accounts are ready, manually

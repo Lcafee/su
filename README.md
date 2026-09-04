@@ -52,6 +52,8 @@ publish-recovery controls. Cashiers retain normal category, item, price, media,
 ordering, archive, save, and publish work while advanced category fields, item
 metadata/options, and publish retry remain owner-only. PHP enforces this
 boundary independently of the React UI.
+Admin sessions are bound to a database credential generation; the interactive
+password-rotation CLI increments it without changing either role's permissions.
 
 Vite builds Landing and the canonical Menu as public React entry points.
 `menu2.html` is a lightweight compatibility redirect for static hosts. Public
