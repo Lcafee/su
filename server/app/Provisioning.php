@@ -432,6 +432,85 @@ function migration_is_applied(PDO $pdo, string $version): bool
     return $statement->fetchColumn() !== false;
 }
 
+/** @return array<string, mixed>|null */
+function admin_session_epoch_column(PDO $pdo): ?array
+{
+    $statement = $pdo->prepare(
+        'SELECT DATA_TYPE, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA, ORDINAL_POSITION '
+        . 'FROM information_schema.columns '
+        . "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_users' "
+        . "AND COLUMN_NAME = 'session_epoch' LIMIT 1"
+    );
+    $statement->execute();
+    $column = $statement->fetch();
+    return is_array($column) ? $column : null;
+}
+
+function admin_session_epoch_schema_is_valid(PDO $pdo, array $column): bool
+{
+    $role = $pdo->query(
+        "SELECT ORDINAL_POSITION FROM information_schema.columns "
+        . "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_users' "
+        . "AND COLUMN_NAME = 'role' LIMIT 1"
+    )->fetchColumn();
+
+    return strtolower((string) ($column['DATA_TYPE'] ?? '')) === 'bigint'
+        && preg_match('/^bigint(?:\\(\\d+\\))? unsigned$/i', (string) ($column['COLUMN_TYPE'] ?? '')) === 1
+        && (string) ($column['IS_NULLABLE'] ?? '') === 'NO'
+        && (string) ($column['COLUMN_DEFAULT'] ?? '') === '1'
+        && trim((string) ($column['EXTRA'] ?? '')) === ''
+        && $role !== false
+        && (int) ($column['ORDINAL_POSITION'] ?? 0) === ((int) $role + 1);
+}
+
+function apply_admin_session_epoch_migration(PDO $pdo, string $migrationFile): void
+{
+    if (migration_is_applied($pdo, '004_admin_session_epoch')) {
+        return;
+    }
+
+    $column = admin_session_epoch_column($pdo);
+    if ($column === null) {
+        try {
+            $pdo->exec(
+                'ALTER TABLE admin_users ADD COLUMN session_epoch BIGINT UNSIGNED NOT NULL DEFAULT 1 AFTER role'
+            );
+        } catch (Throwable $exception) {
+            // Another provisioner may have added the column concurrently. Re-read
+            // the schema and accept the race only when the resulting definition is
+            // exactly the one this migration requires.
+            $column = admin_session_epoch_column($pdo);
+            if ($column === null) {
+                throw new RuntimeException(
+                    'Migration 004 could not add admin_users.session_epoch.',
+                    0,
+                    $exception
+                );
+            }
+        }
+    }
+
+    if ($column === null) {
+        $column = admin_session_epoch_column($pdo);
+    }
+    if ($column === null || !admin_session_epoch_schema_is_valid($pdo, $column)) {
+        throw new RuntimeException(
+            'Migration 004 found an incompatible admin_users.session_epoch definition; completion marker was not written.'
+        );
+    }
+
+    $sql = file_get_contents($migrationFile);
+    if (!is_string($sql) || $sql === '') {
+        throw new RuntimeException('Database migration 004 is empty or unreadable.');
+    }
+    foreach (migration_statements($sql) as $statement) {
+        $pdo->exec($statement);
+    }
+    if (!migration_is_applied($pdo, '004_admin_session_epoch')) {
+        throw new RuntimeException('Database migration 004 did not record its completion.');
+    }
+}
+
 /** @return array{applied:list<string>,skipped:list<string>} */
 function apply_database_migrations(PDO $pdo, string $migrationDirectory): array
 {
@@ -461,6 +540,11 @@ function apply_database_migrations(PDO $pdo, string $migrationDirectory): array
         $sql = file_get_contents($file);
         if (!is_string($sql) || $sql === '') {
             throw new RuntimeException("Database migration $version is empty or unreadable.");
+        }
+        if ($version === '004_admin_session_epoch') {
+            apply_admin_session_epoch_migration($pdo, $file);
+            $applied[] = $version;
+            continue;
         }
         foreach (migration_statements($sql) as $statement) {
             $pdo->exec($statement);
