@@ -6,6 +6,7 @@ namespace LCafe\Admin;
 
 use PDO;
 use RuntimeException;
+use Throwable;
 
 /** @return array{configCreated:bool,migrationsApplied:list<string>,migrationsSkipped:list<string>,adminCreated:bool} */
 function provision_admin_system(
