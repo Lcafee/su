@@ -1,13 +1,13 @@
 # L Cafe Main Site — Shared VPS Migration Map
 
-Status: source audit complete enough to design the replacement backend. Content migration remains blocked until the newest local Main Site snapshot is supplied and checksummed. This document does not authorize implementation, deployment, DNS changes, or production mutation.
+Status: source audit complete enough to design the replacement backend. Content migration is blocked until the current ParsPack production state is exported and checksummed. This document does not authorize deployment, DNS changes, or production mutation.
 
 ## Non-negotiable contracts
 
 - UI/UX is frozen unless explicitly requested. Landing, Menu and Admin visuals must remain unchanged.
 - GitHub (`Lcafee/su`) is the code source of truth.
-- During migration, the latest local Main Site content snapshot is the content source of truth.
-- Current production is authority only for server/runtime-generated state that is not present in the local content snapshot.
+- During migration, the current ParsPack production host is the content/runtime data source of truth for the Main Site.
+- Local project content and repository fixtures must not overwrite newer ParsPack production values.
 - L Cafe Operations Platform is a separate product. This migration must not modify its repository, service, database, data root, configuration root, domain, or port.
 - The two products may share only the VPS operating system and shared infrastructure such as Nginx/TLS, under a separately scoped infrastructure change.
 
@@ -57,12 +57,14 @@ Liara VPS / Ubuntu 24.04
 | Concern | Authority during migration |
 | --- | --- |
 | Application/UI code | GitHub `Lcafee/su` |
-| Current menu content | latest local Main Site snapshot |
-| Local content media | latest local Main Site snapshot |
-| Existing server-only admin/runtime state | current production, after explicit reconciliation |
+| Current menu content | current ParsPack MySQL + published snapshot reconciliation |
+| Managed media | current ParsPack managed-media/original storage |
+| Admin account state | current ParsPack MySQL |
+| Publish/revision state | current ParsPack MySQL + `managed-menu/current.json`/`previous.json` |
+| Local project content | supporting reference only; not authoritative unless explicitly reconciled |
 | Operations application/data | `Lcafee/l-cafe-operations-platform` and its existing VPS runtime; out of scope |
 
-When the same menu/content field differs between GitHub fixtures, current production and the local snapshot, the local snapshot wins. This rule does not automatically apply to password hashes, server-side session state, publish history or other runtime-generated state.
+If a menu/content value differs between GitHub fixtures, a local project copy and the current ParsPack production state, ParsPack wins unless a separate explicit correction is approved before snapshot capture. GitHub remains authoritative for application code, not production content.
 
 ## Current API compatibility surface
 
@@ -124,7 +126,7 @@ Current behavior that must survive the rewrite:
 - password rotation must invalidate old sessions by incrementing `session_epoch`;
 - owner/cashier authorization stays server-side.
 
-The Node implementation may use its own private session store under `/var/lib/lcafe-site` or a dedicated SQLite session table, but browser-visible behavior and invalidation semantics must remain compatible.
+The Node implementation may use its own private session store under `/var/lib/lcafe-site` or a dedicated SQLite session table, but browser-visible behavior and invalidation semantics must remain compatible. Existing live PHP session files are ephemeral and are not migration input.
 
 ## Menu save and publish compatibility map
 
@@ -192,16 +194,16 @@ Operations remains in its separate Nginx server block and is not edited by Main 
 
 ## Migration sequence
 
-1. Establish project/repository boundaries and agent scope guards.
-2. Capture and checksum the latest local content snapshot.
-3. Reconcile local content vs GitHub fixture vs production runtime data.
-4. Finalize any remaining source-level edge cases discovered from the local snapshot/production reconciliation.
+1. Establish project/repository boundaries and agent scope guards. **Done.**
+2. Export and checksum the current ParsPack production database and persistent menu/media state.
+3. Reconcile ParsPack MySQL, `current.json`, `previous.json`, managed media and revision archives into one immutable migration manifest.
+4. Finalize any source-level edge cases discovered from production reconciliation.
 5. Implement the Node/SQLite compatibility backend with unchanged API contracts.
-6. Build deterministic local-content -> SQLite migration tooling.
+6. Build deterministic ParsPack-production -> SQLite migration tooling.
 7. Translate `.htaccess` behavior to an isolated Nginx site config.
 8. Provision independent OS user, directories, service, secrets and backups on the VPS.
 9. Deploy to a staging hostname without changing `l-cafe.ir` DNS.
-10. Run functional, content and visual-regression verification.
+10. Run functional, content and visual-regression verification against the ParsPack source snapshot.
 11. Cut DNS to the VPS only after all gates pass.
 12. Retain ParsPack as rollback-only during observation.
 13. Retire PHP/MySQL/cPanel-specific active paths only after the new site is verified.
@@ -221,22 +223,26 @@ The frontend is retained. The replacement backend must preserve:
 - public routes and canonical URL behavior;
 - current visual output.
 
-## Content snapshot gate — BLOCKED ON LOCAL INPUT
+## Production snapshot gate — BLOCKED ON PARSPACK EXPORT
 
-Before content/data implementation, create an immutable migration input from the user's newest local Main Site state. Required input is one of:
+Before content/data implementation, create one immutable read-only export from the current ParsPack host. Preferred input:
 
-1. preferred: a ZIP of the current local `L Cafe/coding/Main Site/Git-Version` project directory, excluding `node_modules`, `dist`, generated release artifacts, `.git` and secrets; or
-2. a pushed temporary Git branch containing the current local content/assets but no secrets; or
-3. if content is stored outside the repository, an export containing the current menu data plus all referenced media.
+1. full Main Site MySQL dump;
+2. `managed-menu/current.json` and `managed-menu/previous.json`;
+3. complete `managed-media/` directory;
+4. private original-media and revision/snapshot archive directories when available;
+5. production `.htaccess` only for host-owned runtime behavior not represented in source.
 
-The snapshot receives a file inventory, manifest and SHA-256 checksums before transformation. Production/GitHub fixture content must not silently overwrite it.
+Do not export live sessions, cPanel credentials, DB passwords, private configuration secrets, API keys or plaintext account passwords.
+
+The export receives a file inventory, manifest and SHA-256 checksums before transformation. GitHub fixtures and local copies must not silently overwrite ParsPack production content.
 
 ## Current gate status
 
-- project isolation design: defined;
+- project isolation design: merged;
 - Main Site source audit: sufficient for backend design;
 - UI freeze: defined;
-- local content authority: defined;
-- local content snapshot: **waiting for owner input**;
+- ParsPack production content authority: defined;
+- ParsPack production snapshot: **waiting for export/access**;
 - backend implementation: not started;
 - VPS provisioning/deploy/DNS: not authorized and not started.
