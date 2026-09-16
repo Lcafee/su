@@ -29,7 +29,7 @@
     "lcafe.service",
     "127.0.0.1:3000"
   ],
-  "content_authority_during_migration": "local-main-site-snapshot",
+  "content_authority_during_migration": "current-parspack-production-snapshot",
   "code_authority": "this-repository",
   "shared_infrastructure_changes_require_separate_scope": true,
   "ui_contract": "frozen-unless-explicitly-requested"
