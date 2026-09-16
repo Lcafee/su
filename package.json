@@ -7,6 +7,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
+    "agent:boundary": "node scripts/agent-scope-check.mjs",
     "dev": "vite",
     "dev:admin": "vite --config vite.admin.config.js",
     "validate:release": "node scripts/validate-release.mjs",

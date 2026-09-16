@@ -1,3 +1,17 @@
+# Project identity and hard boundary
+
+This repository is **L Cafe Main Site** (`Lcafee/su`). It owns `l-cafe.ir`, the public Landing/Menu, the site Admin/API, and site-only content/runtime state. It does **not** own L Cafe Operations Platform.
+
+For any task that touches deployment, a host, database, runtime paths, services, ports, DNS, TLS, or shared infrastructure:
+
+1. Read `.agent/project-boundary.json` first.
+2. Run `node scripts/agent-scope-check.mjs` from this repository and require `AGENT_SCOPE_OK lcafe-main-site` before proceeding.
+3. Treat every `forbidden_targets` entry as outside this project's authority.
+
+Never modify, migrate, restart, deploy, reconfigure, or use as a data source any Operations-owned target (`Lcafee/l-cafe-operations-platform`, `ops.lcafe-esf.ir`, `/app`, `/var/lib/lcafe`, `/etc/lcafe`, `lcafe.service`, or `127.0.0.1:3000`) unless the user explicitly starts a separate cross-project infrastructure task.
+
+Main Site and Operations may share a VPS, but application tasks remain project-scoped. Shared Nginx/TLS/OS changes require a separately scoped infrastructure task. The Main Site UI is frozen during the infrastructure/backend migration unless the user explicitly requests a visual change.
+
 # Release and deployment boundary
 
 `PROJECT_STATE.md` is the only authoritative mutable ledger for source HEAD,

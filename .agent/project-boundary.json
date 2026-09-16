@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "project_id": "lcafe-main-site",
+  "project_name": "L Cafe Main Site",
+  "repository": "Lcafee/su",
+  "production_domains": ["l-cafe.ir", "www.l-cafe.ir"],
+  "runtime": {
+    "service": "lcafe-site-api",
+    "runtime_user": "lcafe-site",
+    "code_root": "/srv/lcafe-site",
+    "data_root": "/var/lib/lcafe-site",
+    "config_root": "/etc/lcafe-site",
+    "api_bind": "127.0.0.1:3100"
+  },
+  "owns": [
+    "public landing site",
+    "public menu",
+    "site admin UI",
+    "site API",
+    "site menu and media content",
+    "site-only database and runtime state"
+  ],
+  "forbidden_targets": [
+    "Lcafee/l-cafe-operations-platform",
+    "ops.lcafe-esf.ir",
+    "/app",
+    "/var/lib/lcafe",
+    "/etc/lcafe",
+    "lcafe.service",
+    "127.0.0.1:3000"
+  ],
+  "content_authority_during_migration": "local-main-site-snapshot",
+  "code_authority": "this-repository",
+  "shared_infrastructure_changes_require_separate_scope": true,
+  "ui_contract": "frozen-unless-explicitly-requested"
+}
