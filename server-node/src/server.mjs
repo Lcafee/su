@@ -4,6 +4,7 @@ import { registerAuthRoutes } from './auth.mjs';
 import { loadConfig } from './config.mjs';
 import { assertDatabaseHealthy, openDatabase } from './db.mjs';
 import { installApiErrorHandler } from './http.mjs';
+import { registerReadOnlyMenuRoutes } from './menu-read.mjs';
 
 const config = loadConfig();
 const db = openDatabase(config.dbPath, { fileMustExist: true });
@@ -47,6 +48,7 @@ app.get('/readyz', async (_request, reply) => {
 });
 
 registerAuthRoutes(app, { db, config });
+registerReadOnlyMenuRoutes(app, { db, config });
 
 app.setNotFoundHandler(async (request, reply) => {
   if (request.url.startsWith('/api/')) {
