@@ -69,12 +69,12 @@ function findStatementEnd(input, start) {
 
 function decodeEscape(char) {
   switch (char) {
-    case '0': return '\0';
+    case '0': return '\u0000';
     case 'b': return '\b';
     case 'n': return '\n';
     case 'r': return '\r';
     case 't': return '\t';
-    case 'Z': return '\x1a';
+    case 'Z': return '\u001a';
     default: return char;
   }
 }
@@ -150,14 +150,15 @@ function collectInserts(sql) {
   const header = /INSERT INTO\s+`([^`]+)`\s*\(([^)]*)\)\s*VALUES\s*/g;
   for (let match = header.exec(sql); match; match = header.exec(sql)) {
     const table = match[1];
-    if (!ALLOWED_TABLES.has(table)) continue;
-    const columns = [...match[2].matchAll(/`([^`]+)`/g)].map((item) => item[1]);
-    if (columns.length === 0) throw new Error(`no columns found for ${table}`);
     const end = findStatementEnd(sql, header.lastIndex);
-    const rows = parseRows(sql.slice(header.lastIndex, end));
-    const entries = byTable.get(table) || [];
-    entries.push({ columns, rows });
-    byTable.set(table, entries);
+    if (ALLOWED_TABLES.has(table)) {
+      const columns = [...match[2].matchAll(/`([^`]+)`/g)].map((item) => item[1]);
+      if (columns.length === 0) throw new Error(`no columns found for ${table}`);
+      const rows = parseRows(sql.slice(header.lastIndex, end));
+      const entries = byTable.get(table) || [];
+      entries.push({ columns, rows });
+      byTable.set(table, entries);
+    }
     header.lastIndex = end + 1;
   }
   return byTable;
