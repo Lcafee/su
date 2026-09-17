@@ -18,7 +18,7 @@ on:
       - 'vite*.js'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   node-api:
@@ -28,23 +28,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Generate API lockfile on migration branch
-        if: github.event_name == 'push'
+          cache: npm
+          cache-dependency-path: server-node/package-lock.json
+      - name: Install locked API dependencies
         working-directory: server-node
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Commit API lockfile when changed
-        if: github.event_name == 'push'
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add server-node/package-lock.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: lock Node API dependencies"
-            git push origin HEAD:migration/node-sqlite-vps
-          fi
-      - name: Install API dependencies
-        working-directory: server-node
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Run API contract tests
         working-directory: server-node
         run: npm test
