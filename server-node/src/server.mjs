@@ -1,9 +1,11 @@
+import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 
 import { registerAuthRoutes } from './auth.mjs';
 import { loadConfig } from './config.mjs';
 import { assertDatabaseHealthy, openDatabase } from './db.mjs';
 import { installApiErrorHandler } from './http.mjs';
+import { registerMediaRoute } from './media.mjs';
 import { registerReadOnlyMenuRoutes } from './menu-read.mjs';
 import { registerMenuWriteRoutes } from './menu-write.mjs';
 import { createMutationLock } from './mutation-lock.mjs';
@@ -17,6 +19,16 @@ const app = Fastify({
   logger: true,
   bodyLimit: 2_097_152,
   disableRequestLogging: false,
+});
+
+await app.register(multipart, {
+  throwFileSizeLimit: true,
+  limits: {
+    fileSize: config.uploads.maxBytes,
+    files: 1,
+    fields: 0,
+    parts: 1,
+  },
 });
 
 installApiErrorHandler(app);
@@ -54,6 +66,7 @@ app.get('/readyz', async (_request, reply) => {
 registerAuthRoutes(app, { db, config });
 registerReadOnlyMenuRoutes(app, { db, config });
 registerMenuWriteRoutes(app, { db, config, mutationLock });
+registerMediaRoute(app, { db, config, mutationLock });
 
 app.setNotFoundHandler(async (request, reply) => {
   if (request.url.startsWith('/api/')) {
