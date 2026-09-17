@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs",
     "migrate": "node scripts/migrate.mjs",
     "import:parspack": "node scripts/import-parspack.mjs",
     "verify:import": "node scripts/verify-import.mjs"
