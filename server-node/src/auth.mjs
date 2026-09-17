@@ -134,11 +134,14 @@ export function requireOwner(user) {
 
 export function requireCsrf(config, request, context) {
   requireAllowedOrigin(request, config);
+  const expected = context.session.csrfToken;
   const actual = request.headers['x-csrf-token'];
-  if (typeof actual !== 'string' || !crypto.timingSafeEqual(
-    Buffer.from(context.session.csrfToken),
-    Buffer.from(actual.padEnd(context.session.csrfToken.length, '\0').slice(0, context.session.csrfToken.length)),
-  ) || actual.length !== context.session.csrfToken.length) {
+  if (typeof actual !== 'string') {
+    throw new ApiError(403, 'csrf_rejected', 'The CSRF token is missing or invalid.');
+  }
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  const actualBytes = Buffer.from(actual, 'utf8');
+  if (expectedBytes.length !== actualBytes.length || !crypto.timingSafeEqual(expectedBytes, actualBytes)) {
     throw new ApiError(403, 'csrf_rejected', 'The CSRF token is missing or invalid.');
   }
 }
