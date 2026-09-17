@@ -33,6 +33,7 @@ ReadWritePaths=/var/lib/lcafe-site /run/lcafe-site
 TasksMax=128
 MemoryHigh=384M
 MemoryMax=640M
+CPUQuota=100%
 CPUWeight=50
 IOWeight=50
 
