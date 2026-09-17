@@ -29,6 +29,12 @@
     "lcafe.service",
     "127.0.0.1:3000"
   ],
+  "shared_host": {
+    "peer_project": "lcafe-operations",
+    "peer_repository": "Lcafee/l-cafe-operations-platform",
+    "contract_document": "docs/architecture/SHARED_VPS_ISOLATION.md",
+    "rule": "same-vps-does-not-grant-cross-project-authority"
+  },
   "content_authority_during_migration": "current-parspack-production-snapshot",
   "code_authority": "this-repository",
   "shared_infrastructure_changes_require_separate_scope": true,
