@@ -1,7 +1,9 @@
 import Fastify from 'fastify';
 
+import { registerAuthRoutes } from './auth.mjs';
 import { loadConfig } from './config.mjs';
 import { assertDatabaseHealthy, openDatabase } from './db.mjs';
+import { installApiErrorHandler } from './http.mjs';
 
 const config = loadConfig();
 const db = openDatabase(config.dbPath, { fileMustExist: true });
@@ -13,9 +15,12 @@ const app = Fastify({
   disableRequestLogging: false,
 });
 
+installApiErrorHandler(app);
+
 app.addHook('onSend', async (request, reply, payload) => {
   if (request.url.startsWith('/api/')) {
-    reply.header('Cache-Control', 'no-store');
+    reply.header('Cache-Control', 'private, no-store');
+    reply.header('Pragma', 'no-cache');
     reply.header('X-Content-Type-Options', 'nosniff');
   }
   return payload;
@@ -41,6 +46,8 @@ app.get('/readyz', async (_request, reply) => {
   };
 });
 
+registerAuthRoutes(app, { db, config });
+
 app.setNotFoundHandler(async (request, reply) => {
   if (request.url.startsWith('/api/')) {
     reply.code(404);
@@ -48,7 +55,7 @@ app.setNotFoundHandler(async (request, reply) => {
       error: {
         type: 'not_found',
         message: 'The API route does not exist.',
-        details: null,
+        details: [],
       },
     };
   }
