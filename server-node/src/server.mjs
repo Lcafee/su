@@ -5,10 +5,13 @@ import { loadConfig } from './config.mjs';
 import { assertDatabaseHealthy, openDatabase } from './db.mjs';
 import { installApiErrorHandler } from './http.mjs';
 import { registerReadOnlyMenuRoutes } from './menu-read.mjs';
+import { registerMenuWriteRoutes } from './menu-write.mjs';
+import { createMutationLock } from './mutation-lock.mjs';
 
 const config = loadConfig();
 const db = openDatabase(config.dbPath, { fileMustExist: true });
 assertDatabaseHealthy(db);
+const mutationLock = createMutationLock({ timeoutMs: 10_000 });
 
 const app = Fastify({
   logger: true,
@@ -44,11 +47,13 @@ app.get('/readyz', async (_request, reply) => {
     ok: true,
     editRevision: state.edit_revision,
     publishedRevision: state.published_revision,
+    mutationQueue: mutationLock.queued,
   };
 });
 
 registerAuthRoutes(app, { db, config });
 registerReadOnlyMenuRoutes(app, { db, config });
+registerMenuWriteRoutes(app, { db, config, mutationLock });
 
 app.setNotFoundHandler(async (request, reply) => {
   if (request.url.startsWith('/api/')) {
