@@ -1,0 +1,60 @@
+name: Main Site Node migration CI
+
+on:
+  push:
+    branches:
+      - migration/node-sqlite-vps
+  pull_request:
+    paths:
+      - 'server-node/**'
+      - 'deploy/vps/**'
+      - '.github/workflows/migration-node-ci.yml'
+      - 'src/**'
+      - 'admin/**'
+      - 'assets/**'
+      - '*.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite*.js'
+
+permissions:
+  contents: read
+
+jobs:
+  node-api:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: server-node/package.json
+      - name: Install API dependencies
+        working-directory: server-node
+        run: npm install --no-audit --no-fund
+      - name: Run API contract tests
+        working-directory: server-node
+        run: npm test
+      - name: Check migration script syntax
+        working-directory: server-node
+        run: |
+          node --check scripts/migrate.mjs
+          node --check scripts/import-parspack.mjs
+          node --check scripts/verify-import.mjs
+          node --check src/server.mjs
+
+  frontend-regression-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install existing frontend dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build unchanged frontend
+        run: npm run build
+      - name: Validate dist contract
+        run: npm run validate:dist
