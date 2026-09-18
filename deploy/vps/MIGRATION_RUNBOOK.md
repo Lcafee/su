@@ -47,17 +47,19 @@ npm run verify:import -- \
 
 Do not continue if any count, hash, FK, integrity or media check fails.
 
-## 4. Build the existing frontend unchanged
+## 4. Build/package the staging release off-host
 
-At repository root:
+Build the exact approved SHA in the connected operator/Claude/CI workspace, never on the VPS:
 
 ```bash
-npm ci
-npm run build
-npm run validate:dist
+node deploy/vps/package-staging-release.mjs \
+  --approve <full-approved-sha> \
+  --out /tmp/lcafe-main-site-<full-approved-sha>.tar.gz
 ```
 
-The migration must not require a visual/frontend rewrite.
+The packager runs the existing frontend build/validation in a detached exact-SHA worktree and writes a hash-bound manifest into the archive. Record the printed archive SHA-256 and transfer the archive to a private root-only VPS path. The VPS bootstrap verifies both the transport hash and embedded manifest before installing it.
+
+The VPS may run locked `npm ci --omit=dev` for the Node API runtime dependencies, but it must not build the frontend.
 
 ## 5. VPS preflight — read only
 
@@ -92,7 +94,9 @@ Do not grant `lcafe-site` write access to Operations paths.
 
 ## 7. Stage an immutable release
 
-Recommended release shape:
+Use the verified off-host archive with `deploy/vps/bootstrap-staging.sh <sha> <archive> <archive-sha256>`. The bootstrap verifies source scope, archive integrity, and the embedded file manifest before atomic release promotion.
+
+Release shape:
 
 ```text
 /srv/lcafe-site/releases/<git-sha>/
