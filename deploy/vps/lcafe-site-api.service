@@ -18,7 +18,9 @@ TimeoutStopSec=15
 UMask=0027
 
 StateDirectory=lcafe-site
+StateDirectoryMode=0751
 RuntimeDirectory=lcafe-site
+RuntimeDirectoryMode=0750
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
