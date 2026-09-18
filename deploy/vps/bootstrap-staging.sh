@@ -128,6 +128,7 @@ if [[ ! -e "${RELEASE_ROOT}" ]]; then
     cd "${STAGING_RELEASE}/server-node"
     npm ci --omit=dev --no-audit --no-fund
   )
+  node "${STAGING_RELEASE}/deploy/vps/verify-staging-release.mjs" "${STAGING_RELEASE}" "${SHA}"
 
   test -f "${STAGING_RELEASE}/dist/index.html"
   test -f "${STAGING_RELEASE}/server-node/src/server.mjs"
@@ -141,11 +142,7 @@ else
     echo "Existing release path has no VPS release manifest: ${RELEASE_ROOT}" >&2
     exit 1
   fi
-  RECORDED_SHA="$(node -e 'const fs=require("fs"); const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write(String(m.gitCommit||""));' "${RELEASE_ROOT}/.lcafe-vps-release.json")"
-  if [[ "${RECORDED_SHA}" != "${SHA}" ]]; then
-    echo "Existing release path has unexpected SHA: ${RECORDED_SHA}" >&2
-    exit 1
-  fi
+  node "${RELEASE_ROOT}/deploy/vps/verify-staging-release.mjs" "${RELEASE_ROOT}" "${SHA}"
   test -f "${RELEASE_ROOT}/dist/index.html"
   test -f "${RELEASE_ROOT}/server-node/src/server.mjs"
   test -f "${RELEASE_ROOT}/server-node/node_modules/better-sqlite3/package.json"
