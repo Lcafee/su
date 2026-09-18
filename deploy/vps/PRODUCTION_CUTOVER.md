@@ -131,11 +131,14 @@ Use the ACME webroot:
 
 Do not enable the repository production HTTPS config until the referenced certificate/key actually exist.
 
+If only `l-cafe.ir` is publicly certifiable and `www.l-cafe.ir` is not yet ready, use `deploy/vps/lcafe-site.apex.nginx.conf` after issuing an apex-only certificate. Replace it with the full `lcafe-site.nginx.conf` only after `www` DNS is correct and the certificate has been reissued/expanded to cover both names.
+
 ## 6. Activate production HTTPS vhost
 
-Repository config:
+Repository configs:
 
-`deploy/vps/lcafe-site.nginx.conf`
+- full apex + www: `deploy/vps/lcafe-site.nginx.conf`
+- temporary apex-only fallback: `deploy/vps/lcafe-site.apex.nginx.conf`
 
 Install it as a separate Main Site Nginx site. Do not edit the existing Operations file.
 
