@@ -42,6 +42,7 @@ jobs:
           node --check scripts/migrate.mjs
           node --check scripts/import-parspack.mjs
           node --check scripts/verify-import.mjs
+          node --check scripts/backup-state.mjs
           node --check src/server.mjs
           node --check ../deploy/vps/package-staging-release.mjs
           node --check ../deploy/vps/verify-staging-release.mjs
