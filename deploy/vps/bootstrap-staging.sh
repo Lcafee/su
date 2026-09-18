@@ -12,6 +12,7 @@ if [[ ! "${SHA}" =~ ^[0-9a-f]{40}$ ]]; then
   exit 1
 fi
 
+EXPECTED_HOST="ubuntu-lcafe-ops-beta"
 REPO="https://github.com/Lcafee/su.git"
 CODE_ROOT="/srv/lcafe-site"
 RELEASE_ROOT="${CODE_ROOT}/releases/${SHA}"
@@ -25,7 +26,19 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "== boundary guard =="
+echo "== host and tool guard =="
+if [[ "$(hostname)" != "${EXPECTED_HOST}" ]]; then
+  echo "Refusing to stage on unexpected host: $(hostname)" >&2
+  exit 1
+fi
+for command_name in git node npm nginx systemctl ss curl install useradd; do
+  if ! command -v "${command_name}" >/dev/null 2>&1; then
+    echo "Required command is missing: ${command_name}" >&2
+    exit 1
+  fi
+done
+
+echo "== Operations boundary guard =="
 for forbidden in /app /var/lib/lcafe /etc/lcafe; do
   if [[ ! -e "${forbidden}" ]]; then
     echo "WARNING: expected Operations path missing: ${forbidden}" >&2
@@ -35,10 +48,29 @@ if [[ "$(systemctl is-active lcafe || true)" != "active" ]]; then
   echo "Refusing to stage while lcafe.service is not active." >&2
   exit 1
 fi
+if ! ss -ltn | grep -qE '127\.0\.0\.1:3000\b'; then
+  echo "Refusing to stage: Operations is not listening on 127.0.0.1:3000." >&2
+  exit 1
+fi
 if ss -ltn | grep -qE '127\.0\.0\.1:3100\b'; then
   echo "Refusing to continue: port 3100 is already in use." >&2
   exit 1
 fi
+
+echo "== fetch and verify exact Main Site release =="
+git -C "${TMP}" init -q
+git -C "${TMP}" remote add origin "${REPO}"
+git -C "${TMP}" fetch -q --depth=1 origin "${SHA}"
+git -C "${TMP}" checkout -q --detach FETCH_HEAD
+ACTUAL_FETCHED="$(git -C "${TMP}" rev-parse HEAD)"
+if [[ "${ACTUAL_FETCHED}" != "${SHA}" ]]; then
+  echo "Fetched SHA mismatch: expected ${SHA}, got ${ACTUAL_FETCHED}" >&2
+  exit 1
+fi
+(
+  cd "${TMP}"
+  node scripts/agent-scope-check.mjs
+)
 
 echo "== runtime identity =="
 if ! id lcafe-site >/dev/null 2>&1; then
@@ -57,11 +89,6 @@ install -d -o root -g root -m 0700 "${INPUT_ROOT}"
 
 echo "== immutable release ${SHA} =="
 if [[ ! -d "${RELEASE_ROOT}/.git" ]]; then
-  git -C "${TMP}" init -q
-  git -C "${TMP}" remote add origin "${REPO}"
-  git -C "${TMP}" fetch -q --depth=1 origin "${SHA}"
-  git -C "${TMP}" checkout -q --detach FETCH_HEAD
-
   (
     cd "${TMP}"
     npm ci --no-audit --no-fund
@@ -73,7 +100,6 @@ if [[ ! -d "${RELEASE_ROOT}/.git" ]]; then
   (
     cd "${TMP}/server-node"
     npm ci --omit=dev --no-audit --no-fund
-    npm test
   )
 
   install -d -o root -g root -m 0755 "${RELEASE_ROOT}"
@@ -100,19 +126,44 @@ chown root:lcafe-site "${CONFIG_ROOT}/site.env"
 chmod 0640 "${CONFIG_ROOT}/site.env"
 
 echo "== install service definition (not started) =="
-install -o root -g root -m 0644   "${RELEASE_ROOT}/deploy/vps/lcafe-site-api.service"   /etc/systemd/system/lcafe-site-api.service
+install -o root -g root -m 0644 \
+  "${RELEASE_ROOT}/deploy/vps/lcafe-site-api.service" \
+  /etc/systemd/system/lcafe-site-api.service
 systemctl daemon-reload
 
 echo "== install internal-only staging nginx =="
-install -o root -g root -m 0644   "${RELEASE_ROOT}/deploy/vps/lcafe-site.staging.nginx.conf"   /etc/nginx/sites-available/lcafe-site-staging
-ln -sfn /etc/nginx/sites-available/lcafe-site-staging   /etc/nginx/sites-enabled/lcafe-site-staging
-nginx -t
+NGINX_AVAILABLE="/etc/nginx/sites-available/lcafe-site-staging"
+NGINX_ENABLED="/etc/nginx/sites-enabled/lcafe-site-staging"
+NGINX_BACKUP="${TMP}/lcafe-site-staging.nginx.previous"
+HAD_NGINX_AVAILABLE=0
+if [[ -f "${NGINX_AVAILABLE}" ]]; then
+  cp -a "${NGINX_AVAILABLE}" "${NGINX_BACKUP}"
+  HAD_NGINX_AVAILABLE=1
+fi
+
+install -o root -g root -m 0644 \
+  "${RELEASE_ROOT}/deploy/vps/lcafe-site.staging.nginx.conf" \
+  "${NGINX_AVAILABLE}"
+ln -sfn "${NGINX_AVAILABLE}" "${NGINX_ENABLED}"
+
+if ! nginx -t; then
+  rm -f "${NGINX_ENABLED}"
+  if [[ "${HAD_NGINX_AVAILABLE}" -eq 1 ]]; then
+    cp -a "${NGINX_BACKUP}" "${NGINX_AVAILABLE}"
+    ln -sfn "${NGINX_AVAILABLE}" "${NGINX_ENABLED}"
+  else
+    rm -f "${NGINX_AVAILABLE}"
+  fi
+  nginx -t || true
+  echo "Nginx staging config rejected; previous state restored." >&2
+  exit 1
+fi
 systemctl reload nginx
 
 echo "== post-checks =="
 test "$(systemctl is-active lcafe)" = "active"
-curl -fsS -o /dev/null http://127.0.0.1:3000/ || true
-curl -fsS -o /dev/null http://127.0.0.1:8081/
+ss -ltn | grep -qE '127\.0\.0\.1:3000\b'
+curl -fsS --max-time 5 -o /dev/null http://127.0.0.1:8081/
 ss -ltn | grep -E '127\.0\.0\.1:(3000|8081)\b' || true
 
 echo
