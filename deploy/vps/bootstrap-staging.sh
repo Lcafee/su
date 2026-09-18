@@ -106,7 +106,7 @@ if [[ ! -e "${RELEASE_ROOT}" ]]; then
     npm ci --omit=dev --no-audit --no-fund
   )
 
-  STAGING_RELEASE="${CODE_ROOT}/releases/.${SHA}.staging.$"
+  STAGING_RELEASE="${CODE_ROOT}/releases/.${SHA}.staging.${BASHPID}"
   install -d -o root -g root -m 0755 "${STAGING_RELEASE}"
   cp -a "${TMP}/." "${STAGING_RELEASE}/"
   chown -R root:root "${STAGING_RELEASE}"
