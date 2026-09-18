@@ -7,8 +7,14 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 SHA="${1:-}"
-if [[ ! "${SHA}" =~ ^[0-9a-f]{40}$ ]]; then
-  echo "Usage: bootstrap-staging.sh <40-char-git-sha>" >&2
+ARCHIVE="${2:-}"
+ARCHIVE_SHA256="${3:-}"
+if [[ ! "${SHA}" =~ ^[0-9a-f]{40}$ || -z "${ARCHIVE}" || ! "${ARCHIVE_SHA256}" =~ ^[0-9a-f]{64}$ ]]; then
+  echo "Usage: bootstrap-staging.sh <40-char-git-sha> <release.tar.gz> <archive-sha256>" >&2
+  exit 1
+fi
+if [[ ! -f "${ARCHIVE}" ]]; then
+  echo "Release archive not found: ${ARCHIVE}" >&2
   exit 1
 fi
 
@@ -19,7 +25,8 @@ RELEASE_ROOT="${CODE_ROOT}/releases/${SHA}"
 DATA_ROOT="/var/lib/lcafe-site"
 CONFIG_ROOT="/etc/lcafe-site"
 INPUT_ROOT="/root/lcafe-main-site-migration-input"
-TMP="$(mktemp -d /tmp/lcafe-site-release.XXXXXX)"
+TMP="$(mktemp -d /tmp/lcafe-site-bootstrap.XXXXXX)"
+SOURCE_ROOT="${TMP}/source"
 STAGING_RELEASE=""
 
 cleanup() {
@@ -35,12 +42,29 @@ if [[ "$(hostname)" != "${EXPECTED_HOST}" ]]; then
   echo "Refusing to stage on unexpected host: $(hostname)" >&2
   exit 1
 fi
-for command_name in git node npm nginx systemctl ss curl install useradd; do
+for command_name in git node npm nginx systemctl ss curl install useradd tar sha256sum; do
   if ! command -v "${command_name}" >/dev/null 2>&1; then
     echo "Required command is missing: ${command_name}" >&2
     exit 1
   fi
 done
+
+echo "== release archive guard =="
+ACTUAL_ARCHIVE_SHA256="$(sha256sum "${ARCHIVE}" | awk '{print $1}')"
+if [[ "${ACTUAL_ARCHIVE_SHA256}" != "${ARCHIVE_SHA256}" ]]; then
+  echo "Release archive SHA-256 mismatch." >&2
+  exit 1
+fi
+while IFS= read -r entry; do
+  normalized="${entry#./}"
+  case "${normalized}" in
+    "" ) ;;
+    /*|..|../*|*/../* )
+      echo "Unsafe release archive entry: ${entry}" >&2
+      exit 1
+      ;;
+  esac
+done < <(tar -tzf "${ARCHIVE}")
 
 echo "== Operations boundary guard =="
 for forbidden in /app /var/lib/lcafe /etc/lcafe; do
@@ -61,18 +85,19 @@ if ss -ltn | grep -qE '127\.0\.0\.1:3100\b'; then
   exit 1
 fi
 
-echo "== fetch and verify exact Main Site release =="
-git -C "${TMP}" init -q
-git -C "${TMP}" remote add origin "${REPO}"
-git -C "${TMP}" fetch -q --depth=1 origin "${SHA}"
-git -C "${TMP}" checkout -q --detach FETCH_HEAD
-ACTUAL_FETCHED="$(git -C "${TMP}" rev-parse HEAD)"
+echo "== verify exact Main Site source scope =="
+mkdir -p "${SOURCE_ROOT}"
+git -C "${SOURCE_ROOT}" init -q
+git -C "${SOURCE_ROOT}" remote add origin "${REPO}"
+git -C "${SOURCE_ROOT}" fetch -q --depth=1 origin "${SHA}"
+git -C "${SOURCE_ROOT}" checkout -q --detach FETCH_HEAD
+ACTUAL_FETCHED="$(git -C "${SOURCE_ROOT}" rev-parse HEAD)"
 if [[ "${ACTUAL_FETCHED}" != "${SHA}" ]]; then
   echo "Fetched SHA mismatch: expected ${SHA}, got ${ACTUAL_FETCHED}" >&2
   exit 1
 fi
 (
-  cd "${TMP}"
+  cd "${SOURCE_ROOT}"
   node scripts/agent-scope-check.mjs
 )
 
@@ -93,37 +118,32 @@ install -d -o root -g root -m 0700 "${INPUT_ROOT}"
 
 echo "== immutable release ${SHA} =="
 if [[ ! -e "${RELEASE_ROOT}" ]]; then
-  (
-    cd "${TMP}"
-    npm ci --no-audit --no-fund
-    npm run build
-    npm run validate:dist
-    rm -rf node_modules
-  )
+  STAGING_RELEASE="${CODE_ROOT}/releases/.${SHA}.staging.${BASHPID}"
+  install -d -o root -g root -m 0755 "${STAGING_RELEASE}"
+  tar -xzf "${ARCHIVE}" --no-same-owner --no-same-permissions -C "${STAGING_RELEASE}"
+
+  node "${STAGING_RELEASE}/deploy/vps/verify-staging-release.mjs" "${STAGING_RELEASE}" "${SHA}"
 
   (
-    cd "${TMP}/server-node"
+    cd "${STAGING_RELEASE}/server-node"
     npm ci --omit=dev --no-audit --no-fund
   )
 
-  STAGING_RELEASE="${CODE_ROOT}/releases/.${SHA}.staging.${BASHPID}"
-  install -d -o root -g root -m 0755 "${STAGING_RELEASE}"
-  cp -a "${TMP}/." "${STAGING_RELEASE}/"
-  chown -R root:root "${STAGING_RELEASE}"
-  chmod -R a+rX "${STAGING_RELEASE}"
   test -f "${STAGING_RELEASE}/dist/index.html"
   test -f "${STAGING_RELEASE}/server-node/src/server.mjs"
   test -f "${STAGING_RELEASE}/server-node/node_modules/better-sqlite3/package.json"
+  chown -R root:root "${STAGING_RELEASE}"
+  chmod -R a+rX "${STAGING_RELEASE}"
   mv "${STAGING_RELEASE}" "${RELEASE_ROOT}"
   STAGING_RELEASE=""
 else
-  if [[ ! -d "${RELEASE_ROOT}/.git" ]]; then
-    echo "Existing release path is incomplete; refusing to reuse it: ${RELEASE_ROOT}" >&2
+  if [[ ! -f "${RELEASE_ROOT}/.lcafe-vps-release.json" ]]; then
+    echo "Existing release path has no VPS release manifest: ${RELEASE_ROOT}" >&2
     exit 1
   fi
-  ACTUAL="$(git -C "${RELEASE_ROOT}" rev-parse HEAD)"
-  if [[ "${ACTUAL}" != "${SHA}" ]]; then
-    echo "Existing release path has unexpected SHA: ${ACTUAL}" >&2
+  RECORDED_SHA="$(node -e 'const fs=require("fs"); const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write(String(m.gitCommit||""));' "${RELEASE_ROOT}/.lcafe-vps-release.json")"
+  if [[ "${RECORDED_SHA}" != "${SHA}" ]]; then
+    echo "Existing release path has unexpected SHA: ${RECORDED_SHA}" >&2
     exit 1
   fi
   test -f "${RELEASE_ROOT}/dist/index.html"
