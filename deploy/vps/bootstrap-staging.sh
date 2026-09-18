@@ -122,13 +122,13 @@ if [[ ! -e "${RELEASE_ROOT}" ]]; then
   install -d -o root -g root -m 0755 "${STAGING_RELEASE}"
   tar -xzf "${ARCHIVE}" --no-same-owner --no-same-permissions -C "${STAGING_RELEASE}"
 
-  node "${STAGING_RELEASE}/deploy/vps/verify-staging-release.mjs" "${STAGING_RELEASE}" "${SHA}"
+  node "${SOURCE_ROOT}/deploy/vps/verify-staging-release.mjs" "${STAGING_RELEASE}" "${SHA}"
 
   (
     cd "${STAGING_RELEASE}/server-node"
     npm ci --omit=dev --no-audit --no-fund
   )
-  node "${STAGING_RELEASE}/deploy/vps/verify-staging-release.mjs" "${STAGING_RELEASE}" "${SHA}"
+  node "${SOURCE_ROOT}/deploy/vps/verify-staging-release.mjs" "${STAGING_RELEASE}" "${SHA}"
 
   test -f "${STAGING_RELEASE}/dist/index.html"
   test -f "${STAGING_RELEASE}/server-node/src/server.mjs"
@@ -142,7 +142,7 @@ else
     echo "Existing release path has no VPS release manifest: ${RELEASE_ROOT}" >&2
     exit 1
   fi
-  node "${RELEASE_ROOT}/deploy/vps/verify-staging-release.mjs" "${RELEASE_ROOT}" "${SHA}"
+  node "${SOURCE_ROOT}/deploy/vps/verify-staging-release.mjs" "${RELEASE_ROOT}" "${SHA}"
   test -f "${RELEASE_ROOT}/dist/index.html"
   test -f "${RELEASE_ROOT}/server-node/src/server.mjs"
   test -f "${RELEASE_ROOT}/server-node/node_modules/better-sqlite3/package.json"
