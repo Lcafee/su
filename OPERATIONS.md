@@ -8,6 +8,8 @@ operator record. `README.md` explains local development, `HANDOFF.md` explains c
 When those documents overlap with production procedure, this file is
 authoritative.
 
+Current production remains the ParsPack PHP/MySQL runtime until cutover. The isolated Liara VPS migration is a separate staging path governed by `deploy/vps/MIGRATION_EXECUTION.md`; that guide does not supersede this production runbook or authorize DNS/TLS cutover.
+
 ## State authority
 
 `PROJECT_STATE.md` is the sole tracked ledger for source baseline, production
