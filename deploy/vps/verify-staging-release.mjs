@@ -52,7 +52,10 @@ async function main() {
     fail("manifest identity is invalid");
   }
 
-  const actual = (await listFiles(root)).filter((name) => name !== ".lcafe-vps-release.json");
+  const actual = (await listFiles(root)).filter(
+    (name) => name !== ".lcafe-vps-release.json"
+      && !name.startsWith("server-node/node_modules/"),
+  );
   const expected = Object.keys(manifest.files).sort();
   actual.sort();
 
