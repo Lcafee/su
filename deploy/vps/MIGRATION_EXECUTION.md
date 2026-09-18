@@ -62,6 +62,7 @@ Known SHA-256:
 - current.json: `3faeebfaa7c786c0d9e5c1ddfd5fd233f2550726c64028d741b9cec74f4fe3d7`
 - previous.json: `dd35c31b4af97313a324dbab90bee03ee53f49345ce8ceb3951d6248ec2d0f0e`
 - managed-media.zip, only if original ZIP is present: `7aef6245273bb7a82cf046b5614e151616dce0cadea49d85099c11913d245d8c`
+- menu-revisions.zip, only if original ZIP is present: `25c4989ad546da9a8adea33fd92c5fb8d376682802a30f34b1e6e64f1cfbfd84`
 
 Do not compare ZIP hashes to extracted directories. Use `verify:import` for extracted managed-media and menu-revisions.
 
@@ -75,14 +76,14 @@ Do not compare ZIP hashes to extracted directories. Use `verify:import` for extr
    - `previous.json`
    - either extracted `managed-media/` or `managed-media.zip`
    - either extracted `menu-revisions/` or `menu-revisions.zip`
-   `media-originals/` is optional and non-blocking. If ZIP inputs are supplied, validate archive integrity and extract them only inside this private input root before running `verify:import`.
+   `media-originals/` is optional and non-blocking. The supplied ZIP archives already contain their top-level `managed-media/` and `menu-revisions/` directories: validate archive integrity, then extract each ZIP directly into `/root/lcafe-main-site-migration-input` so the result is not double-nested. Run `verify:import` only against the resulting single-level directories.
 4. Verify only known file hashes above. Never print SQL contents, password hashes, sessions, or private env values.
 5. In `/srv/lcafe-site/current/server-node`:
    - if `/var/lib/lcafe-site/site.sqlite` does not exist, run the prepared migration;
    - if it already contains imported app data, stop instead of deleting/overwriting it;
    - run the prepared ParsPack importer with explicit SQL and DB paths.
 6. Run existing `verify:import` with explicit DB/current/previous/media/revisions paths. Require integrity/FK/revision/hash/content/media/archive checks to pass.
-7. Before starting the service, ensure `/var/lib/lcafe-site/site.sqlite` and any SQLite sidecars are owned by `lcafe-site:lcafe-site`; the data directory must remain writable by `lcafe-site`. Never solve a permission failure by running the API as root.
+7. Before starting the service, ensure `/var/lib/lcafe-site/site.sqlite` and any existing SQLite sidecars are owned by `lcafe-site:lcafe-site` and mode `0600`; keep `/var/lib/lcafe-site` traversable/writable by `lcafe-site`. Never solve a permission failure by running the API as root.
 8. Install verified persistent content into:
    - `/var/lib/lcafe-site/managed-menu/`
    - `/var/lib/lcafe-site/managed-media/`
