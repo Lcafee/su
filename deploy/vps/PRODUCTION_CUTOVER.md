@@ -23,6 +23,21 @@ Do not stop or restart Operations. Every Nginx change must pass `nginx -t` befor
 
 Do not retire/delete ParsPack, PHP/MySQL, the older Main Site release, or any rollback material during this task.
 
+
+
+## DNS-already-changing emergency ordering
+
+Because the owner has already initiated DNS changes, do not leave `l-cafe.ir` falling through to the existing default Operations Nginx vhost while propagation occurs.
+
+Use this ordering:
+1. record the old ParsPack rollback destination if it is immediately available;
+2. install/enable the Main Site HTTP-bootstrap vhost and verify Operations is still healthy;
+3. freeze normal menu edits on both backends;
+4. perform the fresh ParsPack reconciliation and backup gate;
+5. issue TLS and activate HTTPS only after reconciliation succeeds.
+
+The HTTP-bootstrap vhost may temporarily serve the already-verified staged generation while reconciliation runs. Do not treat that temporary HTTP availability as production acceptance, and do not permit Admin login/editing until HTTPS and final reconciliation are complete.
+
 ## 1. Record rollback facts first
 
 Before public activation, privately record:
