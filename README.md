@@ -6,6 +6,8 @@ snapshot delivery for the public menu.
 Current mutable source, release, production, migration, phase, and blocker state
 is authoritative in [`PROJECT_STATE.md`](PROJECT_STATE.md).
 
+The PHP/MySQL architecture described below is the current ParsPack production runtime until cutover. The draft Liara VPS migration keeps the existing UI unchanged and is documented separately in [`docs/architecture/VPS_TARGET_ARCHITECTURE.md`](docs/architecture/VPS_TARGET_ARCHITECTURE.md) and [`deploy/vps/MIGRATION_EXECUTION.md`](deploy/vps/MIGRATION_EXECUTION.md).
+
 ## Development
 
 ```sh
