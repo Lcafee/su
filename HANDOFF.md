@@ -2,6 +2,8 @@
 
 Mutable state is authoritative in `PROJECT_STATE.md`.
 
+The active architecture below remains the ParsPack production runtime until an explicitly approved cutover. The prepared Node/SQLite VPS target is not production yet; its architecture and staging procedure are in `docs/architecture/VPS_TARGET_ARCHITECTURE.md` and `deploy/vps/MIGRATION_EXECUTION.md`.
+
 ## Active architecture
 
 ```text
