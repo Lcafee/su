@@ -20,9 +20,13 @@ DATA_ROOT="/var/lib/lcafe-site"
 CONFIG_ROOT="/etc/lcafe-site"
 INPUT_ROOT="/root/lcafe-main-site-migration-input"
 TMP="$(mktemp -d /tmp/lcafe-site-release.XXXXXX)"
+STAGING_RELEASE=""
 
 cleanup() {
   rm -rf "${TMP}"
+  if [[ -n "${STAGING_RELEASE}" && -e "${STAGING_RELEASE}" ]]; then
+    rm -rf "${STAGING_RELEASE}"
+  fi
 }
 trap cleanup EXIT
 
@@ -88,7 +92,7 @@ install -d -o root -g lcafe-site -m 0750 "${CONFIG_ROOT}"
 install -d -o root -g root -m 0700 "${INPUT_ROOT}"
 
 echo "== immutable release ${SHA} =="
-if [[ ! -d "${RELEASE_ROOT}/.git" ]]; then
+if [[ ! -e "${RELEASE_ROOT}" ]]; then
   (
     cd "${TMP}"
     npm ci --no-audit --no-fund
@@ -102,16 +106,29 @@ if [[ ! -d "${RELEASE_ROOT}/.git" ]]; then
     npm ci --omit=dev --no-audit --no-fund
   )
 
-  install -d -o root -g root -m 0755 "${RELEASE_ROOT}"
-  cp -a "${TMP}/." "${RELEASE_ROOT}/"
-  chown -R root:root "${RELEASE_ROOT}"
-  chmod -R a+rX "${RELEASE_ROOT}"
+  STAGING_RELEASE="${CODE_ROOT}/releases/.${SHA}.staging.$"
+  install -d -o root -g root -m 0755 "${STAGING_RELEASE}"
+  cp -a "${TMP}/." "${STAGING_RELEASE}/"
+  chown -R root:root "${STAGING_RELEASE}"
+  chmod -R a+rX "${STAGING_RELEASE}"
+  test -f "${STAGING_RELEASE}/dist/index.html"
+  test -f "${STAGING_RELEASE}/server-node/src/server.mjs"
+  test -f "${STAGING_RELEASE}/server-node/node_modules/better-sqlite3/package.json"
+  mv "${STAGING_RELEASE}" "${RELEASE_ROOT}"
+  STAGING_RELEASE=""
 else
+  if [[ ! -d "${RELEASE_ROOT}/.git" ]]; then
+    echo "Existing release path is incomplete; refusing to reuse it: ${RELEASE_ROOT}" >&2
+    exit 1
+  fi
   ACTUAL="$(git -C "${RELEASE_ROOT}" rev-parse HEAD)"
   if [[ "${ACTUAL}" != "${SHA}" ]]; then
     echo "Existing release path has unexpected SHA: ${ACTUAL}" >&2
     exit 1
   fi
+  test -f "${RELEASE_ROOT}/dist/index.html"
+  test -f "${RELEASE_ROOT}/server-node/src/server.mjs"
+  test -f "${RELEASE_ROOT}/server-node/node_modules/better-sqlite3/package.json"
 fi
 
 echo "== atomic current pointer =="
