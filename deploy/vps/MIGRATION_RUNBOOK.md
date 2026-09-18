@@ -1,5 +1,7 @@
 # Main Site VPS Migration Runbook
 
+For the current concise execution contract, use `deploy/vps/MIGRATION_EXECUTION.md`. This longer runbook preserves the full sequence and cutover gates.
+
 This runbook is intentionally staging-first. It must not modify the live ParsPack site, `l-cafe.ir` DNS, `lcafe.service`, `/app`, `/var/lib/lcafe`, or the Operations database.
 
 ## 0. Required inputs
@@ -9,22 +11,15 @@ Keep outside Git:
 - production MySQL dump;
 - `current.json`;
 - `previous.json`;
-- extracted `managed-media/`;
-- extracted `menu-revisions/`;
+- extracted `managed-media/` or the original `managed-media.zip` for private extraction;
+- extracted `menu-revisions/` or the original `menu-revisions.zip` for private extraction;
 - private `media-originals/` when available for archival migration.
 
 Never commit the SQL dump or private config.
 
-## 1. Generate a locked Node dependency set
+## 1. Use the committed locked dependency set
 
-Before deployment, run inside `server-node/` and commit the resulting lockfile on the migration branch:
-
-```bash
-npm install --package-lock-only
-npm ci
-```
-
-Deployment must use the committed lockfile and `npm ci`; do not deploy from an unlocked dependency graph.
+`server-node/package-lock.json` is already committed and CI-verified. Deployment must use `npm ci`; do not regenerate or update dependencies during staging.
 
 ## 2. Build a disposable SQLite migration target
 
@@ -104,7 +99,7 @@ Recommended release shape:
 /srv/lcafe-site/current -> releases/<git-sha>
 ```
 
-Copy the verified SQLite database and persistent snapshots/media into `/var/lib/lcafe-site` before starting the API. Persistent state is not stored inside the release.
+Copy the verified SQLite database and persistent snapshots/media into `/var/lib/lcafe-site` before starting the API. Persistent state is not stored inside the release. Before service start, the SQLite database and sidecars must be owned by `lcafe-site:lcafe-site`; never run the API as root to bypass permissions.
 
 ## 8. Install service and isolated Nginx config
 
