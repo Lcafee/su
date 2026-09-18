@@ -17,6 +17,9 @@ async function listFiles(directory, prefix = "") {
   for (const entry of entries) {
     const absolute = resolve(directory, entry.name);
     const name = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (name === "server-node/node_modules" || name.startsWith("server-node/node_modules/")) {
+      continue;
+    }
     const rel = relative(root, absolute);
     if (rel === ".." || rel.startsWith(`..${sep}`)) fail("path escaped artifact root");
     if (entry.isDirectory()) output.push(...await listFiles(absolute, name));
@@ -53,8 +56,7 @@ async function main() {
   }
 
   const actual = (await listFiles(root)).filter(
-    (name) => name !== ".lcafe-vps-release.json"
-      && !name.startsWith("server-node/node_modules/"),
+    (name) => name !== ".lcafe-vps-release.json",
   );
   const expected = Object.keys(manifest.files).sort();
   actual.sort();
