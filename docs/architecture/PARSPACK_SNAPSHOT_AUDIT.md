@@ -27,6 +27,16 @@ The supplied `current.json` and `previous.json` byte hashes match their correspo
 
 The 90 active database item public IDs exactly match the 90 items in revision 65 `current.json`.
 
+## Source archive checksums
+
+- production SQL SHA-256: `3e68990a2718e8bfd77adcb7ce130004ccd476b2d06ee2780342e1c98fbcd5a2`
+- `current.json` SHA-256: `3faeebfaa7c786c0d9e5c1ddfd5fd233f2550726c64028d741b9cec74f4fe3d7`
+- `previous.json` SHA-256: `dd35c31b4af97313a324dbab90bee03ee53f49345ce8ceb3951d6248ec2d0f0e`
+- `managed-media.zip` SHA-256: `7aef6245273bb7a82cf046b5614e151616dce0cadea49d85099c11913d245d8c`
+- `menu-revisions.zip` SHA-256: `25c4989ad546da9a8adea33fd92c5fb8d376682802a30f34b1e6e64f1cfbfd84`
+
+These hashes identify the audited migration capture only. A fresh ParsPack reconciliation is still required immediately before production cutover.
+
 ## Managed media baseline
 
 - expected renditions from DB: 252
