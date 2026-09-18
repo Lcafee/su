@@ -68,30 +68,41 @@ Do not compare ZIP hashes to extracted directories. Use `verify:import` for extr
 
 ## Execution
 
-1. Confirm hostname/root, `lcafe.service` active, port 3000 still Operations, port 3100 free.
-2. Run `deploy/vps/bootstrap-staging.sh <approved-sha>`. Require `STAGING_BOOTSTRAP_OK`.
-3. Required private inputs under `/root/lcafe-main-site-migration-input`:
+1. In the connected Claude/CI workspace, not on the VPS, build the immutable staging artifact from the exact approved SHA:
+
+   `node deploy/vps/package-staging-release.mjs --approve <approved-sha> --out /tmp/lcafe-main-site-<approved-sha>.tar.gz`
+
+   Record the archive SHA-256 printed by the command. Transfer that exact archive to a private root-only path on the VPS. Do not build the frontend on the VPS.
+
+2. On the actual VPS, confirm hostname/root, `lcafe.service` active, port 3000 still Operations, and port 3100 free.
+
+3. Run:
+
+   `deploy/vps/bootstrap-staging.sh <approved-sha> <archive-path> <archive-sha256>`
+
+   The bootstrap must verify the archive hash and manifest before install. Require `STAGING_BOOTSTRAP_OK`.
+4. Required private inputs under `/root/lcafe-main-site-migration-input`:
    - `h415280_lcafe_prod.sql`
    - `current.json`
    - `previous.json`
    - either extracted `managed-media/` or `managed-media.zip`
    - either extracted `menu-revisions/` or `menu-revisions.zip`
    `media-originals/` is optional and non-blocking. The supplied ZIP archives already contain their top-level `managed-media/` and `menu-revisions/` directories: validate archive integrity, then extract each ZIP directly into `/root/lcafe-main-site-migration-input` so the result is not double-nested. Run `verify:import` only against the resulting single-level directories.
-4. Verify only known file hashes above. Never print SQL contents, password hashes, sessions, or private env values.
-5. In `/srv/lcafe-site/current/server-node`:
+5. Verify only known file hashes above. Never print SQL contents, password hashes, sessions, or private env values.
+6. In `/srv/lcafe-site/current/server-node`:
    - if `/var/lib/lcafe-site/site.sqlite` does not exist, run the prepared migration;
    - if it already contains imported app data, stop instead of deleting/overwriting it;
    - run the prepared ParsPack importer with explicit SQL and DB paths.
-6. Run existing `verify:import` with explicit DB/current/previous/media/revisions paths. Require integrity/FK/revision/hash/content/media/archive checks to pass.
-7. Before starting the service, ensure `/var/lib/lcafe-site/site.sqlite` and any existing SQLite sidecars are owned by `lcafe-site:lcafe-site` and mode `0600`; keep `/var/lib/lcafe-site` traversable/writable by `lcafe-site`. Never solve a permission failure by running the API as root.
-8. Install verified persistent content into:
+7. Run existing `verify:import` with explicit DB/current/previous/media/revisions paths. Require integrity/FK/revision/hash/content/media/archive checks to pass.
+8. Before starting the service, ensure `/var/lib/lcafe-site/site.sqlite` and any existing SQLite sidecars are owned by `lcafe-site:lcafe-site` and mode `0600`; keep `/var/lib/lcafe-site` traversable/writable by `lcafe-site`. Never solve a permission failure by running the API as root.
+9. Install verified persistent content into:
    - `/var/lib/lcafe-site/managed-menu/`
    - `/var/lib/lcafe-site/managed-media/`
    - `/var/lib/lcafe-site/menu-revisions/`
    - optional originals into `/var/lib/lcafe-site/media-originals/`
    Apply minimum ownership/permissions: `lcafe-site` writes persistent state; Nginx can read only public menu/media.
-9. Configure `/etc/lcafe-site/site.env` without exposing its contents. Start/enable only `lcafe-site-api.service`.
-10. Minimum required checks:
+10. Configure `/etc/lcafe-site/site.env` without exposing its contents. Start/enable only `lcafe-site-api.service`.
+11. Minimum required checks:
    - Main Site service active
    - `127.0.0.1:3100` listening
    - `/healthz` PASS
