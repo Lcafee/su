@@ -38,6 +38,7 @@ function normalizeSnapshot(snapshot) {
       items: Array.isArray(category.items)
         ? category.items.map((item) => ({
             ...item,
+            featured: Boolean(item.featured),
             options: Array.isArray(item.options) ? item.options : [],
             image: item.image?.src
               ? {
