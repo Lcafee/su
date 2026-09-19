@@ -15,15 +15,16 @@ import { spawnSync } from "node:child_process";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MANIFEST = ".lcafe-vps-release.json";
-// spawnSync resolves only .com/.exe on Windows, where npm ships as npm.cmd.
-const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
+// Windows npm is npm.cmd: spawnSync cannot resolve it, and Node refuses to
+// launch .cmd directly, so those three calls go through the shell instead.
+const NPM_VIA_SHELL = process.platform === "win32";
 
 function fail(message) {
   throw new Error(`VPS staging package: ${message}`);
 }
 
-function run(command, args, { cwd = root, stdio = "pipe" } = {}) {
-  const result = spawnSync(command, args, { cwd, encoding: "utf8", stdio });
+function run(command, args, { cwd = root, stdio = "pipe", shell = false } = {}) {
+  const result = spawnSync(command, args, { cwd, encoding: "utf8", stdio, shell });
   if (result.error) fail(`${command} could not start (${result.error.message})`);
   if (result.status !== 0) {
     const detail = `${result.stderr ?? result.stdout ?? ""}`.trim();
@@ -99,9 +100,9 @@ async function main() {
     git(["worktree", "add", "--quiet", "--detach", worktree, commit]);
     worktreeAdded = true;
 
-    run(NPM, ["ci", "--no-audit", "--no-fund"], { cwd: worktree, stdio: "inherit" });
-    run(NPM, ["run", "build"], { cwd: worktree, stdio: "inherit" });
-    run(NPM, ["run", "validate:dist"], { cwd: worktree, stdio: "inherit" });
+    run("npm", ["ci", "--no-audit", "--no-fund"], { cwd: worktree, stdio: "inherit", shell: NPM_VIA_SHELL });
+    run("npm", ["run", "build"], { cwd: worktree, stdio: "inherit", shell: NPM_VIA_SHELL });
+    run("npm", ["run", "validate:dist"], { cwd: worktree, stdio: "inherit", shell: NPM_VIA_SHELL });
 
     await mkdir(staging, { recursive: true });
     await cp(resolve(worktree, "dist"), resolve(staging, "dist"), { recursive: true });
