@@ -1,0 +1,24 @@
+{
+  "name": "lcafe-main-site-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "import:parspack": "node scripts/import-parspack.mjs",
+    "verify:import": "node scripts/verify-import.mjs",
+    "backup:state": "node scripts/backup-state.mjs"
+  },
+  "dependencies": {
+    "@fastify/multipart": "10.1.1",
+    "bcryptjs": "3.0.3",
+    "better-sqlite3": "13.0.3",
+    "fastify": "5.12.5",
+    "sharp": "0.34.4"
+  }
+}
