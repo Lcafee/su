@@ -1,0 +1,40 @@
+/* One continuous gouache mural: the viewport travels through the painting. */
+html[data-menu-background="journey"] body::before{display:none}
+.menu-journey{
+  --journey-offset:0px;
+  position:fixed;
+  inset:0;
+  height:100lvh;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  contain:strict;
+  background:#f3f1ec;
+}
+.menu-journey-painting{
+  display:block;
+  position:absolute;
+  top:0;
+  left:50%;
+  /* Zoom into the two painted motif corridors without stretching the artwork. */
+  width:max(100%,84svh);
+  max-width:none;
+  height:auto;
+  transform:translate3d(-50%,var(--journey-offset),0);
+  will-change:transform;
+}
+.menu-journey-reading-field{
+  position:absolute;
+  inset:0;
+  /* Keep pigment visible at the perimeter; a stable veil protects both text columns. */
+  background:linear-gradient(90deg,rgba(243,241,236,.50),rgba(243,241,236,.73) 22%,rgba(243,241,236,.82) 43%,rgba(243,241,236,.82) 62%,rgba(243,241,236,.73) 80%,rgba(243,241,236,.54));
+}
+@media(min-width:760px){
+  .menu-journey-reading-field{
+    background:linear-gradient(90deg,rgba(243,241,236,.32),rgba(243,241,236,.80) 28%,rgba(243,241,236,.85) 72%,rgba(243,241,236,.32));
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .menu-journey-painting{transform:translateX(-50%);will-change:auto}
+}
+@media print,(forced-colors:active){.menu-journey{display:none}}
