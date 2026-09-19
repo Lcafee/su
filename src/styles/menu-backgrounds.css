@@ -1,0 +1,104 @@
+/* Three independent material studies; menu geometry and typography are inherited. */
+:root[data-menu-background="limestone"]{
+  --ivory:#f3eee4;--ivory-rgb:243,238,228;--ivory-deep:#e6dece;
+  --scarlet:#51372b;--scarlet-rgb:81,55,43;
+  --background-art:url('../../assets/menu-backgrounds/limestone.webp');
+  --background-wash:rgba(243,238,228,.60);
+}
+:root[data-menu-background="nocturne"]{
+  --ivory:#241d19;--ivory-rgb:36,29,25;--ivory-deep:#33281f;
+  --scarlet:#f1dfc4;--scarlet-rgb:241,223,196;
+  --on-dark:#241d19;--on-dark-soft:#352a22;--on-dark-line:rgba(36,29,25,.25);
+  --background-art:url('../../assets/menu-backgrounds/nocturne.webp');
+  --background-wash:rgba(24,18,14,.72);
+  color-scheme:dark;
+}
+:root[data-menu-background="garden"]{
+  --ivory:#e9ebe0;--ivory-rgb:233,235,224;--ivory-deep:#dce0d1;
+  --scarlet:#344735;--scarlet-rgb:52,71,53;
+  --background-art:url('../../assets/menu-backgrounds/garden.webp');
+  --background-wash:rgba(233,235,224,.84);
+}
+:root[data-menu-background]{
+  --ink-strong:rgba(var(--scarlet-rgb),.96);
+  --ink-soft:rgba(var(--scarlet-rgb),.90);
+  --ink-dim:rgba(var(--scarlet-rgb),.88);
+}
+html[data-menu-background] body::before{
+  background-image:linear-gradient(var(--background-wash),var(--background-wash)),var(--background-art);
+  background-size:cover;
+  background-position:center;
+  opacity:1;
+}
+html[data-menu-background="nocturne"] .menu-brand-mark{filter:brightness(0) invert(94%) sepia(13%) saturate(445%)}
+html[data-menu-background="nocturne"] .foot{
+  --on-dark:#f1dfc4;--on-dark-soft:#dfcbb1;--on-dark-line:rgba(241,223,196,.2);
+  background:#191410;
+}
+html[data-menu-background="nocturne"] .foot a:focus-visible{outline-color:#f1dfc4}
+
+/* Review controls are opt-in, fixed outside document flow, and collapse fully. */
+.background-studio{
+  position:fixed;z-index:44;top:max(12px,env(safe-area-inset-top,0px));
+  left:max(12px,env(safe-area-inset-left,0px));
+  max-width:calc(100vw - 24px);color:#382c25;
+}
+.background-studio-toggle{
+  display:block;min-height:44px;padding:8px 16px;margin-right:auto;
+  background:#faf6ef;color:#382c25;border:1px solid #b5a28c;border-radius:2px;
+  cursor:pointer;font:500 12px/1.6 var(--font);
+}
+.background-studio-toggle:focus-visible{outline-color:#51372b}
+.background-studio-panel{
+  width:318px;max-width:calc(100vw - 24px);margin-top:8px;padding:18px;
+  max-height:calc(100dvh - 160px);overflow:auto;
+  background:#faf6ef;box-shadow:0 12px 40px rgba(24,18,14,.2);
+  color-scheme:light;
+}
+.background-studio-panel fieldset{border:0;padding:0;margin:0;min-width:0}
+.background-studio-panel legend{font:700 16px/1.7 var(--display);margin-bottom:12px;padding:0}
+.background-studio-option{
+  display:grid;grid-template-columns:16px 40px 1fr;align-items:center;gap:10px;
+  padding:12px 0;min-height:74px;cursor:pointer;
+}
+.background-studio-option+.background-studio-option{border-top:1px solid #dfd5c8}
+.background-studio-option input{margin:0;width:16px;height:16px;accent-color:#51372b}
+.background-studio-option input:focus-visible{outline:2px solid #51372b;outline-offset:4px}
+.background-studio-option strong{display:block;font:600 13px/1.7 var(--font)}
+.background-studio-option [lang="en"]{display:block;text-align:right;font:400 12px/1.7 Georgia,serif;color:#675749}
+.background-studio-option small{display:block;font:400 10.5px/1.7 var(--font);color:#675749}
+.background-studio-swatch{height:44px;border:1px solid #b5a28c;background:#e8dfcf}
+[data-swatch="limestone"]{background:linear-gradient(120deg,#c9b698,#f3eee4 60%)}
+[data-swatch="nocturne"]{background:linear-gradient(115deg,#8a6040,#241d19 65%)}
+[data-swatch="garden"]{background:linear-gradient(90deg,#849077,#e9ebe0 70%)}
+[data-swatch="original"]{background:linear-gradient(125deg,#cab4b3,#f3f1ec 70%)}
+@media(max-width:759px){
+  :root[data-menu-background="limestone"]{
+    --background-art:url('../../assets/menu-backgrounds/limestone-mobile.webp');
+    --background-wash:rgba(243,238,228,.60);
+  }
+  :root[data-menu-background="nocturne"]{
+    --background-art:url('../../assets/menu-backgrounds/nocturne-mobile.webp');
+    --background-wash:rgba(24,18,14,.72);
+  }
+  :root[data-menu-background="garden"]{
+    --background-art:url('../../assets/menu-backgrounds/garden-mobile.webp');
+    --background-wash:rgba(233,235,224,.84);
+  }
+  html[data-menu-background] body::before{background-position:18% center;background-size:auto 100%;}
+  html[data-menu-background="garden"] body::before{background-position:left center;}
+  .background-studio-toggle{font-size:11px;padding:7px 12px}
+}
+@media print{
+  .background-studio{display:none}
+  :root[data-menu-background]{
+    --ivory:#fff;--ivory-rgb:255,255,255;--scarlet:#29231e;--scarlet-rgb:41,35,30;
+    --on-dark:#fff;--on-dark-soft:#fff;color-scheme:light;
+  }
+}
+@media(forced-colors:active){
+  .background-studio-swatch{display:none}
+  .background-studio-option{grid-template-columns:16px 1fr}
+  .background-studio-panel{border:1px solid CanvasText;background:Canvas;color:CanvasText}
+  .background-studio-option strong,.background-studio-option small,.background-studio-option [lang="en"]{color:CanvasText}
+}
