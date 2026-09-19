@@ -25,7 +25,8 @@
             "srcSet": "assets/menu/opt/item-placeholder-300.webp 300w, assets/menu/opt/item-placeholder.webp 600w",
             "width": 600,
             "height": 600
-          }
+          },
+          "featured": true
         },
         {
           "id": "menu-routine-02",
