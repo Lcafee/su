@@ -193,6 +193,24 @@ function ItemCardComponent({
           </div>
 
           {advanced ? (
+            <div className={`featured-setting${item.featured ? " is-active" : ""}`}>
+              <div>
+                <strong>پیشنهاد ویژه</strong>
+                <small>حالت ویژه این آیتم را در منوی عمومی روشن یا خاموش می‌کند.</small>
+              </div>
+              <button
+                type="button"
+                className={`featured-toggle${item.featured ? " is-active" : ""}`}
+                aria-pressed={Boolean(item.featured)}
+                onClick={() => update({ featured: !item.featured })}
+                disabled={disabled}
+              >
+                {item.featured ? "فعال" : "غیرفعال"}
+              </button>
+            </div>
+          ) : null}
+
+          {advanced ? (
             <details className="owner-settings item-owner-settings">
               <summary>تنظیمات پیشرفته مالک</summary>
               <MetadataEditor
