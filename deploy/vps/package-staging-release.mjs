@@ -15,6 +15,8 @@ import { spawnSync } from "node:child_process";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MANIFEST = ".lcafe-vps-release.json";
+// spawnSync resolves only .com/.exe on Windows, where npm ships as npm.cmd.
+const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function fail(message) {
   throw new Error(`VPS staging package: ${message}`);
@@ -97,9 +99,9 @@ async function main() {
     git(["worktree", "add", "--quiet", "--detach", worktree, commit]);
     worktreeAdded = true;
 
-    run("npm", ["ci", "--no-audit", "--no-fund"], { cwd: worktree, stdio: "inherit" });
-    run("npm", ["run", "build"], { cwd: worktree, stdio: "inherit" });
-    run("npm", ["run", "validate:dist"], { cwd: worktree, stdio: "inherit" });
+    run(NPM, ["ci", "--no-audit", "--no-fund"], { cwd: worktree, stdio: "inherit" });
+    run(NPM, ["run", "build"], { cwd: worktree, stdio: "inherit" });
+    run(NPM, ["run", "validate:dist"], { cwd: worktree, stdio: "inherit" });
 
     await mkdir(staging, { recursive: true });
     await cp(resolve(worktree, "dist"), resolve(staging, "dist"), { recursive: true });
