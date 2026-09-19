@@ -1,36 +1,48 @@
 # Public menu background studies
 
-Three implemented, URL-scoped directions. Mobile is the design priority;
-desktop remains functional. These are options for selection, not a new default.
-Existing menu data, item photography, layout, typography, navigation and view
-preferences are unchanged.
+The background concepts explored for the public menu, kept for comparison.
+The production menu ships one background: the painted mural ("The Art of
+Pause"). The earlier studies are preview-only and are never loaded by the
+production menu bundle. Existing menu data, item photography, layout,
+typography, navigation and view preferences are unchanged by any of them.
 
 ## Preview
 
-Run `npm run dev` and open the menu with these query parameters:
+All concepts live on one page — the Design Studio — which renders the real
+current menu and swaps only the background layer:
 
-| Direction | Query | Material / palette |
-| --- | --- | --- |
-| Limestone Atelier | `?background=limestone&backgrounds=1` | Sculptural limewash, afternoon light; ivory `#f3eee4`, walnut ink `#51372b` |
-| Bronze Nocturne | `?background=nocturne&backgrounds=1` | Fashion editorial silk; espresso `#241d19`, cream ink `#f1dfc4` |
-| Garden Folio | `?background=garden&backgrounds=1` | Cypress and pomegranate engraving; celadon `#e9ebe0`, botanical ink `#344735` |
+- locally: `npm run dev` then open `/design-studio.html`
+- published preview: `/su/design-studio/`
 
-The Persian “طرح‌های پس‌زمینه” button opens the comparison controls. The
-original artwork is also available for comparison. Remove `backgrounds=1`
-to view a concept without review controls. Remove both parameters to return
-to the normal menu. Unknown background values fall back to the original.
-Changing direction retains the current category hash, scroll position and
-grid/list view. Direction selection is encoded in the URL, not local storage.
+| Direction | Material / palette |
+| --- | --- |
+| The Art of Pause (production) | Continuous gouache mural; ivory `#f3f1ec` reading field |
+| Amber Atrium | Suspended light, handmade texture, architectural lines |
+| Limestone Atelier | Sculptural limewash, afternoon light; ivory `#f3eee4`, walnut ink `#51372b` |
+| Bronze Nocturne | Fashion editorial silk; espresso `#241d19`, cream ink `#f1dfc4` |
+| Garden Folio | Cypress and pomegranate engraving; celadon `#e9ebe0`, botanical ink `#344735` |
+| Original | Calligraphy pattern overlay, for comparison |
+
+The Persian “طرح‌های پس‌زمینه” button opens the selector. Selection is encoded
+in the URL as `?background=<id>`, not local storage, so a comparison is
+shareable. Unknown values fall back to the production mural. Changing
+direction retains the current category hash, scroll position and grid/list
+view.
 
 ## Implementation
 
-- `src/menu/MenuBackgrounds.jsx`: validated URL selection, optional native
-  radio controls, popstate synchronization and document theme lifecycle.
-- `src/styles/menu-backgrounds.css`: background layer and color variables only;
-  no changes to menu dimensions, fonts or content hierarchy.
-- `assets/menu-backgrounds/`: six optimized WebP assets. Mobile files are
-  960 × 640 and 12–52 KB; desktop files are 1536 × 1024 and 41–160 KB.
-  Only the selected background is requested by CSS.
+- `src/preview/DesignStudio.jsx`: validated URL selection, the native radio
+  selector, popstate synchronization and document theme lifecycle. Preview
+  only.
+- `src/preview/design-studio.css`: the earlier studies' background layers,
+  colour variables and selector chrome. Preview only; no changes to menu
+  dimensions, fonts or content hierarchy.
+- `src/menu/MenuJourney.jsx` and `src/styles/menu-journey.css`: the production
+  mural, shared by the menu and the Design Studio so there is one
+  implementation.
+- `assets/menu-backgrounds/`: the mural plus eight optimized WebP concept
+  assets. Mobile files are 960 × 640 and 12–52 KB; desktop files are
+  1536 × 1024 and 41–160 KB. Only the selected background is requested by CSS.
 - Small screens use a deliberate edge crop with a protective tonal wash;
   garden retains a cypress silhouette, limestone a sculptural curved edge,
   and nocturne a single silk fold. All artwork is decorative and static.

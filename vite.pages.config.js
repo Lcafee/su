@@ -9,6 +9,8 @@ const root = dirname(fileURLToPath(import.meta.url));
 const outDir = resolve(root, "dist-pages");
 const base = "/su/";
 const fixturePath = resolve(root, "src/menu/fixtures/current.json");
+// Product photos for the preview are copied from the published production snapshot.
+const previewMediaDir = resolve(root, "preview/menu-media");
 
 const runtimeAssets = [
   "assets/l-cafe-sculptural-light.webp",
@@ -26,6 +28,7 @@ const requiredOutput = [
   "index.html",
   "menu/index.html",
   "menu2/index.html",
+  "design-studio/index.html",
   "robots.txt",
   "managed-menu/current.json",
   "managed-menu/previous.json",
@@ -69,7 +72,8 @@ async function assertSafePreviewOutput() {
   const unexpected = files.filter(
     (file) =>
       !requiredOutput.includes(file)
-      && !file.startsWith("assets/"),
+      && !file.startsWith("assets/")
+      && !file.startsWith("managed-media/"),
   );
   const forbidden = files.filter((file) =>
     /(^|\/)(?:admin|api|server|release)(?:\/|$)|(^|\/)\.htaccess$|\.lcafe-(?:build|release)\.json$/i.test(file),
@@ -83,7 +87,7 @@ async function assertSafePreviewOutput() {
     );
   }
 
-  for (const page of ["index.html", "menu/index.html", "menu2/index.html"]) {
+  for (const page of ["index.html", "menu/index.html", "menu2/index.html", "design-studio/index.html"]) {
     const html = await readFile(resolve(outDir, page), "utf8");
     if (!/<meta name="robots" content="noindex,nofollow"\s*\/>/i.test(html)) {
       throw new Error(`${page} is missing preview search isolation.`);
@@ -126,8 +130,12 @@ function buildPagesPreview() {
       await cp(fixturePath, resolve(managedMenu, "current.json"));
       await cp(fixturePath, resolve(managedMenu, "previous.json"));
 
+      // The snapshot references /managed-media/*; serve those photos from the preview copy.
+      await cp(previewMediaDir, resolve(outDir, "managed-media"), { recursive: true });
+
       await makeDirectoryRoute("menu");
       await makeDirectoryRoute("menu2");
+      await makeDirectoryRoute("design-studio");
       await writeFile(resolve(outDir, ".nojekyll"), "", "utf8");
       await writeFile(
         resolve(outDir, "robots.txt"),
@@ -153,6 +161,7 @@ export default defineConfig({
         landing: resolve(root, "index.html"),
         menu: resolve(root, "menu.html"),
         menu2: resolve(root, "menu2.html"),
+        "design-studio": resolve(root, "design-studio.html"),
       },
     },
   },
