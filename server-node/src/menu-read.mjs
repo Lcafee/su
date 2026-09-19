@@ -63,7 +63,7 @@ export function loadMenuDocument(db) {
 
   const itemRows = db.prepare(`
     SELECT i.id, i.category_id, i.public_id, i.name, i.description, i.price_text,
-           i.media_id, i.metadata_json, i.sort_order, i.archived_at,
+           i.media_id, i.metadata_json, i.is_featured, i.sort_order, i.archived_at,
            m.width, m.height, m.rendition_300_filename, m.rendition_600_filename
     FROM menu_items i
     LEFT JOIN media_assets m ON m.id = i.media_id
@@ -93,6 +93,7 @@ export function loadMenuDocument(db) {
       mediaId: row.media_id ?? null,
       media,
       metadata: decodedMetadata(row.metadata_json),
+      featured: row.is_featured === 1,
       sortOrder: row.sort_order,
       archived: row.archived_at != null,
       options: optionsByItem.get(row.id) || [],
