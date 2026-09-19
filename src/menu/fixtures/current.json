@@ -78,6 +78,7 @@
         },
         {
           "id": "menu-routine-04",
+          "featured": true,
           "name": "کوکی رژیمی",
           "description": "شیره انگور و کره بادام‌زمینی؛ بدون آرد و شکر سفید.",
           "price": "۲۲۰",

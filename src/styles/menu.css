@@ -620,6 +620,29 @@ a:focus-visible,button:focus-visible{
   display:block;
   padding:8px 16px;
 }
+/* Preserve the original treatment; only the cookie gets the fine metal rim. */
+.featured-photo-legacy{display:contents}
+.item-photo[data-featured-frame="refined"]{overflow:visible;margin-bottom:30px}
+.item-photo[data-featured-frame="refined"] img,
+.item-photo[data-featured-frame="refined"]::before,
+.item-photo[data-featured-frame="refined"] .item-photo-empty{border-radius:inherit}
+.featured-photo-mount{
+  position:absolute;inset:0;z-index:4;border-radius:inherit;pointer-events:none;
+}
+.featured-photo-rim{
+  position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;
+  background:linear-gradient(135deg,#948779 0%,#f7f1e7 22%,#b8aaa0 45%,#ede3d7 66%,#8d8176 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;
+  /* No shader/glow on this rim: corners remain a continuous, flush contour. */
+}
+.featured-photo-mount .cold-brew-photo-label{
+  inset-block-end:-1.5px;
+  transform:translateY(50%);
+}
+#menu[data-menu-view="list"] .item-photo[data-featured-frame="refined"]{margin-bottom:20px}
 #menu[data-menu-view="list"] .cold-brew-photo-label{font-size:12px}
 #menu[data-menu-view="list"] .cold-brew-photo-label-text{padding:6px 10px}
 .item h3{

@@ -318,15 +318,15 @@ const CategoryHeader = memo(function CategoryHeader({
 });
 
 // Featured treatment; driven by the published `featured` state of a menu item.
-function FeaturedPhotoTreatment() {
+function FeaturedPhotoTreatment({ refined = false }) {
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const metalFxReady = useDeferredEnhancement(!reducedMotion);
   const showMetal = metalFxReady && !reducedMotion;
 
   return (
-    <>
-      <span className="cold-brew-photo-frame" aria-hidden="true">
-        {showMetal ? (
+    <span className={refined ? "featured-photo-mount" : "featured-photo-legacy"}>
+      <span className={refined ? "featured-photo-rim" : "cold-brew-photo-frame"} aria-hidden="true">
+        {!refined && showMetal ? (
           <SafeMetalFx
             variant="button"
             // Preset/theme are shared by metal-fx; keep the other menu effects intact.
@@ -364,7 +364,7 @@ function FeaturedPhotoTreatment() {
           </SafeMetalFx>
         ) : null}
       </span>
-    </>
+    </span>
   );
 }
 
@@ -375,6 +375,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const [terminalFallback, setTerminalFallback] = useState(false);
   const photo = fallback || !item.image ? PLACEHOLDER_IMAGE : item.image;
   const usingPlaceholder = fallback || !item.image;
+  const refinedFeatured = item.featured === true && item.id === "menu-routine-04";
 
   useEffect(() => {
     setFallback(false);
@@ -389,7 +390,8 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   }, [photo.src]);
 
   return (
-    <div className="item-photo t-avatar" data-ready={ready ? "" : undefined}>
+    <div className="item-photo t-avatar" data-ready={ready ? "" : undefined}
+      data-featured-frame={refinedFeatured ? "refined" : undefined}>
       {terminalFallback ? (
         <span className="item-photo-empty" aria-hidden="true" />
       ) : (
@@ -416,7 +418,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
           }}
         />
       )}
-      {item.featured === true ? <FeaturedPhotoTreatment /> : null}
+      {item.featured === true ? <FeaturedPhotoTreatment refined={refinedFeatured} /> : null}
     </div>
   );
 });

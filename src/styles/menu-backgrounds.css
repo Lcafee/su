@@ -1,4 +1,8 @@
-/* Three independent material studies; menu geometry and typography are inherited. */
+/* Amber Atrium: L Cafe's pendant, stairwell and materials as an architectural folio. */
+:root[data-menu-background="atrium"]{
+  --background-art:url('../../assets/menu-backgrounds/amber-atrium.webp');
+  --background-wash:rgba(243,241,236,.68);
+}
 :root[data-menu-background="limestone"]{
   --ivory:#f3eee4;--ivory-rgb:243,238,228;--ivory-deep:#e6dece;
   --scarlet:#51372b;--scarlet-rgb:81,55,43;
@@ -25,10 +29,19 @@
   --ink-dim:rgba(var(--scarlet-rgb),.88);
 }
 html[data-menu-background] body::before{
+  -webkit-mask:none;
+  mask:none;
   background-image:linear-gradient(var(--background-wash),var(--background-wash)),var(--background-art);
   background-size:cover;
   background-position:center;
   opacity:1;
+}
+html[data-menu-background="atrium"] body::before{
+  background-color:#f3f1ec;
+  background-image:linear-gradient(90deg,rgba(243,241,236,.66),rgba(243,241,236,.80) 38%,rgba(243,241,236,.80) 72%,rgba(243,241,236,.66)),var(--background-art);
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  background-position:center;
 }
 html[data-menu-background="nocturne"] .menu-brand-mark{filter:brightness(0) invert(94%) sepia(13%) saturate(445%)}
 html[data-menu-background="nocturne"] .foot{
@@ -72,7 +85,11 @@ html[data-menu-background="nocturne"] .foot a:focus-visible{outline-color:#f1dfc
 [data-swatch="nocturne"]{background:linear-gradient(115deg,#8a6040,#241d19 65%)}
 [data-swatch="garden"]{background:linear-gradient(90deg,#849077,#e9ebe0 70%)}
 [data-swatch="original"]{background:linear-gradient(125deg,#cab4b3,#f3f1ec 70%)}
+[data-swatch="atrium"]{background:linear-gradient(135deg,#cba36e,#f3f1ec 60%,#681f2d)}
 @media(max-width:759px){
+  :root[data-menu-background="atrium"]{
+    --background-art:url('../../assets/menu-backgrounds/amber-atrium-mobile.webp');
+  }
   :root[data-menu-background="limestone"]{
     --background-art:url('../../assets/menu-backgrounds/limestone-mobile.webp');
     --background-wash:rgba(243,238,228,.60);
@@ -87,9 +104,17 @@ html[data-menu-background="nocturne"] .foot a:focus-visible{outline-color:#f1dfc
   }
   html[data-menu-background] body::before{background-position:18% center;background-size:auto 100%;}
   html[data-menu-background="garden"] body::before{background-position:left center;}
+  html[data-menu-background="atrium"] body::before{
+    /* The tall composition keeps a cropped pendant and stair edge in view. */
+    background-size:cover;
+    background-position:center top;
+    height:100lvh;
+    bottom:auto;
+  }
   .background-studio-toggle{font-size:11px;padding:7px 12px}
 }
 @media print{
+  html[data-menu-background] body::before{display:none}
   .background-studio{display:none}
   :root[data-menu-background]{
     --ivory:#fff;--ivory-rgb:255,255,255;--scarlet:#29231e;--scarlet-rgb:41,35,30;
@@ -97,6 +122,7 @@ html[data-menu-background="nocturne"] .foot a:focus-visible{outline-color:#f1dfc
   }
 }
 @media(forced-colors:active){
+  html[data-menu-background] body::before{display:none}
   .background-studio-swatch{display:none}
   .background-studio-option{grid-template-columns:16px 1fr}
   .background-studio-panel{border:1px solid CanvasText;background:Canvas;color:CanvasText}

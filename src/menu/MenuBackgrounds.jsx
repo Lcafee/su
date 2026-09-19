@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import "../styles/menu-backgrounds.css";
 
 export const MENU_BACKGROUNDS = [
+  { id: "atrium", name: "Amber Atrium", label: "آتریوم کهربایی", description: "نور آویز دست‌ساز، چوب روشن و معماری ال کافه" },
   { id: "limestone", name: "Limestone Atelier", label: "آتلیه سنگ", description: "گچ روشن، نور عصر و سایه‌های معماری" },
   { id: "nocturne", name: "Bronze Nocturne", label: "شب برنزی", description: "ابریشم تیره، برنز و فضای شام" },
   { id: "garden", name: "Garden Folio", label: "باغ روی کاغذ", description: "حکاکی سرو و انار روی کاغذ سبز روشن" },
@@ -10,10 +11,10 @@ export const MENU_BACKGROUNDS = [
 
 function readBackground() {
   const id = new URLSearchParams(window.location.search).get("background");
-  return MENU_BACKGROUNDS.some((option) => option.id === id) ? id : "original";
+  return MENU_BACKGROUNDS.some((option) => option.id === id) ? id : "atrium";
 }
 
-// URL-scoped art studies: never change a guest's normal menu or view preference.
+// Amber Atrium is the menu surface; previous studies remain available by URL.
 export function MenuBackgrounds() {
   const [background, setBackground] = useState(readBackground);
   const [open, setOpen] = useState(false);
@@ -36,8 +37,7 @@ export function MenuBackgrounds() {
 
   const select = (id) => {
     const url = new URL(window.location.href);
-    if (id === "original") url.searchParams.delete("background");
-    else url.searchParams.set("background", id);
+    url.searchParams.set("background", id);
     window.history.replaceState(window.history.state, "", url);
     setBackground(id);
   };
