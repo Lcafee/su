@@ -1,5 +1,7 @@
 # Main Site Migration Execution Guide
 
+> Historical migration record. The Liara/VPS cutover is complete and accepted. Do not execute this staging procedure for normal production deployments; use `OPERATIONS.md`. ParsPack remains rollback-only.
+
 Use this file as the execution contract for staging the L Cafe Main Site on the Liara VPS. Keep execution concise; do not redesign, re-audit, or add QA beyond the gates below.
 
 ## Scope
