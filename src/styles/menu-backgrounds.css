@@ -1,4 +1,4 @@
-/* Amber Atrium: L Cafe's pendant, stairwell and materials as an architectural folio. */
+/* Amber Atrium / Suspended warmth: abstract light, handmade fibers and architectural rhythm. */
 :root[data-menu-background="atrium"]{
   --background-art:url('../../assets/menu-backgrounds/amber-atrium.webp');
   --background-wash:rgba(243,241,236,.68);
@@ -105,7 +105,7 @@ html[data-menu-background="nocturne"] .foot a:focus-visible{outline-color:#f1dfc
   html[data-menu-background] body::before{background-position:18% center;background-size:auto 100%;}
   html[data-menu-background="garden"] body::before{background-position:left center;}
   html[data-menu-background="atrium"] body::before{
-    /* The tall composition keeps a cropped pendant and stair edge in view. */
+    /* Cropped paper forms and ascending lines surround a quiet mobile reading field. */
     background-size:cover;
     background-position:center top;
     height:100lvh;

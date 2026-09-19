@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import "../styles/menu-backgrounds.css";
 
 export const MENU_BACKGROUNDS = [
-  { id: "atrium", name: "Amber Atrium", label: "آتریوم کهربایی", description: "نور آویز دست‌ساز، چوب روشن و معماری ال کافه" },
+  { id: "atrium", name: "Amber Atrium", label: "آتریوم کهربایی", description: "برداشتی انتزاعی از نور معلق، بافت دست‌ساز و خطوط معماری" },
   { id: "limestone", name: "Limestone Atelier", label: "آتلیه سنگ", description: "گچ روشن، نور عصر و سایه‌های معماری" },
   { id: "nocturne", name: "Bronze Nocturne", label: "شب برنزی", description: "ابریشم تیره، برنز و فضای شام" },
   { id: "garden", name: "Garden Folio", label: "باغ روی کاغذ", description: "حکاکی سرو و انار روی کاغذ سبز روشن" },

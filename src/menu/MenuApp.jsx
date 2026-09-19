@@ -325,15 +325,15 @@ function FeaturedPhotoTreatment({ refined = false }) {
 
   return (
     <span className={refined ? "featured-photo-mount" : "featured-photo-legacy"}>
-      <span className={refined ? "featured-photo-rim" : "cold-brew-photo-frame"} aria-hidden="true">
-        {!refined && showMetal ? (
+      <span className={refined ? "cold-brew-photo-frame cold-brew-photo-frame-refined" : "cold-brew-photo-frame"} aria-hidden="true">
+        {showMetal ? (
           <SafeMetalFx
             variant="button"
             // Preset/theme are shared by metal-fx; keep the other menu effects intact.
             preset="silver"
             theme="light"
             strength={1}
-            ringCssPx={5}
+            ringCssPx={refined ? 3 : 5}
             shaderScale={2.4}
             scale={1.5}
             normalizeHostStyles={false}
