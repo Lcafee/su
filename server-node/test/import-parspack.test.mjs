@@ -76,6 +76,7 @@ test('ParsPack importer preserves source rows and refuses reuse of a non-empty t
       assert.equal(db.prepare('SELECT COUNT(*) AS count FROM menu_item_options').get().count, 1);
       assert.equal(db.prepare('SELECT COUNT(*) AS count FROM menu_revisions').get().count, 1);
       assert.equal(db.prepare('SELECT name FROM menu_items').get().name, "O'Reilly تست");
+      assert.equal(db.prepare('SELECT is_featured FROM menu_items').get().is_featured, 0);
       assert.deepEqual(JSON.parse(db.prepare('SELECT metadata_json FROM menu_items').get().metadata_json), { code: '3100' });
       assert.equal(db.prepare("SELECT COUNT(*) AS count FROM schema_migrations WHERE version IN ('001','002','003','004')").get().count, 4);
     } finally {

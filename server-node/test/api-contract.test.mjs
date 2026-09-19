@@ -11,10 +11,22 @@ import Database from 'better-sqlite3';
 import { buildApp } from '../src/app.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const schemaPath = path.resolve(here, '..', 'migrations', '001_base.sql');
+const migrationsDir = path.resolve(here, '..', 'migrations');
 
 function sqlNow(date = new Date()) {
   return date.toISOString().replace('T', ' ').replace('Z', '000');
+}
+
+function applyMigrations(db) {
+  const files = fs.readdirSync(migrationsDir)
+    .filter((name) => /^\d+_[a-z0-9_-]+\.sql$/i.test(name))
+    .sort();
+  for (const file of files) {
+    db.exec(fs.readFileSync(path.join(migrationsDir, file), 'utf8'));
+    db.prepare(
+      'INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)'
+    ).run(path.basename(file, '.sql'), sqlNow());
+  }
 }
 
 function fixture() {
@@ -25,9 +37,8 @@ function fixture() {
   const dbPath = path.join(root, 'site.sqlite');
   const db = new Database(dbPath);
   db.pragma('foreign_keys = ON');
-  db.exec(fs.readFileSync(schemaPath, 'utf8'));
+  applyMigrations(db);
   const now = sqlNow();
-  db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('001_base', now);
   db.prepare(
     'INSERT INTO menu_state (id, edit_revision, published_revision, updated_at) VALUES (1, 0, 0, ?)'
   ).run(now);
@@ -198,4 +209,105 @@ test('session, csrf and atomic snapshot flow preserve the admin contract', async
   });
   assert.equal(logout.statusCode, 200);
   assert.deepEqual(logout.json(), { authenticated: false });
+});
+
+
+function featuredMenuPayload(baseRevision, featured) {
+  const item = {
+    id: '22222222-2222-4222-8222-222222222222',
+    publicId: 'menu-cold-brew-featured',
+    name: 'Cold Brew',
+    description: null,
+    price: '۳۰۰',
+    mediaId: null,
+    metadata: {},
+    archived: false,
+    options: [],
+  };
+  if (featured !== undefined) item.featured = featured;
+  return {
+    baseRevision,
+    categories: [{
+      id: '11111111-1111-4111-8111-111111111111',
+      publicId: 'cat-cold-coffee',
+      title: 'قهوه سرد',
+      intro: null,
+      layout: 'grid',
+      archived: false,
+      items: [item],
+    }],
+  };
+}
+
+test('featured item state defaults safely, persists and is published', async (t) => {
+  const { root, db, config } = fixture();
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => {
+    await app.close();
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  const session = await login(app);
+  const headers = {
+    cookie: session.cookie,
+    origin: 'https://l-cafe.ir',
+    'x-csrf-token': session.csrf,
+    'content-type': 'application/json',
+  };
+
+  const initial = await app.inject({
+    method: 'PUT',
+    url: '/api/admin/menu',
+    headers,
+    payload: featuredMenuPayload(0),
+  });
+  assert.equal(initial.statusCode, 200);
+  assert.equal(db.prepare('SELECT is_featured FROM menu_items').get().is_featured, 0);
+
+  const initialRead = await app.inject({
+    method: 'GET',
+    url: '/api/admin/menu',
+    headers: { cookie: session.cookie },
+  });
+  assert.equal(initialRead.json().categories[0].items[0].featured, false);
+
+  const enable = await app.inject({
+    method: 'PUT',
+    url: '/api/admin/menu',
+    headers,
+    payload: featuredMenuPayload(1, true),
+  });
+  assert.equal(enable.statusCode, 200);
+  assert.equal(db.prepare('SELECT is_featured FROM menu_items').get().is_featured, 1);
+
+  const enabledRead = await app.inject({
+    method: 'GET',
+    url: '/api/admin/menu',
+    headers: { cookie: session.cookie },
+  });
+  assert.equal(enabledRead.json().categories[0].items[0].featured, true);
+
+  const published = JSON.parse(
+    fs.readFileSync(path.join(root, 'managed-menu', 'current.json'), 'utf8')
+  );
+  assert.equal(published.categories[0].items[0].featured, true);
+
+  const legacySave = await app.inject({
+    method: 'PUT',
+    url: '/api/admin/menu',
+    headers,
+    payload: featuredMenuPayload(2),
+  });
+  assert.equal(legacySave.statusCode, 200);
+  assert.equal(db.prepare('SELECT is_featured FROM menu_items').get().is_featured, 1);
+
+  const disable = await app.inject({
+    method: 'PUT',
+    url: '/api/admin/menu',
+    headers,
+    payload: featuredMenuPayload(3, false),
+  });
+  assert.equal(disable.statusCode, 200);
+  assert.equal(db.prepare('SELECT is_featured FROM menu_items').get().is_featured, 0);
 });
