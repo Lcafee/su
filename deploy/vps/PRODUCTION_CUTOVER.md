@@ -1,6 +1,6 @@
 # Main Site Production Cutover
 
-Status: production-cutover procedure after successful internal staging. The owner has already initiated DNS changes toward the Liara VPS. This file is the execution contract for the remaining host/ParsPack work.
+Status: historical accepted cutover record. The Liara/VPS cutover is complete; this file is no longer an active execution contract. Use `OPERATIONS.md` for current production procedure and `PROJECT_STATE.md` for live state.
 
 ## Fixed boundaries
 
