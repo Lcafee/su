@@ -143,7 +143,7 @@ function saveResultNotice(result, isOwner) {
 
 function messageForError(error) {
   const messages = {
-    invalid_credentials: "نام کاربری یا رمز عبور درست نیست.",
+    invalid_credentials: "رمز عبور درست نیست.",
     authentication_required: "نشست شما پایان یافته است. دوباره وارد شوید.",
     csrf_rejected: "نشست امن منقضی شده است. دوباره وارد شوید.",
     origin_rejected: "این درخواست از نشانی مجاز ارسال نشده است.",
@@ -292,11 +292,11 @@ export function AdminApp() {
     return true;
   }, [menuEditorStorageKey]);
 
-  const handleLogin = useCallback(async (username, password) => {
+  const handleLogin = useCallback(async (password) => {
     setLoginBusy(true);
     setLoginError("");
     try {
-      const nextSession = await loginSession(username, password);
+      const nextSession = await loginSession(password);
       const editorData = await fetchEditorData();
       setSession(nextSession);
       applyEditorData(editorData);

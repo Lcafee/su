@@ -47,10 +47,10 @@ export function getSession() {
   return apiRequest("/session");
 }
 
-export function loginSession(username, password) {
+export function loginSession(password) {
   return apiRequest("/session/login", {
     method: "POST",
-    json: { username, password },
+    json: { password },
   });
 }
 

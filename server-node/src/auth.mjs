@@ -2,7 +2,13 @@ import crypto from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
 
-import { ApiError, requireAllowedOrigin, requireObjectBody, requiredText } from './http.mjs';
+import { ApiError, requireAllowedOrigin, requireObjectBody } from './http.mjs';
+
+// Login is password-only, so a failed attempt identifies no account. One
+// process-wide throttle replaces the per-account lockout; this single API
+// process receives all login traffic.
+let loginFailureCount = 0;
+let loginLockedUntilMs = 0;
 
 const DUMMY_HASH = '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
 
@@ -166,49 +172,60 @@ export function registerAuthRoutes(app, { db, config }) {
   app.post('/api/session/login', { bodyLimit: 32_768 }, async (request, reply) => {
     requireAllowedOrigin(request, config);
     const input = requireObjectBody(request);
-    const username = requiredText(input.username, 'username', 191);
     const password = input.password;
     if (typeof password !== 'string' || password === '' || Buffer.byteLength(password, 'utf8') > 4096) {
-      throw new ApiError(401, 'invalid_credentials', 'The username or password is incorrect.');
+      throw new ApiError(401, 'invalid_credentials', 'The password is incorrect.');
     }
 
-    const row = db.prepare(`
-      SELECT id, username, password_hash, session_epoch, is_active,
-             failed_login_count, locked_until
-      FROM admin_users WHERE username = ? LIMIT 1
-    `).get(username);
-    const hash = row?.password_hash || DUMMY_HASH;
-    const passwordMatches = await verifyPassword(password, hash);
     const now = new Date();
     const nowMs = now.getTime();
-    const lockedUntilMs = row?.locked_until ? parseSqlUtc(row.locked_until) : null;
-    const locked = Number.isFinite(lockedUntilMs) && lockedUntilMs > nowMs;
-    const valid = Boolean(row && row.is_active === 1 && passwordMatches && !locked);
-
-    if (!valid) {
-      if (row) {
-        let priorFailures = locked ? row.failed_login_count : 0;
-        if (!locked && row.locked_until == null) priorFailures = row.failed_login_count;
-        const failures = priorFailures + 1;
-        const lockValue = failures >= config.security.maxLoginFailures
-          ? nowSqlUtc(new Date(nowMs + config.security.loginLockSeconds * 1000))
-          : null;
-        db.prepare(`
-          UPDATE admin_users
-          SET failed_login_count = ?, locked_until = ?, updated_at = ?
-          WHERE id = ? AND session_epoch = ?
-        `).run(failures, lockValue, nowSqlUtc(now), row.id, row.session_epoch);
-      }
-      throw new ApiError(401, 'invalid_credentials', 'The username or password is incorrect.');
+    if (loginLockedUntilMs > nowMs) {
+      throw new ApiError(401, 'invalid_credentials', 'The password is incorrect.');
     }
+
+    const candidates = db.prepare(`
+      SELECT id, username, password_hash, session_epoch
+      FROM admin_users WHERE is_active = 1 ORDER BY id
+    `).all();
+
+    // Compare against every active account and never short-circuit: stopping at
+    // the first match would let response time reveal which account owns the
+    // password. With no active accounts, still spend one comparison.
+    let matched = null;
+    let matchCount = 0;
+    for (const candidate of candidates.length ? candidates : [{ id: null, password_hash: DUMMY_HASH }]) {
+      const isMatch = await verifyPassword(password, candidate.password_hash);
+      if (isMatch && candidate.id !== null) {
+        matchCount += 1;
+        if (!matched) matched = candidate;
+      }
+    }
+
+    // Without a username the password is the identifier, so two accounts sharing
+    // one would make the login ambiguous. Refuse rather than pick an account.
+    const row = matchCount === 1 ? matched : null;
+
+    if (!row) {
+      // The attempt names no account, so the failure cannot be charged to one:
+      // counting it against every user would let anyone lock out the owner.
+      loginFailureCount += 1;
+      if (loginFailureCount >= config.security.maxLoginFailures) {
+        loginLockedUntilMs = nowMs + config.security.loginLockSeconds * 1000;
+        loginFailureCount = 0;
+      }
+      throw new ApiError(401, 'invalid_credentials', 'The password is incorrect.');
+    }
+
+    loginFailureCount = 0;
+    loginLockedUntilMs = 0;
 
     const update = db.prepare(`
       UPDATE admin_users
       SET failed_login_count = 0, locked_until = NULL, last_login_at = ?, updated_at = ?
       WHERE id = ? AND session_epoch = ? AND password_hash = ?
-    `).run(nowSqlUtc(now), nowSqlUtc(now), row.id, row.session_epoch, hash);
+    `).run(nowSqlUtc(now), nowSqlUtc(now), row.id, row.session_epoch, row.password_hash);
     if (update.changes !== 1) {
-      throw new ApiError(401, 'invalid_credentials', 'The username or password is incorrect.');
+      throw new ApiError(401, 'invalid_credentials', 'The password is incorrect.');
     }
 
     const oldSessionId = sessionIdFromRequest(request, config);

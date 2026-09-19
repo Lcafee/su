@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 export function LoginForm({ busy, error, onLogin }) {
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   function handleSubmit(event) {
     event.preventDefault();
-    onLogin(username.trim(), password);
+    onLogin(password);
   }
 
   return (
@@ -19,19 +18,6 @@ export function LoginForm({ busy, error, onLogin }) {
 
         <form onSubmit={handleSubmit} className="login-form">
           <label>
-            <span>نام کاربری</span>
-            <input
-              dir="ltr"
-              name="username"
-              autoComplete="username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              disabled={busy}
-              required
-              autoFocus
-            />
-          </label>
-          <label>
             <span>رمز عبور</span>
             <input
               dir="ltr"
@@ -42,6 +28,7 @@ export function LoginForm({ busy, error, onLogin }) {
               onChange={(event) => setPassword(event.target.value)}
               disabled={busy}
               required
+              autoFocus
             />
           </label>
           {error ? <p className="form-error" role="alert">{error}</p> : null}

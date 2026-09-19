@@ -12,7 +12,8 @@
     "migrate": "node scripts/migrate.mjs",
     "import:parspack": "node scripts/import-parspack.mjs",
     "verify:import": "node scripts/verify-import.mjs",
-    "backup:state": "node scripts/backup-state.mjs"
+    "backup:state": "node scripts/backup-state.mjs",
+    "rotate:admin-password": "node scripts/rotate-admin-password.mjs"
   },
   "dependencies": {
     "@fastify/multipart": "10.1.1",

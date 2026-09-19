@@ -83,7 +83,7 @@ async function login(app) {
     method: 'POST',
     url: '/api/session/login',
     headers: { origin: 'https://l-cafe.ir', 'content-type': 'application/json' },
-    payload: { username: 'admin', password: 'owner-secret' },
+    payload: { password: 'owner-secret' },
   });
   assert.equal(response.statusCode, 200);
   const body = response.json();
@@ -310,4 +310,62 @@ test('featured item state defaults safely, persists and is published', async (t)
   });
   assert.equal(disable.statusCode, 200);
   assert.equal(db.prepare('SELECT is_featured FROM menu_items').get().is_featured, 0);
+});
+
+test('password-only login selects the account that owns the password', async (t) => {
+  const { root, db, config } = fixture();
+  const now = sqlNow();
+  db.prepare(`
+    INSERT INTO admin_users
+      (id, username, password_hash, role, session_epoch, is_active,
+       failed_login_count, locked_until, last_login_at, created_at, updated_at)
+    VALUES (2, 'cashier', ?, 'cashier', 1, 1, 0, NULL, NULL, ?, ?)
+  `).run(bcrypt.hashSync('cashier-secret', 10), now, now);
+  db.prepare(`
+    INSERT INTO admin_users
+      (id, username, password_hash, role, session_epoch, is_active,
+       failed_login_count, locked_until, last_login_at, created_at, updated_at)
+    VALUES (3, 'retired', ?, 'cashier', 1, 0, 0, NULL, NULL, ?, ?)
+  `).run(bcrypt.hashSync('retired-secret', 10), now, now);
+
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => {
+    await app.close();
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  const attempt = (password) => app.inject({
+    method: 'POST',
+    url: '/api/session/login',
+    headers: { origin: 'https://l-cafe.ir', 'content-type': 'application/json' },
+    payload: { password },
+  });
+
+  const owner = await attempt('owner-secret');
+  assert.equal(owner.statusCode, 200);
+  assert.equal(owner.json().user.username, 'admin');
+  assert.equal(owner.json().user.role, 'owner');
+
+  const cashier = await attempt('cashier-secret');
+  assert.equal(cashier.statusCode, 200);
+  assert.equal(cashier.json().user.username, 'cashier');
+  assert.equal(cashier.json().user.role, 'cashier');
+
+  const wrong = await attempt('not-a-password');
+  assert.equal(wrong.statusCode, 401);
+
+  // A deactivated account must not be reachable by its old password.
+  const retired = await attempt('retired-secret');
+  assert.equal(retired.statusCode, 401);
+
+  // The username is no longer part of the credential.
+  const withUsername = await app.inject({
+    method: 'POST',
+    url: '/api/session/login',
+    headers: { origin: 'https://l-cafe.ir', 'content-type': 'application/json' },
+    payload: { username: 'admin', password: 'cashier-secret' },
+  });
+  assert.equal(withUsername.statusCode, 200);
+  assert.equal(withUsername.json().user.role, 'cashier');
 });
