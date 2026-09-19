@@ -1,288 +1,162 @@
 # L Cafe production operations
 
-This is the canonical hosting and deployment runbook. Mutable state is
-authoritative only in `PROJECT_STATE.md`. Real hostnames, account identifiers,
-credentials, absolute roots, and private paths belong in the approved private
-operator record. `README.md` explains local development, `HANDOFF.md` explains code ownership, and
-`server/HOST-ACTIVATION.md` gives the one-time PHP/MySQL provisioning sequence.
-When those documents overlap with production procedure, this file is
-authoritative.
+This is the canonical production runbook. Mutable live state, release SHAs,
+revision numbers, rollback state, and blockers are authoritative only in
+`PROJECT_STATE.md`.
 
-Current production remains the ParsPack PHP/MySQL runtime until cutover. The isolated Liara VPS migration is a separate staging path governed by `deploy/vps/MIGRATION_EXECUTION.md`; that guide does not supersede this production runbook or authorize DNS/TLS cutover.
+Liara/VPS is the active production environment. ParsPack is retained unchanged
+as rollback only and must not be used for normal edits or deployments.
 
-## State authority
-
-`PROJECT_STATE.md` is the sole tracked ledger for source baseline, production
-SHA, release state, migrations, roles, architecture, blockers, phase, and next
-action. Do not copy changing hashes, runtime versions, network addresses,
-snapshot counts, media counts, or dated verification observations into this
-runbook. Store action-specific observations in the private operator record.
-
-The durable production contract is that private config, database, sessions,
-snapshots, media, and the fenced `.htaccess` runtime override remain outside
-release ownership. The required direct `php_value auto_prepend_file` setting is
-host-owned state; its enclosed bytes and private path are never tracked.
-
-## Ownership model
-
-Production has two deliberately separate layers:
-
-1. Approved code is immutable output in `release/current/`. It contains the
-   public React/Vite pages, admin bundle, API controller, and versioned PHP app
-   under `api/_app/<approved-sha>/`.
-2. Runtime state persists independently: MySQL, the private config, sessions,
-   revision archives, original uploads, `managed-menu/`, and `managed-media/`.
-3. Root `.htaccess` is a composite ownership boundary. The approved release
-   owns the code-managed portion; the production host owns exactly one final fenced block
-   from `LCAFE-HOST-RUNTIME-BEGIN` through `LCAFE-HOST-RUNTIME-END`.
-
-`deploy.py` and `merge_htaccess.py` preserve the fenced block byte-for-byte and fail before mutation
-when markers are missing, duplicated, reversed, or followed by unexpected
-content. The release source must never contain the block, its private path, or
-its `php_value auto_prepend_file` directive. `package.py` excludes root
-`.htaccess`, so file-manager extraction cannot overwrite host runtime state.
-
-Never replace, clear, upload over, move, or prune runtime state during a code
-deployment. In particular, do not include `managed-menu/` or `managed-media/`
-in a release ZIP. Menu publishing is an admin/database operation and is never a
-side effect of deploying code.
-
-MySQL is the editable authority and the public site reads the published
-persistent snapshot. `src/menu/fixtures/current.json` is a standalone local
-development fixture. Pre-admin JSON/Excel/import/generator artifacts live only
-under `legacy/` and have no runtime or operational role.
-
-## Managed-media lifecycle maintenance
-
-Source migration `003_media_lifecycle` and the release-owned
-`bin/media-lifecycle.php` provide the non-destructive lifecycle foundation. Do
-not run the CLI until that migration is confirmed active for the target
-environment. The CLI uses the same connection-scoped advisory lock as media
-upload, menu save/publish, and publish retry, and must hold it for the complete
-reference scan and any bookkeeping transaction.
-
-Default dry-run examples:
+## Production architecture
 
 ```text
-php bin/media-lifecycle.php --config=/absolute/private/lcafe/config.php
-php bin/media-lifecycle.php --config=/absolute/private/lcafe/config.php --dry-run --json
+Nginx
+  +-- /, /menu, /admin/*, hashed assets
+  |      -> /srv/lcafe-site/current/dist
+  +-- /managed-menu/* -> /var/lib/lcafe-site/managed-menu
+  +-- /managed-media/* -> /var/lib/lcafe-site/managed-media
+  `-- /api/* -> 127.0.0.1:3100
+                   -> lcafe-site-api.service
+                   -> SQLite + private persistent state
 ```
 
-The report identifies database, current/previous snapshot, and retained private
-revision references; lifecycle classifications; orphan candidates;
-uncertainties; observed bytes; policy; proposed bookkeeping; and a deterministic
-plan SHA-256. Any malformed/unreadable source, symlink, path escape, ownership
-conflict, unknown managed-media reference, or archive mismatch fails closed.
+Main Site owns only its isolated VPS paths/service. L Cafe Operations remains a
+separate application and must not be restarted, reconfigured, or written during
+Main Site deployment.
 
-The only mutating mode is explicit bookkeeping apply:
+Persistent production state lives outside immutable releases:
+
+- `/var/lib/lcafe-site` — SQLite, managed menu/media, revisions, originals,
+  backups, and runtime state;
+- `/etc/lcafe-site` — private configuration;
+- `/srv/lcafe-site/releases/<sha>` — immutable code releases;
+- `/srv/lcafe-site/current` — active release symlink.
+
+Never copy persistent data into a release or replace persistent directories
+during code deployment.
+
+## Edit authority
+
+The VPS Admin at `/admin/` is the only production menu edit authority.
+
+Production menu changes flow:
 
 ```text
-php bin/media-lifecycle.php --config=/absolute/private/lcafe/config.php --apply
+/admin/
+  -> Node/Fastify API
+  -> SQLite
+  -> managed-menu/current.json
+  -> public /menu
 ```
 
-It may set or clear `orphan_candidate_at` in one database transaction. It does
-not prune archives, delete originals or renditions, delete media rows, or modify
-menu content. Never schedule it with cron and never run it concurrently with
-out-of-band database, snapshot, or media restoration.
+Do not edit production menu content on ParsPack, in JSX, in local fixtures, or
+by changing generated snapshots manually.
 
-Destructive cleanup is disabled regardless of configured retention values. The
-recommended 180-day archive horizon and 50-published-revision floor are not
-production facts. Before any future destructive phase, the owner must confirm
-the actual backup retention horizon and that database, snapshots, originals,
-and renditions are captured and restored as one coordinated generation. Record
-that decision and every lifecycle run in the private operator record.
+## Manual code deployment workflow
 
-Admin authorization is database-backed. Owners have the complete editor and
-publish recovery; cashiers retain normal category/item/media/order/archive/save
-and publish work while PHP protects advanced category fields, item
-metadata/options, and owner-only recovery actions. Accounts are created and
-passwords are rotated only by release-owned interactive CLIs.
-
-## Admin password rotation
-
-Do not rotate a production password until source migration
-`004_admin_session_epoch` is confirmed active. The migration gives every
-account a monotonically increasing credential generation; authenticated
-sessions carry that generation and are rejected after it changes.
-
-Run rotation from the exact approved release's private `_app` directory:
+Production deployment is intentionally manual:
 
 ```text
-php api/_app/<approved-commit>/bin/rotate-admin-password.php \
-  --config=/absolute/private/lcafe/config.php \
-  --username=account-name
+edit source
+  -> validate/build locally
+  -> commit + push
+  -> package the intended exact release
+  -> back up production
+  -> deploy new immutable release
+  -> switch /srv/lcafe-site/current
+  -> verify production
 ```
 
-The command requires an interactive TTY, accepts no password option, prompts
-twice with terminal echo disabled, and refuses the current password. Its single
-conditional database update replaces the hash with `PASSWORD_DEFAULT`, resets
-`failed_login_count` and `locked_until`, increments `session_epoch`, and leaves
-the username, role, active state, and last-login timestamp unchanged. If the
-account changes while the operator is entering the password, the update fails
-closed instead of overwriting the newer state.
+A Git push does not deploy production automatically. GitHub Pages is only a
+frontend preview.
 
-Record the new plaintext password only in the approved private credential
-record; never in shell history, logs, source, or tracked operations notes. Do
-not update `password_hash` with ad-hoc SQL because session invalidation requires
-the epoch increment in the same atomic update. Existing sessions are rejected
-on their next API authentication check; one request authorized immediately
-before the database update may finish normally.
+Before deployment:
 
-## Release boundary
+1. confirm the exact intended commit;
+2. run the repository validation/build commands;
+3. create the exact VPS release artifact from that source;
+4. take a current production backup;
+5. confirm Operations is healthy and untouched;
+6. record the current active release so rollback is deterministic.
 
-The sequence is intentionally split:
+Do not build on the VPS and do not edit files inside the active release in
+place.
 
-1. Edit source and documentation; validate; commit and push.
-2. Obtain explicit approval for one exact pushed full SHA.
-3. Generate with `npm run release:generate -- --approve <full-sha>`.
-4. Stop. Generation is not deployment approval.
-5. In a separate explicitly authorized production-deployment task, verify the
-   host target and upload that exact approved artifact.
+## Backup contract
 
-Never build directly on the host and never deploy `dist/`, repository-root HTML,
-or an unapproved commit. `package.py` and `deploy.py` validate the approved
-manifest and reject dirty/unknown artifacts. Internal `.lcafe-build.json` and
-`.lcafe-release.json` files are not public upload files.
+A production backup must cover the coordinated persistent generation needed to
+restore service, including SQLite and managed content. Use the release-owned
+Node backup tooling where applicable and keep at least one verified copy
+off-host.
 
-## Host access and upload methods
+A backup is not accepted only because files exist. Restoration evidence should
+include SQLite integrity/FK checks and the expected edit/published revision.
 
-Hostnames, usernames, absolute roots, credentials, and private paths are kept
-out of Git. Store them in the ignored `.deploy.ini` or the operator's approved
-credential store. The production document root and connection settings come
-only from that private configuration.
+## Deployment verification
 
-Copy `.deploy.ini.example` to the ignored `.deploy.ini`, use explicit FTPS, and
-keep certificate verification enabled. If an FTP account is scoped directly to
-the site root, use `directory = .`.
+After switching the active release, verify at minimum:
 
-The supported upload paths are:
+- `/` — HTTP 200 over HTTPS;
+- `/menu` — HTTP 200;
+- `/admin/` — HTTP 200 and current assets load;
+- `GET /api/session` — HTTP 200 with valid JSON;
+- `/readyz` — healthy with expected edit/published revision;
+- `managed-menu/current.json` — expected revision;
+- referenced managed media — HTTP 200;
+- HTTP redirects to HTTPS;
+- `www` redirects to apex as configured;
+- `lcafe-site-api.service` is active;
+- L Cafe Operations remains active and unchanged.
 
-- preferred: `py deploy.py`, which uses FTPS, fully stages and size-checks every
-  changed file, then promotes dependencies before HTML using RNFR/RNTO;
-- fallback: create `lcafe-site.zip` with `py package.py`, upload it through the
-  hosting file manager, and extract it into the existing site root without
-  deleting or replacing persistent runtime directories. The ZIP intentionally
-  omits root `.htaccess`; never add the release copy manually. Before activation,
-  download the current live root `.htaccess` to a secure ignored local path and
-  generate a verified composite with `merge_htaccess.py`. Upload that composite
-  separately through private File Manager staging only after the tool verifies
-  the host-owned suffix byte-for-byte.
+For a production Admin/auth change, also verify a real login/logout cycle when
+the change affects authentication or session behavior.
 
-The method used for the existing production upload is not confirmed. Do not
-turn the likely file-manager/ZIP history into a fact until private operator logs or an
-operator confirms it.
+## Rollback
 
-## Read-only preflight
+ParsPack is retained as a DNS-level rollback destination and must remain
+unchanged until explicitly retired.
 
-Run local validations first:
+Normal VPS code rollback should prefer the previous verified immutable VPS
+release and preserved persistent state. A DNS rollback to ParsPack is a separate
+explicit recovery action, not part of routine deploys.
 
-```text
-npm ci
-npm run validate:release
-py package.py
-py merge_htaccess.py --live .live.htaccess
-py deploy.py --dry-run
-```
+Do not retire ParsPack, merge migration PRs, or perform destructive historical
+cleanup as a side effect of an unrelated release.
 
-For the File Manager fallback, `.live.htaccess` above is a freshly downloaded
-copy of the live root file, not a repository file. The merge command refuses a
-missing or malformed ownership fence, host content in the approved release
-rules, an in-place overwrite, or an existing output. It writes the ignored
-`lcafe-merged.htaccess` sidecar; the public ZIP remains unchanged and still has
-no root `.htaccess`. Upload the sidecar to a non-public deployment staging
-directory, then replace only the live composite root file. Re-open the live file
-and confirm that its application portion matches `release/current/.htaccess`
-and its opaque suffix matches the downloaded input before checking routes.
-Never retain or commit the downloaded or merged private files.
+## TLS and Nginx
 
-`--dry-run` is deliberately local-only: it validates `release/current/` and
-shows the upload candidate set without reading credentials or connecting.
-It does not prove the remote directory.
+Nginx terminates TLS and serves public static content. Production certificate
+state and current DNS values belong in `PROJECT_STATE.md`, not this durable
+runbook.
 
-With current FTPS credentials, use the non-mutating remote audit:
+Changes to Nginx or TLS must be syntax-checked and isolated to the Main Site
+configuration. Never modify the existing L Cafe Operations Nginx configuration
+as part of Main Site work.
 
-```text
-py deploy.py --check-remote
-```
+## Admin and credentials
 
-It enters the configured existing site root, reads the release-owned files,
-checks their SHA-256 values, compares only the code-managed portion of root
-`.htaccess`, verifies the staging-file deny rule, and requires one well-formed
-host runtime block. It creates no directories or files, performs no rename
-or cleanup, does not publish menu data, and does not update
-`.deploy-state.json`. Any missing/different file produces a failing exit status.
+Admin sessions are server-side. Passwords, private environment values, database
+contents, and account secrets never belong in Git, logs, tracked docs, or shell
+history.
 
-Before any real upload, independently record the approved SHA, confirm the
-remote working directory shown by the tool, take a host backup, and confirm the
-runtime paths are outside the release-owned set. A host with an older
-`.htaccess` will stop safely; after manually confirming the target, the
-explicit one-time `py deploy.py --bootstrap-htaccess` installs only the
-release-owned rules while preserving an already installed, valid host runtime
-block. It will not create or reconstruct the host block. `--new` never bypasses
-that boundary.
+Use only the current release's supported account/session tooling. Do not mutate
+credential/session fields with ad-hoc SQLite statements.
 
-## Production deployment and verification
+## Repository and documentation protocol
 
-Only with separate deployment authorization:
+For every production deployment record:
 
-```text
-py deploy.py
-```
+- exact release SHA;
+- backup generation used;
+- release switched from/to;
+- health-check result;
+- menu edit/published revision before and after;
+- rollback action if any.
 
-The tool never prunes live files. Afterward, run `py deploy.py --check-remote`
-and verify at minimum:
+Keep secrets and absolute private credential details outside Git.
 
-- `/`, `/menu`, and `/admin/` return 200 over HTTPS;
-- `/menu/` and `/menu.html` redirect to `/menu`;
-- a random missing URL uses the custom 404;
-- `.htaccess`, PHP app source, and `*.lcafe-uploading` are not public;
-- `managed-menu/current.json` has the same revision and hash as before the code
-  deployment unless an independently authorized menu publish occurred;
-- every managed-media URL referenced by that snapshot still returns 200;
-- `GET /api/session` returns 200 with `authenticated: false` when logged out.
+After mutable live state changes, update `PROJECT_STATE.md`. Update this file
+only when the durable production procedure or ownership model changes.
 
-Throttle media verification in small batches. If LiteSpeed starts resetting
-connections, stop and retry after a cooldown rather than increasing concurrency.
-
-Do not use an empty local `.deploy-state.json` as evidence of remote drift; it
-only records what that workstation uploaded. Use `--check-remote` or host
-file hashes.
-
-## Admin runtime and role activation
-
-Production uses a private config and web bootstrap outside the document root.
-Their absolute paths and contents are host-sensitive operator state and are not
-recorded in Git. LiteSpeed/LSPHP applies the required direct host override
-through the host-owned fenced block in root `.htaccess`. See the
-[LiteSpeed cPanel guidance](https://docs.litespeedtech.com/lsws/cp/cpanel/php-user-ini/)
-and [cPanel MultiPHP INI guidance](https://docs.cpanel.net/cpanel/software/multiphp-ini-editor-for-cpanel/).
-
-The block begins and ends with the public marker names documented in the
-ownership section, but its enclosed bytes are intentionally absent from source
-and documentation. Preserve the working setting and existing runtime data. If
-the failure returns, interpret `/api/session` as follows:
-
-- expected logged-out result: HTTP 200 and `{"authenticated":false,...}`;
-- `configuration_unavailable`: pointer absent, unreadable, inside an inaccessible
-  environment scope, or points to a missing file;
-- `database_unavailable`: pointer/config loaded, but database connection failed;
-- `schema_unavailable`: database loaded, but the L Cafe schema is unavailable.
-
-Current migration and role state is recorded only in `PROJECT_STATE.md`. Future
-additive migrations run through the provisioner against the existing private
-configuration. Do not run or reconstruct the archived legacy importer. FTPS
-credentials are required only for remote comparison/deployment; release
-generation does not use them.
-
-## Operator record and documentation protocol
-
-For every production action, record the date/time, operator, approved SHA,
-access method, remote target identifier, pre/post snapshot revision and hash,
-files changed, verification results, and rollback taken in the private operator
-record. Never place passwords, account details, private roots, or config
-contents in tracked documentation.
-
-After mutable source, release, or live-state changes, update `PROJECT_STATE.md`.
-Update this runbook only when durable procedure or ownership changes. Keep
-private operator observations labelled as source-defined, release-verified,
-live-observed, or host-confirmed and include their observation date.
+Migration-era instructions under `deploy/vps/` are historical execution
+records unless a document explicitly says it is the active production runbook.
