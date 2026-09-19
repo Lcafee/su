@@ -1,6 +1,6 @@
 # L Cafe Main Site — Optimized VPS Target Architecture
 
-Status: migration implementation target. This document does not authorize DNS cutover or production mutation.
+Status: active production architecture after the accepted Liara/VPS cutover. Mutable release, revision, DNS, TLS, and rollback facts remain authoritative in `PROJECT_STATE.md`.
 
 ## Goals
 
