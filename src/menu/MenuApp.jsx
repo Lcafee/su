@@ -317,6 +317,57 @@ const CategoryHeader = memo(function CategoryHeader({
   );
 });
 
+// Featured treatment; driven by the published `featured` state of a menu item.
+function FeaturedPhotoTreatment() {
+  const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
+  const metalFxReady = useDeferredEnhancement(!reducedMotion);
+  const showMetal = metalFxReady && !reducedMotion;
+
+  return (
+    <>
+      <span className="cold-brew-photo-frame" aria-hidden="true">
+        {showMetal ? (
+          <SafeMetalFx
+            variant="button"
+            // Preset/theme are shared by metal-fx; keep the other menu effects intact.
+            preset="silver"
+            theme="light"
+            strength={1}
+            ringCssPx={5}
+            shaderScale={2.4}
+            scale={1.5}
+            normalizeHostStyles={false}
+            className="cold-brew-photo-metal"
+            style={METAL_RULE_STYLE}
+          >
+            <span className="cold-brew-photo-metal-host" />
+          </SafeMetalFx>
+        ) : null}
+      </span>
+      <span className="cold-brew-photo-label">
+        <span className="cold-brew-photo-label-text">پیشنهاد ویژه</span>
+        {showMetal ? (
+          <SafeMetalFx
+            variant="button"
+            preset="silver"
+            theme="light"
+            strength={1}
+            ringCssPx={2.5}
+            shaderScale={1.8}
+            borderRadius={2}
+            normalizeHostStyles={false}
+            className="cold-brew-label-metal"
+            style={METAL_RULE_STYLE}
+            aria-hidden="true"
+          >
+            <span className="cold-brew-label-metal-host" />
+          </SafeMetalFx>
+        ) : null}
+      </span>
+    </>
+  );
+}
+
 const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const imageRef = useRef(null);
   const [ready, setReady] = useState(false);
@@ -365,6 +416,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
           }}
         />
       )}
+      {item.featured === true ? <FeaturedPhotoTreatment /> : null}
     </div>
   );
 });
