@@ -2,7 +2,9 @@ name: GitHub Pages preview
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - preview/menu-background-concepts
 
 permissions:
   contents: read
