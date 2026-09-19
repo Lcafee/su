@@ -622,16 +622,40 @@ a:focus-visible,button:focus-visible{
 }
 /* Cookie comparison: the original metal treatment with 60% of its ring width. */
 .featured-photo-legacy{display:contents}
-.item-photo[data-featured-frame="refined"]{overflow:visible;margin-bottom:30px}
+.item-photo[data-featured-frame="refined"]{
+  --featured-frame-radius:var(--radius);
+  --featured-frame-width:3px;
+  overflow:visible;
+  margin-bottom:30px;
+}
 .item-photo[data-featured-frame="refined"] img,
 .item-photo[data-featured-frame="refined"]::before,
 .item-photo[data-featured-frame="refined"] .item-photo-empty{border-radius:inherit}
 .featured-photo-mount{
-  position:absolute;inset:0;z-index:4;border-radius:inherit;pointer-events:none;
+  position:absolute;inset:0;z-index:4;border-radius:var(--featured-frame-radius);pointer-events:none;
 }
 .cold-brew-photo-frame-refined{
   overflow:hidden;
   box-shadow:inset 0 0 0 3.6px var(--scarlet),inset 0 0 0 4.2px rgba(var(--ivory-rgb),.9),inset 0 0 20px rgba(var(--scarlet-rgb),.2);
+}
+/* Keep the original animated metal inside one concentric ring. The package's
+   oversized glow must not change the apparent thickness at edges or corners. */
+.cold-brew-photo-frame-refined .cold-brew-photo-metal.metal-fx-root{
+  box-sizing:border-box;
+  padding:var(--featured-frame-width);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;
+}
+/* Metal-FX reads this host's radius when building its canvas and glow paths. */
+.cold-brew-photo-frame-refined .cold-brew-photo-metal-host{
+  border-radius:var(--featured-frame-radius);
+}
+.cold-brew-photo-frame-refined .cold-brew-photo-metal .metal-fx-glow-svg{
+  inset:0;
+  width:100%;
+  height:100%;
 }
 .featured-photo-mount .cold-brew-photo-label{
   inset-block-end:0;
@@ -949,6 +973,7 @@ a:focus-visible,button:focus-visible{
     border:0;
     border-radius:2px;
   }
+  .item-photo[data-featured-frame="refined"]{--featured-frame-radius:2px}
   .item h3{
     font-size:clamp(14px,4.2vw,15.5px);
     line-height:1.5;
