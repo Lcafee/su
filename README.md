@@ -1,12 +1,12 @@
 # L Cafe
 
-React + Vite frontend with a PHP/MySQL menu-admin control plane and static
-snapshot delivery for the public menu.
+React + Vite frontend with static public delivery through Nginx and an isolated
+Node/Fastify/SQLite menu-admin control plane.
 
 Current mutable source, release, production, migration, phase, and blocker state
 is authoritative in [`PROJECT_STATE.md`](PROJECT_STATE.md).
 
-The PHP/MySQL architecture described below is the current ParsPack production runtime until cutover. The draft Liara VPS migration keeps the existing UI unchanged and is documented separately in [`docs/architecture/VPS_TARGET_ARCHITECTURE.md`](docs/architecture/VPS_TARGET_ARCHITECTURE.md) and [`deploy/vps/MIGRATION_EXECUTION.md`](deploy/vps/MIGRATION_EXECUTION.md).
+Liara/VPS is the active production environment. ParsPack is retained unchanged as rollback only. The production architecture is documented in [`docs/architecture/VPS_TARGET_ARCHITECTURE.md`](docs/architecture/VPS_TARGET_ARCHITECTURE.md); migration history remains in [`deploy/vps/MIGRATION_EXECUTION.md`](deploy/vps/MIGRATION_EXECUTION.md).
 
 ## Development
 
@@ -18,10 +18,10 @@ npm run build
 npm run validate:dist
 ```
 
-`npm run build` writes disposable local output to `dist/`; it is not an approved
-production release and the deploy tooling will not consume it. No Node server
-is needed in production. The project is pinned to Node 20.19+ or 22.12+ (CI
-uses Node 22), matching the Vite 8 runtime requirement.
+`npm run build` writes disposable local frontend output to `dist/`; production
+uses an immutable release on the VPS rather than editing this output in place.
+The frontend toolchain supports Node 20.19+ or 22.12+; the production control
+plane runs separately as the Node 24 `lcafe-site-api.service`.
 
 `VITE_BASE_PATH` controls the public base and defaults to `/` for the production
 domain. A separate `npm run build:pages` build is fixed to the GitHub project
@@ -71,7 +71,7 @@ canonical Menu.
 - `src/admin/` owns the isolated admin bundle.
 - `src/styles/` preserves the approved visual system.
 - `assets/` owns code-managed fonts, brand assets, icons, and public imagery.
-- MySQL is authoritative for edited menu data; the public menu fetches only
+- SQLite is authoritative for edited production menu data; the public menu fetches only
   persistent `managed-menu/current.json`, then `previous.json` as recovery.
 - `managed-media/` is persistent runtime storage. Production releases ship only
   the code-owned placeholder from the historical local menu-image set.
@@ -87,97 +87,28 @@ React/CSS when WebGL is unavailable or Metal-FX initialization fails.
 
 ## Source and release workflow
 
-Normal work has one editable source of truth and one GitHub flow:
+Normal work uses Git as the source of truth and a manual production deployment:
 
-```sh
-# edit in this repository
-git add <files>
-git commit -m "Describe the change"
-git push
+```text
+edit source
+  -> validate/build locally
+  -> commit + push
+  -> package the intended exact release
+  -> back up production
+  -> deploy a new immutable VPS release
+  -> verify /, /menu, /admin/, /api/session
 ```
 
-That push updates only the GitHub Pages pre-production preview. Production
-still requires owner approval of an exact pushed SHA, separate release
-generation, and a separately authorized deployment task.
+A Git push does not deploy production automatically. GitHub Pages remains a
+frontend-only pre-production preview. Production deployment must preserve
+`/var/lib/lcafe-site`, `/etc/lcafe-site`, SQLite, managed menu/media, backups,
+and the separate L Cafe Operations service. ParsPack is rollback-only and must
+not receive normal content or code edits.
 
-Only after a specific pushed commit is explicitly approved, generate its
-production artifact with the full SHA:
-
-```sh
-npm run release:generate -- --approve <full-commit-sha>
-```
-
-The generator refuses a dirty working tree or a commit that is not present on
-an `origin/*` branch. It builds a detached worktree for that exact commit and
-atomically promotes the result to ignored `release/current/`. The artifact's
-`.lcafe-release.json` records the commit and every generated file hash. Normal
-`npm run build` and `npm run dev` never write there.
-
-Release generation is the operating boundary: source changes, commit and push,
-explicit approval, generate `release/current/`, then stop. Release approval does
-not authorize production deployment. Codex may deploy only in a separate task
-that explicitly instructs it to do so.
-
-The pre-consolidation approved artifact is preserved unchanged under
-`release/legacy-approved/`. It has no recorded Git SHA, so it is retained only
-as a rollback/reference snapshot and is intentionally not accepted by the new
-package or deploy commands.
-
-## Manual packaging and production deployment
-
-These commands are separate manual operations after release generation. They are
-never invoked by a build, release command, Git hook, or GitHub workflow:
-
-```sh
-py package.py
-py merge_htaccess.py --live .live.htaccess
-py deploy.py --dry-run
-py deploy.py --check-remote
-py deploy.py
-```
-
-`package.py` archives the file-manager-safe public contents of
-`release/current/`; it deliberately excludes root `.htaccess`. `deploy.py`
-uploads the approved served set. Both refuse missing, edited, or
-unknown-commit release artifacts. The internal `.lcafe-build.json` and
-`.lcafe-release.json` manifests are intentionally excluded from the public
-upload ZIP and FTPS upload.
-
-For the File Manager path, first download the current live root `.htaccess` to
-the ignored `.live.htaccess` path. `merge_htaccess.py` combines the approved
-application rules with that file's single final host-owned runtime suffix and
-writes the separate ignored `lcafe-merged.htaccess` staging artifact. It refuses
-to overwrite the downloaded input and verifies that the opaque suffix is
-byte-identical. The composite is uploaded separately through private cPanel
-staging; it is never added to the public release ZIP or Git.
-
-`--dry-run` is a local-only release/upload preview and never reads credentials
-or connects. `--check-remote` connects read-only, confirms the existing target,
-compares every release-owned file by SHA-256, and verifies staging protection;
-it makes no remote change and never writes `.deploy-state.json`.
-
-Deploy-owned temporary files are denied by `.htaccess` before staging begins.
-The release owns its code-managed portion; the production host owns one final fenced
-runtime block. Deployment preserves that block byte-for-byte and fails safely
-on missing, malformed, or duplicate ownership markers.
-On a host that still has the older `.htaccess`, the first deploy will stop before
-creating any temporary upload. After confirming the FTP document root with the
-read-only `--check-remote` command or the hosting file manager, run the one-time
-bootstrap explicitly:
-
-```sh
-py deploy.py --bootstrap-htaccess
-```
-
-Future deploys verify the remote protection automatically and clean abandoned
-`.lcafe-uploading` files before and after interrupted deployments. A genuinely
-empty first-upload directory must be provisioned with its host runtime block
-before deployment; `--new` does not bypass this requirement. The bootstrap
-installs only release rules and never creates or reconstructs private content.
-
-Host-specific PHP runtime settings remain outside release ownership. Never add
-the private-config path, bootstrap path, or host-only runtime block to Git or a
-generated release.
+Do not build on the VPS and do not modify files inside the active release in
+place. Deploy a complete intended release, switch the release pointer atomically,
+then run the required health checks. Production menu changes are made only
+through the VPS Admin, not through ParsPack.
 
 The canonical production runbook, current state ledger, persistent-data
 boundaries, API recovery procedure, and deployment checklist are in
