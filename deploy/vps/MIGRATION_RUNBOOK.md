@@ -1,5 +1,7 @@
 # Main Site VPS Migration Runbook
 
+> Historical migration record. Production now runs on the Liara/VPS architecture. Use `OPERATIONS.md` for current deployments and `PROJECT_STATE.md` for live state.
+
 For the current concise execution contract, use `deploy/vps/MIGRATION_EXECUTION.md`. This longer runbook preserves the full sequence and cutover gates.
 
 This runbook is intentionally staging-first. It must not modify the live ParsPack site, `l-cafe.ir` DNS, `lcafe.service`, `/app`, `/var/lib/lcafe`, or the Operations database.
