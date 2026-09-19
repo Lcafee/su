@@ -620,8 +620,7 @@ a:focus-visible,button:focus-visible{
   display:block;
   padding:8px 16px;
 }
-/* Cookie comparison: the original metal treatment with 60% of its ring width. */
-.featured-photo-legacy{display:contents}
+/* Featured photo frame: the metal treatment at 60% of its original ring width. */
 .item-photo[data-featured-frame="refined"]{
   --featured-frame-radius:var(--radius);
   --featured-frame-width:3px;

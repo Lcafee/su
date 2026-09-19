@@ -318,14 +318,14 @@ const CategoryHeader = memo(function CategoryHeader({
 });
 
 // Featured treatment; driven by the published `featured` state of a menu item.
-function FeaturedPhotoTreatment({ refined = false }) {
+function FeaturedPhotoTreatment() {
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const metalFxReady = useDeferredEnhancement(!reducedMotion);
   const showMetal = metalFxReady && !reducedMotion;
 
   return (
-    <span className={refined ? "featured-photo-mount" : "featured-photo-legacy"}>
-      <span className={refined ? "cold-brew-photo-frame cold-brew-photo-frame-refined" : "cold-brew-photo-frame"} aria-hidden="true">
+    <span className="featured-photo-mount">
+      <span className="cold-brew-photo-frame cold-brew-photo-frame-refined" aria-hidden="true">
         {showMetal ? (
           <SafeMetalFx
             variant="button"
@@ -333,7 +333,7 @@ function FeaturedPhotoTreatment({ refined = false }) {
             preset="silver"
             theme="light"
             strength={1}
-            ringCssPx={refined ? 3 : 5}
+            ringCssPx={3}
             shaderScale={2.4}
             scale={1.5}
             normalizeHostStyles={false}
@@ -375,7 +375,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const [terminalFallback, setTerminalFallback] = useState(false);
   const photo = fallback || !item.image ? PLACEHOLDER_IMAGE : item.image;
   const usingPlaceholder = fallback || !item.image;
-  const refinedFeatured = item.featured === true && item.id === "menu-routine-04";
+  const featured = item.featured === true;
 
   useEffect(() => {
     setFallback(false);
@@ -391,7 +391,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
 
   return (
     <div className="item-photo t-avatar" data-ready={ready ? "" : undefined}
-      data-featured-frame={refinedFeatured ? "refined" : undefined}>
+      data-featured-frame={featured ? "refined" : undefined}>
       {terminalFallback ? (
         <span className="item-photo-empty" aria-hidden="true" />
       ) : (
@@ -418,7 +418,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
           }}
         />
       )}
-      {item.featured === true ? <FeaturedPhotoTreatment refined={refinedFeatured} /> : null}
+      {featured ? <FeaturedPhotoTreatment /> : null}
     </div>
   );
 });

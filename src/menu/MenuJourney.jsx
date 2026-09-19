@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import paintedFlow from "../../assets/menu-backgrounds/lcafe-painted-flow.webp";
+import "../styles/menu-journey.css";
 
 const clamp = (value) => Math.max(0, Math.min(1, value));
 // One painting, one continuous camera movement. No scenes or category switches.
