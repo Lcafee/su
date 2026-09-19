@@ -560,6 +560,68 @@ a:focus-visible,button:focus-visible{
   z-index:3;
   background:linear-gradient(145deg,var(--ivory-deep),var(--ivory)),var(--ivory);
 }
+/* Featured item treatment: overlays preserve the photo and card geometry. */
+.cold-brew-photo-frame{
+  position:absolute;
+  inset:0;
+  z-index:4;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 6px var(--scarlet),inset 0 0 0 7px rgba(var(--ivory-rgb),.9),inset 0 0 20px rgba(var(--scarlet-rgb),.2);
+  pointer-events:none;
+}
+.cold-brew-photo-metal.metal-fx-root,
+.cold-brew-label-metal.metal-fx-root{
+  border-radius:inherit;
+  background:transparent!important;
+}
+.cold-brew-photo-metal.metal-fx-root::before,
+.cold-brew-photo-metal.metal-fx-root::after,
+.cold-brew-label-metal.metal-fx-root::before,
+.cold-brew-label-metal.metal-fx-root::after{display:none}
+.cold-brew-photo-metal-host,
+.cold-brew-label-metal-host{
+  display:block;
+  width:100%;
+  height:100%;
+  border-radius:var(--radius);
+}
+.cold-brew-label-metal-host{border-radius:2px}
+.cold-brew-photo-metal canvas{
+  filter:invert(.8) sepia(.6) saturate(2.2) hue-rotate(304deg) contrast(1.25) brightness(1.4);
+}
+.cold-brew-label-metal canvas{
+  filter:sepia(.45) saturate(2.4) hue-rotate(304deg) contrast(1.2) brightness(.95);
+}
+.cold-brew-photo-metal .metal-fx-glow-svg,
+.cold-brew-label-metal .metal-fx-glow-svg{
+  opacity:.65!important;
+  filter:sepia(.45) saturate(2.4) hue-rotate(304deg);
+  mix-blend-mode:screen!important;
+}
+.cold-brew-photo-label{
+  position:absolute;
+  inset-block-end:6px;
+  inset-inline:10px;
+  z-index:5;
+  width:fit-content;
+  max-width:calc(100% - 20px);
+  margin-inline:auto;
+  border-radius:2px;
+  background:linear-gradient(155deg,rgba(var(--ivory-rgb),.16),transparent 48%),var(--scarlet);
+  box-shadow:inset 0 0 0 1px rgba(var(--ivory-rgb),.8),0 3px 10px rgba(var(--scarlet-rgb),.24);
+  color:var(--ivory);
+  font:600 clamp(12px,1.1vw,14px)/1.7 var(--font);
+  white-space:nowrap;
+  pointer-events:none;
+}
+.cold-brew-photo-label-text{
+  position:relative;
+  z-index:1;
+  display:block;
+  padding:8px 16px;
+}
+#menu[data-menu-view="list"] .cold-brew-photo-label{font-size:12px}
+#menu[data-menu-view="list"] .cold-brew-photo-label-text{padding:6px 10px}
 .item h3{
   min-width:0;
   margin:0;
