@@ -1,9 +1,7 @@
-/* The Art of Pause: three passages from one material world, composed for mobile. */
+/* One continuous gouache mural: the viewport travels through the painting. */
 html[data-menu-background="journey"] body::before{display:none}
 .menu-journey{
-  --journey-glass:0;
-  --journey-perch:0;
-  --journey-drift:0px;
+  --journey-offset:0px;
   position:fixed;
   inset:0;
   height:100lvh;
@@ -13,37 +11,23 @@ html[data-menu-background="journey"] body::before{display:none}
   contain:strict;
   background:#f3f1ec;
 }
-.menu-journey-scene{
-  position:absolute;
-  inset:-20px 0 -40px;
-  background-color:#f3f1ec;
-  transform:translate3d(0,var(--journey-drift),0);
-  will-change:opacity,transform;
-}
-.menu-journey-scene img{
+.menu-journey-painting{
   display:block;
   position:absolute;
+  top:0;
   left:50%;
-  width:100%;
-  max-width:1100px;
+  /* Zoom into the two painted motif corridors without stretching the artwork. */
+  width:max(100%,84svh);
+  max-width:none;
   height:auto;
-  transform:translateX(-50%);
-  -webkit-mask-image:linear-gradient(transparent,#000 3%,#000 95%,transparent);
-  mask-image:linear-gradient(transparent,#000 3%,#000 95%,transparent);
+  transform:translate3d(-50%,var(--journey-offset),0);
+  will-change:transform;
 }
-.menu-journey-light img{top:0}
-.menu-journey-glass{
-  opacity:var(--journey-glass);
-}
-.menu-journey-glass img{top:50%;transform:translate(-50%,-50%)}
-.menu-journey-perch{
-  opacity:var(--journey-perch);
-}
-.menu-journey-perch img{bottom:0}
 .menu-journey-reading-field{
   position:absolute;
   inset:0;
-  background:linear-gradient(90deg,rgba(243,241,236,.46),rgba(243,241,236,.76) 34%,rgba(243,241,236,.80) 64%,rgba(243,241,236,.52));
+  /* Keep pigment visible at the perimeter; a stable veil protects both text columns. */
+  background:linear-gradient(90deg,rgba(243,241,236,.50),rgba(243,241,236,.73) 22%,rgba(243,241,236,.82) 43%,rgba(243,241,236,.82) 62%,rgba(243,241,236,.73) 80%,rgba(243,241,236,.54));
 }
 [data-swatch="journey"]{background:linear-gradient(145deg,#b78454,#f3f1ec 42%,#d2dddc 72%,#681f2d)}
 @media(min-width:760px){
@@ -52,7 +36,7 @@ html[data-menu-background="journey"] body::before{display:none}
   }
 }
 @media(prefers-reduced-motion:reduce){
-  .menu-journey-scene{transform:none;will-change:opacity}
+  .menu-journey-painting{transform:translateX(-50%);will-change:auto}
 }
 @media print,(forced-colors:active){.menu-journey{display:none}}
 

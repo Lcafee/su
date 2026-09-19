@@ -3,7 +3,7 @@ import { MenuJourney } from "./MenuJourney";
 import "../styles/menu-backgrounds.css";
 
 export const MENU_BACKGROUNDS = [
-  { id: "journey", name: "The Art of Pause", label: "هنر مکث", description: "روایتی پیوسته از نور، شیشه و پرندگان ال کافه" },
+  { id: "journey", name: "The Art of Pause", label: "هنر مکث", description: "نقاشی پیوسته‌ای از نور، معماری و اشیای ال کافه" },
   { id: "atrium", name: "Amber Atrium", label: "آتریوم کهربایی", description: "برداشتی انتزاعی از نور معلق، بافت دست‌ساز و خطوط معماری" },
   { id: "limestone", name: "Limestone Atelier", label: "آتلیه سنگ", description: "گچ روشن، نور عصر و سایه‌های معماری" },
   { id: "nocturne", name: "Bronze Nocturne", label: "شب برنزی", description: "ابریشم تیره، برنز و فضای شام" },
