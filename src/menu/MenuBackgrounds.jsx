@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useState } from "react";
+import { MenuJourney } from "./MenuJourney";
 import "../styles/menu-backgrounds.css";
 
 export const MENU_BACKGROUNDS = [
+  { id: "journey", name: "The Art of Pause", label: "هنر مکث", description: "روایتی پیوسته از نور، شیشه و پرندگان ال کافه" },
   { id: "atrium", name: "Amber Atrium", label: "آتریوم کهربایی", description: "برداشتی انتزاعی از نور معلق، بافت دست‌ساز و خطوط معماری" },
   { id: "limestone", name: "Limestone Atelier", label: "آتلیه سنگ", description: "گچ روشن، نور عصر و سایه‌های معماری" },
   { id: "nocturne", name: "Bronze Nocturne", label: "شب برنزی", description: "ابریشم تیره، برنز و فضای شام" },
@@ -11,10 +13,10 @@ export const MENU_BACKGROUNDS = [
 
 function readBackground() {
   const id = new URLSearchParams(window.location.search).get("background");
-  return MENU_BACKGROUNDS.some((option) => option.id === id) ? id : "atrium";
+  return MENU_BACKGROUNDS.some((option) => option.id === id) ? id : "journey";
 }
 
-// Amber Atrium is the menu surface; previous studies remain available by URL.
+// The evolving artwork is the menu surface; previous studies remain available by URL.
 export function MenuBackgrounds() {
   const [background, setBackground] = useState(readBackground);
   const [open, setOpen] = useState(false);
@@ -42,8 +44,10 @@ export function MenuBackgrounds() {
     setBackground(id);
   };
 
-  if (!preview) return null;
+  if (!preview) return background === "journey" ? <MenuJourney /> : null;
   return (
+    <>
+    {background === "journey" && <MenuJourney />}
     <aside className="background-studio" aria-label="پیش‌نمایش پس‌زمینه منو" dir="rtl">
       <button className="background-studio-toggle" type="button" aria-expanded={open}
         aria-controls="background-studio-panel" onClick={() => setOpen(!open)}>
@@ -71,5 +75,6 @@ export function MenuBackgrounds() {
         </div>
       )}
     </aside>
+    </>
   );
 }
