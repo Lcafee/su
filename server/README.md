@@ -1,5 +1,10 @@
 # Menu-admin backend foundation
 
+> **Production status:** this PHP/MySQL backend is no longer the active production
+> control plane. Liara/VPS production uses `server-node/` with Node 24,
+> Fastify, and SQLite. Keep this directory intact for ParsPack rollback/reference
+> only. Normal production edits and deployments must use the VPS runtime.
+
 This directory contains the source-controlled control plane for menu editing,
 schema provisioning, and secure admin-account creation. The separately built
 React admin calls this API; the public menu reads only the static snapshot files
@@ -28,9 +33,9 @@ row manually. The complete operator sequence and host values are documented in
 persistent directories, applies release-owned migrations, and creates the first
 active owner with `password_hash(..., PASSWORD_DEFAULT)`.
 
-For an existing production host, use [`../OPERATIONS.md`](../OPERATIONS.md) for
-durable access/upload procedure, non-destructive API recovery, and deployment
-checks. Mutable production state is recorded only in `../PROJECT_STATE.md`.
+For the active production host, use [`../OPERATIONS.md`](../OPERATIONS.md). This
+PHP runbook applies only to the retained ParsPack rollback environment. Mutable
+production state is recorded only in `../PROJECT_STATE.md`.
 Use [`../PROJECT_STATE.md`](../PROJECT_STATE.md) for the authoritative production
 SHA, migration, role, phase, and blocker state.
 
