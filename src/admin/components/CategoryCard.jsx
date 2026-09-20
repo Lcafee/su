@@ -142,6 +142,17 @@ function CategoryCardComponent({
                 maxLength="191"
               />
             </label>
+            <label className="wide-field">
+              <span>توضیح کوتاه دسته</span>
+              <textarea
+                dir="auto"
+                rows="2"
+                value={category.intro ?? ""}
+                onChange={(event) => onUpdateCategory(category.id, { intro: event.target.value || null })}
+                disabled={disabled}
+                maxLength="4000"
+              />
+            </label>
           </div>
 
           {advanced ? (
@@ -158,17 +169,6 @@ function CategoryCardComponent({
                     <option value="grid">کارت‌های منو</option>
                     <option value="addons">فهرست افزودنی‌ها</option>
                   </select>
-                </label>
-                <label>
-                  <span>توضیح کوتاه دسته</span>
-                  <textarea
-                    dir="auto"
-                    rows="2"
-                    value={category.intro ?? ""}
-                    onChange={(event) => onUpdateCategory(category.id, { intro: event.target.value || null })}
-                    disabled={disabled}
-                    maxLength="4000"
-                  />
                 </label>
               </div>
             </details>
