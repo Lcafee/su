@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -17,7 +17,6 @@ function ItemCardComponent({
   onMove,
   onUpload,
 }) {
-  const [expanded, setExpanded] = useState(false);
   const nameInputRef = useRef(null);
   const dragId = `item:${item.id}`;
   const {
@@ -41,7 +40,6 @@ function ItemCardComponent({
 
   useEffect(() => {
     if (focusTarget?.type !== "item" || focusTarget.id !== item.id) return undefined;
-    setExpanded(true);
     const frame = requestAnimationFrame(() => {
       nameInputRef.current?.focus();
       nameInputRef.current?.select();
@@ -137,14 +135,6 @@ function ItemCardComponent({
         <div className="item-quick-actions">
           <button
             type="button"
-            className="quiet-button item-details-toggle"
-            aria-expanded={expanded}
-            onClick={() => setExpanded((current) => !current)}
-          >
-            {expanded ? "بستن جزئیات" : "جزئیات"}
-          </button>
-          <button
-            type="button"
             className={item.archived ? "quiet-button restore-button" : "quiet-button danger-button"}
             onClick={() => update({ archived: !item.archived })}
             disabled={disabled}
@@ -156,8 +146,7 @@ function ItemCardComponent({
         {item.archived ? <span className="archive-badge item-archive-badge">آرشیو شده</span> : null}
       </header>
 
-      {expanded ? (
-        <div className="item-card-body">
+      <div className="item-card-body">
           <div className="item-detail-grid">
             <label className="item-description-field">
               <span>توضیحات</span>
@@ -222,8 +211,7 @@ function ItemCardComponent({
               ) : null}
             </details>
           ) : null}
-        </div>
-      ) : null}
+      </div>
     </article>
   );
 }
