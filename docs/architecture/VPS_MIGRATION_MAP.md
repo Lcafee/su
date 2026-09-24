@@ -1,6 +1,6 @@
 # L Cafe Main Site — Shared VPS Migration Map
 
-Status: source audit complete enough to design the replacement backend. Content migration is blocked until the current ParsPack production state is exported and checksummed. This document does not authorize deployment, DNS changes, or production mutation.
+Status: historical migration design and execution map. The Liara/VPS cutover was accepted on 2026-09-19; the active architecture and operating procedure are in `VPS_TARGET_ARCHITECTURE.md` and `../../OPERATIONS.md`. Current mutable release and content state are in `../../PROJECT_STATE.md`.
 
 ## Non-negotiable contracts
 
@@ -223,9 +223,9 @@ The frontend is retained. The replacement backend must preserve:
 - public routes and canonical URL behavior;
 - current visual output.
 
-## Production snapshot gate — BLOCKED ON PARSPACK EXPORT
+## Historical production snapshot gate
 
-Before content/data implementation, create one immutable read-only export from the current ParsPack host. Preferred input:
+Before content/data implementation, the migration required one immutable read-only export from the then-current ParsPack host. Preferred inputs were:
 
 1. full Main Site MySQL dump;
 2. `managed-menu/current.json` and `managed-menu/previous.json`;
@@ -235,14 +235,14 @@ Before content/data implementation, create one immutable read-only export from t
 
 Do not export live sessions, cPanel credentials, DB passwords, private configuration secrets, API keys or plaintext account passwords.
 
-The export receives a file inventory, manifest and SHA-256 checksums before transformation. GitHub fixtures and local copies must not silently overwrite ParsPack production content.
+The export was inventoried and checksummed before transformation. GitHub fixtures and local copies were not allowed to overwrite ParsPack production content.
 
-## Current gate status
+## Migration outcome
 
 - project isolation design: merged;
 - Main Site source audit: sufficient for backend design;
 - UI freeze: defined;
 - ParsPack production content authority: defined;
-- ParsPack production snapshot: **waiting for export/access**;
-- backend implementation: not started;
-- VPS provisioning/deploy/DNS: not authorized and not started.
+- ParsPack production snapshot: imported and verified; final no-later-edits reconciliation was owner-attested on 2026-09-18;
+- Node/SQLite backend: implemented and accepted in Liara production;
+- VPS provisioning, deployment, DNS, TLS, backup/restore, and Admin auth gates: completed and recorded in `PROJECT_STATE.md` and `PRODUCTION_CUTOVER.md`.
