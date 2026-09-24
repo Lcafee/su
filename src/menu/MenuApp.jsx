@@ -190,33 +190,6 @@ function useElementFrame(elementRef, enabled) {
   return frame;
 }
 
-let sharedDescriptionObserver;
-const descriptionMeasurements = new Map();
-
-function observeDescription(element, measure) {
-  if (!("ResizeObserver" in window)) return () => {};
-
-  if (!sharedDescriptionObserver) {
-    sharedDescriptionObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        descriptionMeasurements.get(entry.target)?.();
-      }
-    });
-  }
-
-  descriptionMeasurements.set(element, measure);
-  sharedDescriptionObserver.observe(element);
-
-  return () => {
-    sharedDescriptionObserver?.unobserve(element);
-    descriptionMeasurements.delete(element);
-    if (descriptionMeasurements.size === 0) {
-      sharedDescriptionObserver?.disconnect();
-      sharedDescriptionObserver = undefined;
-    }
-  };
-}
-
 function hasDisplayText(value) {
   return value !== null
     && value !== undefined
@@ -423,48 +396,8 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   );
 });
 
-function ProductDescription({ description, itemName, slotId }) {
-  const paragraphRef = useRef(null);
-  const [expanded, setExpanded] = useState(false);
-  const [hasOverflow, setHasOverflow] = useState(false);
-  const descriptionId = `description-${slotId}`;
-
-  const measure = useCallback(() => {
-    const paragraph = paragraphRef.current;
-    if (!paragraph || expanded) return;
-    const overflow = paragraph.scrollHeight > paragraph.clientHeight + 1;
-    setHasOverflow((current) => (current === overflow ? current : overflow));
-  }, [expanded]);
-
-  useEffect(() => {
-    const paragraph = paragraphRef.current;
-    if (!paragraph || expanded) return undefined;
-    measure();
-    return observeDescription(paragraph, measure);
-  }, [description, expanded, measure]);
-
-  useEffect(() => {
-    document.fonts?.ready.then(measure).catch(() => {});
-  }, [measure]);
-
-  return (
-    <>
-      <p ref={paragraphRef} id={descriptionId} data-open={expanded ? "" : undefined}>
-        {description}
-      </p>
-      <button
-        className="more"
-        type="button"
-        aria-expanded={expanded}
-        aria-controls={descriptionId}
-        aria-label={`${expanded ? "بستن توضیح" : "توضیح کامل"} ${itemName}`}
-        hidden={!expanded && !hasOverflow}
-        onClick={() => setExpanded((current) => !current)}
-      >
-        {expanded ? "کمتر" : "بیشتر"}
-      </button>
-    </>
-  );
+function ProductDescription({ description }) {
+  return <p>{description}</p>;
 }
 
 function VariantList({ item }) {
@@ -490,13 +423,11 @@ const ProductCard = memo(function ProductCard({ eager, item, priority }) {
       <div className="item-body">
         <div className="item-heading">
           <h3>{item.name}</h3>
-          {!hasOptions && hasPrice ? <strong>{item.price}</strong> : null}
         </div>
-        <ProductDescription
-          description={item.description}
-          itemName={item.name}
-          slotId={item.id}
-        />
+        <ProductDescription description={item.description} />
+        {!hasOptions && hasPrice
+          ? <strong className="item-price">{item.price}</strong>
+          : null}
         {hasOptions ? <VariantList item={item} /> : null}
       </div>
     </article>
