@@ -120,8 +120,8 @@ Normal VPS code rollback should prefer the previous verified immutable VPS
 release and preserved persistent state. A DNS rollback to ParsPack is a separate
 explicit recovery action, not part of routine deploys.
 
-Do not retire ParsPack, merge migration PRs, or perform destructive historical
-cleanup as a side effect of an unrelated release.
+Do not retire ParsPack or perform destructive historical cleanup as a side
+effect of an unrelated release.
 
 ## TLS and Nginx
 

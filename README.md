@@ -43,8 +43,8 @@ reuses this same fixture and does not change the production snapshot boundary.
 ## Public routes
 
 - `/` and `/index.html` — Landing
-- `/menu` — Menu (canonical public URL; Apache/LiteSpeed serves the internal
-  `menu.html` build entry and permanently redirects legacy `/menu.html` visits)
+- `/menu` — Menu (canonical public URL; Nginx serves the internal static build
+  entry and redirects legacy `/menu.html` visits)
 - `/menu2` — retired noncanonical compatibility route; production and the
   static Pages entry redirect to the unified canonical `/menu`
 - `/admin/` — separately built authenticated menu editor
@@ -52,7 +52,7 @@ reuses this same fixture and does not change the production snapshot boundary.
 The admin has two database-backed roles. Owners receive the complete editor and
 publish-recovery controls. Cashiers retain normal category, item, price, media,
 ordering, archive, save, and publish work while advanced category fields, item
-metadata/options, and publish retry remain owner-only. PHP enforces this
+metadata/options, and publish retry remain owner-only. The Node API enforces this
 boundary independently of the React UI.
 Admin sessions are bound to a database credential generation; the interactive
 password-rotation CLI increments it without changing either role's permissions.
