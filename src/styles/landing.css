@@ -1,356 +1,152 @@
-:root{
-  --font:'Vazirmatn',system-ui,sans-serif;
-  --display:'Sahel','Vazirmatn',system-ui,sans-serif;
-  --bg:#471019;
-  --ink:#F3F1EC;
-  --ink-strong:rgba(243,241,236,.82);
-  --ink-soft:rgba(243,241,236,.72);
-  --line:rgba(243,241,236,.35);
-  --gutter:clamp(20px,6vw,80px);
-  --copy-size:clamp(15px,calc(.65vw + 12.6px),17px);
-  --copy-leading:2.05;
-  --meta-size:clamp(13px,1.2vw,14px);
-  --utility-size:clamp(12px,1.1vw,13.5px);
-  --utility-leading:1.65;
-  /* Semantic boundaries make the page read as one composed sequence rather
-     than repeating one generic section gap at every transition. */
-  --space-hero-intro:clamp(120px,14vw,208px);
-  --space-intro-photo:clamp(112px,12vw,176px);
-  --space-photo-menu:clamp(160px,16vw,240px);
-  --space-menu-close:clamp(36px,4vw,56px);
-  --tile:clamp(200px,46vw,346px);
-
-  /* One restrained motion voice for copy, image arrival and page handoff. */
-  --motion-dur:400ms;
-  --motion-ease:cubic-bezier(0.22, 1, 0.36, 1);
-  /* transitions.dev — texts reveal (18) */
-  --stagger-dur:var(--motion-dur);
-  --stagger-distance:8px;
-  --stagger-stagger:40ms;
-  --stagger-blur:1.5px;
-  --stagger-ease:var(--motion-ease);
-  /* transitions.dev — skeleton loader and reveal (14) */
-  --pulse-dur:1000ms;
-  --pulse-count:infinite;
-  --pulse-min:0.5;
-  --reveal-dur:var(--motion-dur);
-  --reveal-blur:1.5px;
-  --reveal-ease:var(--motion-ease);
-}
-*,*::before,*::after{box-sizing:border-box}
-html{
-  min-height:100%;
-  overflow-x:hidden;
-  overflow-x:clip;
-  background:var(--bg);
-}
-html,body{
-  width:100%;
-  margin:0;
-  padding:0;
-  background:var(--bg);
-  font-family:var(--font);
-  -webkit-text-size-adjust:100%;
-}
-body,#landing-root,.page{
-  min-width:100%;
-  min-height:100vh;
-  min-height:100dvh;
-}
-body{overflow-x:hidden;overflow-x:clip}
-a{color:var(--ink);touch-action:manipulation}
-a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
-.skip{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;background:var(--ink);color:var(--bg);font:500 13px var(--font);border-radius:2px;text-decoration:none}
-.skip:focus{width:auto;height:auto;padding:10px 18px;overflow:visible;clip-path:none;top:8px;right:16px;z-index:20}
-
-/* The L field. One continuous fixed plane for the whole document, so a panel
-   edge slices the marks mid-glyph instead of restarting the pattern. */
-.field{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-color:var(--bg);
-  background-image:url('../../assets/l-cafe-pattern-inverted-tight.svg');
-  background-repeat:repeat;
-  background-size:var(--tile) calc(var(--tile) * 0.983)}
-
-/* The signature. Absent during the hero, then it takes the phrase's place at
-   dead centre as that fades — the two never share the screen. */
-.mark{position:fixed;top:-21vh;left:50%;z-index:1;display:none;pointer-events:none;
-  height:142vh;width:auto;opacity:0;will-change:transform,opacity}
-.giant-mark-enabled .mark{display:block}
-.mark[hidden]{display:none}
-.mark path{fill:#E6E5E1}
-
-.page{position:relative;z-index:2;background:transparent}
-
-.hero{position:relative;margin:0;width:100%;min-height:100vh;min-height:100svh;
-  padding-top:max(18px,env(safe-area-inset-top,0px));
-  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  padding-bottom:max(18px,env(safe-area-inset-bottom,0px));
-  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
-  display:flex;align-items:center;justify-content:center}
-.hero-phrase{display:block;
-  width:min(100%,1080px);max-width:11.5ch;margin-inline:auto;
-  font:600 clamp(36px,min(10vw,11svh),96px)/.98 'Fahkwang',var(--font);
-  letter-spacing:clamp(.045em,.18vw,.085em);color:var(--ink);
-  text-align:center;text-wrap:balance;white-space:normal}
-.scroll-cue{position:absolute;
-  bottom:max(clamp(18px,3svh,30px),env(safe-area-inset-bottom,0px));left:50%;
-  width:2px;height:clamp(72px,12svh,116px);transform:translateX(-50%);
-  opacity:.74;overflow:hidden;pointer-events:none}
-.scroll-cue-line{display:block;position:absolute;inset:0;background:rgba(243,241,236,.38)}
-.scroll-cue-line::after{content:"";position:absolute;top:0;left:0;width:2px;height:42%;
-  background:var(--ink);transform:translate3d(0,-110%,0);
-  animation:scroll-cue 2.5s var(--motion-ease) infinite}
-@keyframes scroll-cue{
-  0%,20%{transform:translate3d(0,-110%,0)}
-  72%,100%{transform:translate3d(0,250%,0)}
+:root {
+  --home-scarlet: #8f1b3f;
+  --home-ivory: #f3e8d7;
+  --home-espresso: #211916;
+  --home-black: #292320;
+  --home-gray: #746b64;
+  --home-cream: #faf5ec;
+  --home-body: 'Vazirmatn', system-ui, sans-serif;
+  --home-display: 'Sahel', 'Vazirmatn', system-ui, sans-serif;
+  --home-ease: cubic-bezier(.22, 1, .36, 1);
 }
 
-.body{margin:0;font:400 var(--copy-size)/var(--copy-leading) var(--font);color:var(--ink-strong)}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: hidden; background: var(--home-ivory); }
+body { margin: 0; min-width: 320px; overflow-x: hidden; background: var(--home-ivory); color: var(--home-espresso); font-family: var(--home-body); -webkit-text-size-adjust: 100%; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { font: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+::selection { background: var(--home-scarlet); color: var(--home-cream); }
+.home-page { overflow: clip; }
+.home-skip { position: absolute; z-index: 100; top: 12px; right: 12px; padding: 12px 16px; background: var(--home-cream); color: var(--home-espresso); transform: translateY(-150%); }
+.home-skip:focus { transform: translateY(0); }
 
-/* The introduction is composed as headline plus reading column on wide screens,
-   and folds back to one measured column on mobile. */
-.about{
-  padding-top:var(--space-hero-intro);
-  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  padding-bottom:0;
-  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
-  max-width:1180px;
-  margin:0 auto;
-}
-.about .inner{max-width:1060px;text-align:right;display:grid;
-  grid-template-columns:minmax(0,1.15fr) minmax(260px,.72fr);
-  gap:clamp(32px,6vw,88px);align-items:end}
-.about-headline{max-width:18ch;margin:0;font-family:var(--display);
-  font-weight:700;font-size:clamp(34px,4.4vw,56px);line-height:1.34;
-  color:var(--ink);text-wrap:balance}
-.about-body{width:min(100%,40ch);margin:0;font-family:var(--font);font-weight:400;
-  font-size:var(--copy-size);line-height:var(--copy-leading);color:var(--ink-strong)}
+.home-hero { position: relative; isolation: isolate; min-height: 720px; min-height: 100svh; background: var(--home-espresso); color: var(--home-cream); }
+.home-hero-picture, .home-hero-picture img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.home-hero-picture { z-index: -1; }
+.home-hero-picture img { display: block; object-fit: cover; object-position: center; }
+.home-header { position: relative; z-index: 20; display: flex; align-items: flex-start; justify-content: space-between; padding: max(18px, env(safe-area-inset-top)) 24px 0; }
+.home-header-brand { display: block; width: 120px; line-height: 0; }
+.home-header-brand img { display: block; width: 100%; height: auto; }
+.home-menu-toggle { display: inline-flex; align-items: center; flex-direction: row-reverse; gap: 10px; margin-top: 8px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--home-cream); font-size: 15px; cursor: pointer; }
+.home-menu-toggle-lines { display: grid; gap: 6px; width: 26px; }
+.home-menu-toggle-lines i { display: block; height: 1px; background: currentColor; }
+.home-menu-toggle-lines i:last-child { width: 18px; }
+.home-desktop-nav { display: none; }
+.home-mobile-nav { position: fixed; z-index: 60; inset: 0; display: none; flex-direction: column; padding: max(18px, env(safe-area-inset-top)) 24px max(26px, env(safe-area-inset-bottom)); background: var(--home-espresso); color: var(--home-cream); }
+.home-mobile-nav[data-open="true"] { display: flex; }
+.home-mobile-nav-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.home-mobile-nav-top img { width: 120px; height: auto; }
+.home-close { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--home-cream); font: 300 38px/1 var(--home-body); cursor: pointer; }
+.home-mobile-nav-links { display: grid; gap: 0; margin-block: auto; }
+.home-mobile-nav-links a { display: block; padding: 18px 0 20px; border-bottom: 1px solid rgba(250, 245, 236, .25); font: 700 clamp(30px, 9vw, 43px)/1.4 var(--home-display); text-decoration: none; }
+.home-mobile-nav-links a:first-child { border-top: 1px solid rgba(250, 245, 236, .25); }
+.home-mobile-nav-foot { margin: 0; color: rgba(250, 245, 236, .66); font-size: 13px; }
+.home-hero-content { position: absolute; top: 32%; right: 24px; left: 24px; text-align: right; animation: home-rise 850ms var(--home-ease) both; }
+.home-hero-content h1 { margin: 0; font: 700 clamp(38px, 10.8vw, 52px)/1.48 var(--home-display); letter-spacing: -.025em; text-wrap: balance; }
+.home-hero-content p { max-width: 28ch; margin: 16px 0 24px; color: rgba(250, 245, 236, .9); font: 400 clamp(15px, 4vw, 17px)/1.9 var(--home-body); }
+.home-text-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 48px; border-bottom: 1px solid currentColor; font: 500 17px/1.4 var(--home-body); text-decoration: none; transition: gap 300ms var(--home-ease), opacity 200ms ease; }
+.home-text-link-arrow { font: 300 24px/1 var(--home-body); transition: transform 300ms var(--home-ease); }
+.home-text-link:hover .home-text-link-arrow { transform: translateX(-5px); }
+.home-hero-link { color: var(--home-cream); }
+.home-hero-index { display: none; }
+@keyframes home-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* The photo is the page's single light moment. Inset on the start side — the
-   right, in RTL — so a strip of the field survives at the reading origin and
-   the photo's edge cuts the marks mid-glyph.
+.home-story { position: relative; overflow: hidden; padding: 96px 24px 66px; background: var(--home-ivory); }
+.home-story-copy { position: relative; z-index: 1; }
+.home-story h2, .home-signature h2, .home-menu h2, .home-visit h2 { margin: 0; font-family: var(--home-display); font-weight: 700; letter-spacing: -.025em; text-wrap: balance; }
+.home-story h2 { font-size: clamp(35px, 9.7vw, 48px); line-height: 1.48; }
+.home-story-copy > p { max-width: 36ch; margin: 24px 0 0; color: var(--home-black); font-size: 16px; line-height: 2.12; }
+.home-section-rule { display: flex; flex-direction: row-reverse; align-items: center; gap: 14px; margin-top: 44px; color: var(--home-scarlet); font: 500 14px/1 var(--home-body); }
+.home-section-rule::before { content: ''; flex: 1; height: 1px; background: var(--home-scarlet); }
+.home-story-figure { position: relative; margin: 46px -24px 0; }
+.home-story-figure img { display: block; width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; }
+.home-story-figure figcaption { padding: 18px 24px 0; color: var(--home-gray); font-size: 12px; line-height: 1.8; }
 
-   The frame takes the photograph's own shape and nothing else. It used to take
-   a height from the viewport, which meant the frame was some ratio and the
-   picture was another and object-fit resolved the difference the only way it
-   can — by cutting. At 1920 the frame came out at 1.87 against the file's 1.57
-   and lost a sixth of the height; on the phone the mismatch was answered by
-   shipping a 3:4 crop that threw away half the width before the browser saw
-   it. Neither was visible as damage, which is what made it worth fixing: the
-   room in this picture is the whole point of it, and a third of the room was
-   never on screen.
+.home-signature { background: var(--home-espresso); color: var(--home-cream); }
+.home-signature-image { height: clamp(310px, 90vw, 470px); overflow: hidden; }
+.home-signature-image img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 46% 48%; }
+.home-signature-copy { padding: 44px 24px 74px; }
+.home-section-number { display: block; color: #b49c86; font: 400 12px/1.5 var(--home-body); letter-spacing: .04em; }
+.home-signature h2 { margin-top: 19px; font-size: clamp(34px, 9.6vw, 47px); line-height: 1.5; }
+.home-signature-copy p { max-width: 34ch; margin: 19px 0 0; color: rgba(250, 245, 236, .78); font-size: 15px; line-height: 2.05; }
 
-   With the ratio matched, object-fit:cover is a no-op and stays only as a
-   guard — contain would letterbox on the maroon and read as a bug. */
-.photo{aspect-ratio:1586/992;background:var(--ink);overflow:hidden;
-  margin-block-start:var(--space-intro-photo);margin-block-end:var(--space-photo-menu);
-  margin-inline-start:clamp(0px,8vw,140px)}
+.home-menu { padding: 94px 24px 120px; background: var(--home-scarlet); color: var(--home-cream); }
+.home-menu h2 { font-size: clamp(39px, 10.2vw, 52px); line-height: 1.42; }
+.home-menu-copy > p { max-width: 32ch; margin: 21px 0 20px; color: rgba(250, 245, 236, .85); font-size: 16px; line-height: 2; }
+.home-menu-link { color: var(--home-cream); }
+.home-menu-gallery { display: grid; grid-template-columns: 1.14fr .86fr; gap: 12px; direction: ltr; align-items: start; margin-top: 58px; }
+.home-menu-gallery-item { min-width: 0; margin: 0; direction: rtl; }
+.home-menu-gallery-item img { display: block; width: 100%; object-fit: cover; }
+.home-menu-gallery-item--coffee img { aspect-ratio: .64; }
+.home-menu-gallery-item--pastry { margin-top: 67px; }
+.home-menu-gallery-item--pastry img { aspect-ratio: .7; }
+.home-menu-gallery-item figcaption { display: flex; align-items: center; gap: 7px; margin-top: 13px; color: rgba(250, 245, 236, .85); font-size: 11px; line-height: 1.6; white-space: nowrap; }
+.home-menu-gallery-item figcaption::before { content: ''; flex: 1; min-width: 8px; height: 1px; background: rgba(250, 245, 236, .72); }
 
-/* The menu entry is a quiet handoff, not another display-heading moment. Its
-   copy and the page's one primary action form one centred editorial unit. */
-.menu{
-  padding:0 max(var(--gutter),env(safe-area-inset-left,0px));
-  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  margin:0 auto var(--space-menu-close);
-  max-width:1180px;
-  text-align:center;
-}
-.menu .inner{width:min(100%,36ch);margin-inline:auto}
-.menu-support{max-width:none}
-.cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(20px,3vw,28px);
-  padding:0 30px;background:var(--ink);color:var(--bg);
-  font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px;
-  touch-action:manipulation;transition:background-color 180ms var(--motion-ease),color 180ms var(--motion-ease)}
+.home-visit { padding: 103px 24px 72px; background: var(--home-cream); }
+.home-visit h2 { color: var(--home-scarlet); font-size: clamp(49px, 13vw, 67px); line-height: 1.38; }
+.home-visit-main > p { max-width: 31ch; margin: 23px 0 26px; color: var(--home-black); font-size: 17px; line-height: 2; }
+.home-visit-link { color: var(--home-scarlet); }
+.home-visit-details { display: grid; gap: 28px; margin-top: 84px; padding-top: 30px; border-top: 1px solid rgba(33, 25, 22, .25); }
+.home-detail-label { display: block; color: var(--home-gray); font-size: 12px; line-height: 1.8; }
+.home-visit-details p { max-width: 34ch; margin: 5px 0 0; color: var(--home-espresso); font-size: 15px; line-height: 1.85; }
+.home-footer { display: flex; flex-direction: column; align-items: flex-start; gap: 25px; padding: 35px 24px 26px; border-top: 1px solid rgba(33, 25, 22, .22); background: var(--home-ivory); }
+.home-footer-logo { line-height: 0; }
+.home-footer-logo img { display: block; width: 150px; height: auto; }
+.home-footer-links { display: flex; flex-wrap: wrap; gap: 14px 24px; }
+.home-footer-links a { min-height: 44px; display: inline-flex; align-items: center; color: var(--home-espresso); font-size: 14px; text-decoration-color: rgba(33, 25, 22, .45); text-underline-offset: 5px; }
+.home-footer > p { margin: 0; color: var(--home-gray); font-size: 12px; line-height: 1.8; }
 
-/* One compact closing composition: the heading introduces a single body that
-   holds location, hours and actions together rather than splitting utilities
-   into a second footer band. */
-.contact{
-  position:relative;
-  z-index:2;
-  padding-top:0;
-  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
-  padding-bottom:calc(clamp(14px,2vw,22px) + env(safe-area-inset-bottom,0px));
-  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
-}
-.contact .inner{width:min(100%,1180px);margin:0 auto;padding-top:clamp(14px,2vw,20px);
-  border-top:1px solid rgba(243,241,236,.15);text-align:right;display:grid;
-  grid-template-columns:minmax(120px,.42fr) minmax(0,1.58fr);
-  gap:clamp(20px,3vw,44px);align-items:start}
-.contact-title{max-width:12ch;margin:0;font-family:var(--display);
-  font-weight:700;font-size:clamp(20px,2.2vw,24px);line-height:1.35;
-  letter-spacing:-.005em;color:var(--ink);text-wrap:balance}
-/* Keep the intended grid stronger than the shared reveal line's fail-open
-   display declaration below. */
-.contact-body.t-stagger-line{min-width:0;display:grid;grid-template-columns:minmax(240px,1fr) auto;
-  gap:clamp(16px,3vw,36px);align-items:start}
-.contact-location{min-width:0;display:grid;gap:2px}
-.contact-address{max-width:34ch;margin:0;color:var(--ink-strong);
-  font:400 var(--meta-size)/1.85 var(--font)}
-.contact-hours{margin:0;color:var(--ink-soft);
-  font:400 var(--utility-size)/var(--utility-leading) var(--font)}
-.contact-links{display:grid;grid-template-columns:repeat(2,max-content);
-  align-items:center;justify-content:start;column-gap:clamp(12px,1.8vw,18px)}
-.contact a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-soft);
-  font:400 var(--utility-size)/1.5 var(--font);white-space:nowrap;
-  text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line)}
-.contact-link--phone{grid-column:1/-1;color:var(--ink)!important;font-weight:500!important}
-
-/* Unified landing motion */
-/* transitions.dev — texts reveal (18). Each copy block's lines rise out of a
-   blur when the block reaches the viewport. Exit is decoupled from the
-   entrance so a block leaving never replays the stagger backwards.
-
-   The hidden start state is gated on data-armed, which only the reveal script
-   sets. Un-gated, this is copy that exists but is invisible until JS says
-   otherwise — and any failure on that path (blocked script, an observer that
-   never fires, an old browser) silently empties the page of its text. Default
-   to readable; animate only once something is there to un-hide it.
-
-   State lives in data-* rather than classes because the runtime rewrites
-   className from its template on every render: a class set from outside is
-   either wiped or baked in permanently, and both break this gate. Attributes
-   it doesn't own survive. */
-.t-stagger-line{
-  display:block;
-}
-.t-stagger[data-armed] .t-stagger-line{
-  opacity:0;
-  transform:translateY(var(--stagger-distance));
-  filter:blur(var(--stagger-blur));
-  transition:
-    opacity   var(--stagger-dur) var(--stagger-ease),
-    transform var(--stagger-dur) var(--stagger-ease),
-    filter    var(--stagger-dur) var(--stagger-ease);
-  will-change:transform,opacity,filter;
-}
-.t-stagger-line--2{transition-delay:var(--stagger-stagger)}
-.t-stagger-line--3{transition-delay:calc(var(--stagger-stagger) * 2)}
-.t-stagger[data-shown] .t-stagger-line{
-  opacity:1;
-  transform:translateY(0);
-  filter:blur(0);
-}
-.t-stagger[data-hiding] .t-stagger-line{
-  opacity:0;
-  transform:translateY(0);
-  filter:blur(0);
-  transition:
-    opacity 200ms var(--motion-ease),
-    transform 0s linear,
-    filter 0s linear;
-  transition-delay:0s;
+@media (max-width: 370px) {
+  .home-hero-content { top: 30%; }
+  .home-story h2 { font-size: 34px; }
+  .home-menu-gallery-item figcaption { font-size: 10px; }
 }
 
-/* transitions.dev — skeleton loader and reveal (14). The photo is the page's
-   one image; it now pulses in place and cross-blurs into the real frame
-   instead of snapping in when the file lands. */
-.t-skel{position:relative}
-.t-skel-skeleton,
-.t-skel-content{
-  position:absolute;
-  inset:0;
-}
-.t-skel-content>image-slot{display:block;width:100%;height:100%}
-/* React renders a responsive <picture> here. object-fit stays on the rule as a
-   guard rather than as a
-   mechanism: the frame carries the photograph's own ratio, so there is nothing
-   left for cover to trim. If a future re-crop changes the file's shape, this
-   is what keeps the frame filled instead of letterboxed — and the aspect-ratio
-   on .photo is what has to be updated to match. */
-.t-skel-content>picture{display:block;width:100%;height:100%}
-.t-skel-content>picture>img{display:block;width:100%;height:100%;object-fit:cover;object-position:46% 48%}
-.photo-fallback{position:absolute;inset:0;z-index:3;display:grid;place-items:center;
-  background:var(--ink);color:var(--bg)}
-.photo-fallback-mark{font:600 clamp(30px,7vw,68px)/1 'Fahkwang',var(--font);
-  letter-spacing:.16em;text-indent:.16em}
-.t-skel-skeleton{
-  z-index:1;
-  opacity:1;
-  filter:blur(0);
-  transition:
-    opacity var(--reveal-dur) var(--reveal-ease),
-    filter  var(--reveal-dur) var(--reveal-ease);
-}
-/* Same gate as the text above: unarmed, the content layer is simply visible
-   and the skeleton sits unseen behind it. Otherwise a script that never runs
-   leaves the photo permanently hidden behind its own placeholder. */
-.t-skel-content{
-  z-index:2;
-}
-.t-skel[data-armed] .t-skel-content{
-  opacity:0;
-  filter:blur(var(--reveal-blur));
-  transition:
-    opacity var(--reveal-dur) var(--reveal-ease),
-    filter  var(--reveal-dur) var(--reveal-ease);
-}
-.t-skel[data-revealed] .t-skel-skeleton{opacity:0;filter:blur(var(--reveal-blur))}
-.t-skel[data-revealed] .t-skel-content{opacity:1;filter:blur(0)}
-.t-skel[data-resetting] .t-skel-skeleton,
-.t-skel[data-resetting] .t-skel-content{transition:none!important}
-/* Dark on light: this frame's own background is the near-white ink colour, so
-   a light placeholder would pulse invisibly against it. */
-.t-skel-skeleton>*{
-  position:absolute;
-  inset:0;
-  background:rgba(71,16,25,.07);
-}
-.t-skel-skeleton.is-pulsing>*{
-  animation:t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
-}
-@keyframes t-skel-pulse{
-  0%,100%{opacity:1}
-  50%    {opacity:var(--pulse-min)}
+@media (max-height: 660px) and (max-width: 767px) {
+  .home-hero { min-height: max(620px, 100svh); }
+  .home-hero-content { top: 28%; }
+  .home-hero-content h1 { font-size: 37px; }
 }
 
-@media (hover:hover) and (pointer:fine){
-  .cta:hover{background:rgba(243,241,236,.88);color:var(--bg)}
-  .contact a:hover{color:var(--ink);text-decoration-color:var(--ink)}
+@media (min-width: 768px) {
+  .home-header { align-items: center; padding: 22px clamp(42px, 5vw, 86px) 0; }
+  .home-header-brand { width: 165px; }
+  .home-menu-toggle { display: none; }
+  .home-desktop-nav { display: flex; align-items: center; gap: clamp(24px, 3vw, 50px); color: var(--home-cream); font-size: 14px; }
+  .home-desktop-nav a { min-height: 44px; display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+  .home-desktop-nav a:hover { text-decoration: underline; text-underline-offset: 7px; }
+  .home-desktop-menu { border: 1px solid rgba(250, 245, 236, .65); padding: 0 20px; }
+  .home-hero-content { top: 33%; right: clamp(54px, 8vw, 150px); left: auto; max-width: 580px; }
+  .home-hero-content h1 { font-size: clamp(52px, 5.4vw, 82px); line-height: 1.36; }
+  .home-hero-content p { font-size: 18px; margin-top: 17px; }
+  .home-hero-index { display: block; position: absolute; bottom: 34px; left: clamp(42px, 5vw, 86px); color: rgba(250, 245, 236, .75); font: 500 10px/1 'Fahkwang', sans-serif; letter-spacing: .15em; }
+  .home-story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); align-items: center; gap: clamp(52px, 8vw, 150px); min-height: 780px; padding: 110px clamp(54px, 8vw, 150px); }
+  .home-story h2 { font-size: clamp(45px, 4.25vw, 68px); }
+  .home-story-copy > p { font-size: 17px; }
+  .home-story-figure { margin: 0; }
+  .home-story-figure img { max-height: 620px; }
+  .home-story-figure figcaption { padding-inline: 0; }
+  .home-signature { display: grid; grid-template-columns: 1.25fr .75fr; direction: ltr; min-height: 620px; }
+  .home-signature-image { height: 100%; min-height: 620px; }
+  .home-signature-copy { display: flex; flex-direction: column; justify-content: center; direction: rtl; padding: 70px clamp(50px, 6vw, 120px); }
+  .home-signature h2 { font-size: clamp(43px, 4vw, 62px); }
+  .home-menu { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); align-items: center; gap: 6vw; min-height: 850px; padding: 110px clamp(54px, 6vw, 120px) 160px; }
+  .home-menu h2 { font-size: clamp(50px, 5vw, 76px); }
+  .home-menu-copy > p { font-size: 18px; }
+  .home-menu-gallery { gap: 20px; margin-top: 0; }
+  .home-menu-gallery-item--pastry { margin-top: 120px; }
+  .home-menu-gallery-item figcaption { font-size: 12px; }
+  .home-visit { display: grid; grid-template-columns: 1.2fr .8fr; align-items: end; gap: 7vw; min-height: 680px; padding: 110px clamp(54px, 8vw, 150px); }
+  .home-visit h2 { font-size: clamp(70px, 7vw, 110px); }
+  .home-visit-main > p { font-size: 18px; }
+  .home-visit-details { align-self: end; margin: 0 0 15px; }
+  .home-footer { flex-direction: row; justify-content: space-between; align-items: center; gap: 40px; padding: 30px clamp(54px, 8vw, 150px); }
 }
 
-@media (prefers-reduced-motion:reduce){
-  .field,.hero-phrase{opacity:1!important}
-  .scroll-cue{opacity:.74!important}
-  .mark{transform:translate3d(-50%,0,0) !important}
-  .scroll-cue-line::after{display:none}
-  .t-stagger-line{transition:none!important;opacity:1;transform:none;filter:none}
-  .t-skel-skeleton,.t-skel-content{transition:none!important}
-  .t-skel-skeleton.is-pulsing>*{animation:none!important}
-}
-@media (max-width:640px){
-  :root{
-    --space-hero-intro:clamp(96px,28vw,128px);
-    --space-intro-photo:clamp(88px,25vw,116px);
-    --space-photo-menu:clamp(128px,36vw,168px);
-    --space-menu-close:clamp(28px,8vw,36px);
-  }
-  .about .inner{display:block}
-  .about-headline{margin-bottom:clamp(20px,6vw,26px)}
-  /* The start-side inset is dropped on purpose. At 375px that clamp is a 30px
-     margin, which reads as a mistake rather than as the strip of pattern field
-     it is on a wide screen. Full-bleed is the decision on the phone. DESIGN.md
-     records it; do not "restore consistency" here.
-
-     The 62vh height that used to sit here is gone. It was chosen because a
-     width-derived frame collapsed to something too thin to read as the page's
-     one image — but the way it bought that height was by cropping to a 3:4
-     portrait, and half the room went with it. Full-bleed at the photograph's
-     own ratio is 238px on a 375px phone: shorter than 62vh and the whole
-     picture. If it needs to be taller than that, it needs a taller photograph,
-     not a narrower crop of this one. */
-  .photo{margin-inline-start:0}
-  .contact{padding-top:0}
-  .contact .inner{display:block;padding-top:clamp(12px,3.6vw,16px)}
-  .contact-body.t-stagger-line{grid-template-columns:minmax(0,1.1fr) minmax(144px,1fr);
-    gap:clamp(14px,4vw,18px)}
-  .contact-title{margin-bottom:clamp(6px,2vw,8px);
-    font-size:clamp(19px,5.5vw,22px);line-height:1.35}
-  .contact-address{font-size:var(--meta-size);line-height:1.8}
-  .contact-links{column-gap:clamp(10px,3vw,14px)}
-  .mark{height:108vh;top:-4vh}
-}
-@media (max-height:520px){
-  .hero-phrase{max-width:13ch;font-size:clamp(32px,min(9vw,10svh),56px);line-height:1}
-  .scroll-cue{bottom:max(10px,env(safe-area-inset-bottom,0px));height:clamp(48px,10svh,64px)}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

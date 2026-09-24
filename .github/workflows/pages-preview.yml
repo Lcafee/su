@@ -2,7 +2,7 @@ name: GitHub Pages preview
 
 on:
   push:
-    branches: [main]
+    branches: [main, preview/homepage-editorial-redesign]
 
 permissions:
   contents: read
