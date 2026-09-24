@@ -38,3 +38,15 @@ PRIVATE_ADMIN_CREDENTIALS.md
 managed-menu/
 managed-media/
 server/config.php
+
+
+# Production migration captures are sensitive/runtime-only. Never commit them.
+/h415280_lcafe_prod.sql
+/current.json
+/previous.json
+/managed-media.zip
+/menu-revisions.zip
+/migration-input/
+/*.sqlite
+/*.sqlite-wal
+/*.sqlite-shm

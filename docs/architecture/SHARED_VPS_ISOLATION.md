@@ -16,7 +16,7 @@ The only intentionally shared layer is the VPS operating system and explicitly s
 | Public domain | `l-cafe.ir`, `www.l-cafe.ir` | `ops.lcafe-esf.ir` |
 | Service | `lcafe-site-api.service` | `lcafe.service` |
 | Bind | `127.0.0.1:3100` | `127.0.0.1:3000` |
-| Runtime user | `lcafe-site` | `lcafe-ops` |
+| Runtime user | `lcafe-site` | Operations-owned; latest read-only preflight observed the existing service running as `root` |
 | Code root | `/srv/lcafe-site` | `/app` |
 | Data root | `/var/lib/lcafe-site` | `/var/lib/lcafe` |
 | Config root | `/etc/lcafe-site` | `/etc/lcafe` |
@@ -38,7 +38,7 @@ The public menu snapshot remains the customer-serving boundary; an API restart m
 
 ## Filesystem isolation
 
-`lcafe-site` must not have write access to Operations-owned state. `lcafe-ops` must not have write access to Main-Site-owned state.
+`lcafe-site` must not have write access to Operations-owned state. The reciprocal Operations runtime-user policy is owned by the Operations project; Main Site migration must not change or normalize the currently observed Operations service user.
 
 Required separation:
 
@@ -87,7 +87,7 @@ Expected split:
 
 A Main Site task may prepare or validate the Main Site server block but must not rewrite the Operations server block. An Operations task has the reciprocal restriction.
 
-Any change that genuinely modifies global Nginx behavior, shared TLS policy, host firewalling, system packages, OS users, disks, or host-wide resource limits is a **separate shared-infrastructure task** and must evaluate both applications before applying the change.
+Any change that genuinely modifies global Nginx behavior, shared TLS policy, host firewalling, system packages, peer-project users, disks, or host-wide resource limits is a **separate shared-infrastructure task** and must evaluate both applications before applying the change. Creating the dedicated `lcafe-site` user and installing a Main Site-only server block are permitted only when the owner explicitly scopes Main Site staging/provisioning; they still do not authorize changes to Operations.
 
 ## Deployment isolation
 
