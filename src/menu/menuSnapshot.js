@@ -4,12 +4,7 @@ const CURRENT_SNAPSHOT_URL = sitePath("managed-menu/current.json");
 const PREVIOUS_SNAPSHOT_URL = sitePath("managed-menu/previous.json");
 
 function publicAssetUrl(value) {
-  if (
-    value.startsWith("/")
-    || /^(?:https?:|data:|blob:)/i.test(value)
-  ) {
-    return value;
-  }
+  if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return value;
   return sitePath(value);
 }
 
