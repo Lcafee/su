@@ -28,10 +28,13 @@
   حقیقت production نیست. JSON/Excel/generator/importer قدیمی فقط در `legacy/`
   به‌عنوان تاریخچه نگه‌داری می‌شوند و هیچ وابستگی عملیاتی ندارند.
 
-پنل مدیریت دو نقش دارد: `owner` همه‌ی قابلیت‌های فعلی و بازیابی انتشار را دارد؛
-`cashier` عملیات روزمره‌ی دسته، آیتم، قیمت، تصویر، ترتیب، آرشیو و ذخیره/انتشار را
-انجام می‌دهد، اما metadata/options و تنظیمات پیشرفته را نمی‌بیند و backend نیز
-تغییر آن‌ها را رد می‌کند.
+پنل مدیریت دو حالت ساده و پیشرفته دارد؛ مالک هر دو حالت و گزارش تغییرات
+صندوق‌دار را می‌بیند. صندوق‌دار فقط حالت ساده دارد: نام، قیمت پایه و قیمت
+گزینه‌های موجود، تصویر، ترتیب، آرشیو، حذف و ذخیره/انتشار. تغییر ساختار گزینه‌ها،
+کدها، metadata و تنظیمات پیشرفته فقط برای مالک است و API نیز آن را کنترل می‌کند.
+تغییرات ذخیره‌شده و بارگذاری تصاویر با نام کاربر، زمان و مقدار قبل/بعد ثبت
+می‌شوند. حذف تا پیش از ذخیره قابل واگردانی است؛ تغییرات محلی ذخیره‌نشده گزارش
+نمی‌شوند. ناوبری دسته‌ها سمت راست و در موبایل به‌صورت نوار افقی است.
 هر دو نقش در production فعال‌اند. وضعیت mutable دقیق در `PROJECT_STATE.md`
 ثبت می‌شود.
 
@@ -86,3 +89,5 @@
 3. محتوای تأییدنشده اختراع نشود.
 4. source درست ویرایش شود؛ `dist/`، release و state زنده دستی ویرایش نشوند.
 5. متن بدون JavaScript، WebGL یا animation قابل مشاهده و استفاده بماند.
+
+Admin mode is global across the panel. Advanced shows every item's advanced settings immediately; Simple has only daily editing controls. Cashiers have Simple only. Owners activate Special Offer with a compact switch in Advanced; publication reflects it in the public menu.

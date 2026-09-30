@@ -142,6 +142,33 @@ history.
 Use only the current release's supported account/session tooling. Do not mutate
 credential/session fields with ad-hoc SQLite statements.
 
+## Cashier activity and admin modes
+
+Before activating the API version that supports activity reports, run the existing
+`server-node` migration runner against the persistent Main Site database to apply
+`002_admin_activity`. This is a release preparation step; local builds do not
+apply production migrations. `/readyz` requires its recorded migration marker.
+
+Every successful menu save and media upload writes an append-only activity row
+in the same SQLite transaction as its database mutation. A logging failure rolls
+back the mutation. The owner-only `/api/admin/activity` endpoint reports cashier
+actions in pages of 50, including identity, UTC timestamp, revision, and field
+before/after values. The UI displays timestamps in Asia/Tehran. Reports cover
+persisted changes and uploaded media, not unsaved browser drafts or historical
+actions before the migration. Include `admin_activity` in the existing full
+SQLite backup; no separate logging service or cleanup is required.
+
+Owners select one global Simple or Advanced mode. Advanced shows all item settings
+and the cashier report; Simple omits advanced fields and operational details.
+The Special Offer switch uses existing owner-only `metadata.featured` storage,
+projected to the public snapshot's `featured` flag; no separate migration is needed.
+Cashiers only receive Simple; the API permits
+changes to existing option prices but rejects option labels, codes, structure,
+metadata, category introduction/layout, and publish recovery. Deletions must
+declare the exact category/item UUIDs alongside a revision-checked menu save.
+Omitting a record without declaring its deletion remains an error. Menu row
+deletion retains media files and historical revision snapshots.
+
 ## Repository and documentation protocol
 
 For every production deployment record:

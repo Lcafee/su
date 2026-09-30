@@ -3,7 +3,8 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { requireCsrf, requireOwner, requireUser } from './auth.mjs';
 import { ApiError, booleanValue, optionalText, requiredText, requireObjectBody } from './http.mjs';
-import { publishStatus } from './menu-read.mjs';
+import { loadMenuDocument, publishStatus } from './menu-read.mjs';
+import { menuChanges, recordActivity } from './activity.mjs';
 import {
   discardPreparedSnapshot,
   prepareSnapshot,
@@ -161,7 +162,15 @@ function normalizeMenuInput(input) {
     };
   });
 
-  return { baseRevision, categories };
+  const deletions = {};
+  for (const [field, maximum] of [['deletedCategoryIds', 100], ['deletedItemIds', 1000]]) {
+    const ids = input[field] ?? [];
+    if (!Array.isArray(ids) || ids.length > maximum || ids.some((id) => typeof id !== 'string' || !isUuid(id))) {
+      throw new ApiError(422, 'validation_error', `${field} must contain UUIDs.`);
+    }
+    deletions[field] = [...new Set(ids.map((id) => id.toLowerCase()))];
+  }
+  return { baseRevision, categories, ...deletions };
 }
 
 function idSet(db, table) {
@@ -174,11 +183,16 @@ function assertNoImplicitDeletes(db, document) {
   const submittedItems = new Set(document.categories.flatMap((category) => category.items.map((item) => item.id)));
   const missingCategoryIds = [...idSet(db, 'menu_categories')].filter((id) => !submittedCategories.has(id));
   const missingItemIds = [...idSet(db, 'menu_items')].filter((id) => !submittedItems.has(id));
-  if (missingCategoryIds.length || missingItemIds.length) {
+  const declaredCategories = new Set(document.deletedCategoryIds);
+  const declaredItems = new Set(document.deletedItemIds);
+  if (missingCategoryIds.length !== declaredCategories.size
+      || missingItemIds.length !== declaredItems.size
+      || missingCategoryIds.some((id) => !declaredCategories.has(id))
+      || missingItemIds.some((id) => !declaredItems.has(id))) {
     throw new ApiError(
       422,
       'archive_required',
-      'Existing categories and items must be archived, not omitted.',
+      'Every removed category and item must be explicitly declared for deletion.',
       { missingCategoryIds, missingItemIds },
     );
   }
@@ -206,11 +220,13 @@ function assertActorCanSaveMenu(db, actor, document) {
   ).all().map((row) => [row.id, row]));
 
   for (const [id, stored] of storedCategories) {
+    if (!submittedCategories.has(id)) continue;
     if (submittedCategories.get(id)?.publicId !== stored.public_id) {
       throw new ApiError(422, 'immutable_identifier', 'Existing category identifiers cannot be changed.');
     }
   }
   for (const [id, stored] of storedItems) {
+    if (!submittedItems.has(id)) continue;
     if (submittedItems.get(id)?.publicId !== stored.public_id) {
       throw new ApiError(422, 'immutable_identifier', 'Existing item identifiers cannot be changed.');
     }
@@ -251,15 +267,17 @@ function assertActorCanSaveMenu(db, actor, document) {
   for (const [id, submitted] of submittedItems) {
     const stored = storedItems.get(id);
     if (!stored) {
-      if (!isDeepStrictEqual(submitted.metadata, []) || submitted.options.length !== 0) {
+      if (Object.keys(submitted.metadata).length !== 0 || submitted.options.length !== 0) {
         cashierAdvancedFieldError('item');
       }
       continue;
     }
     let storedMetadata;
     try { storedMetadata = JSON.parse(stored.metadata_json); } catch { storedMetadata = []; }
+    // Existing option prices are daily work; option structure remains owner-only.
+    const withoutPrice = (options) => options.map(({ price, ...option }) => option);
     if (!isDeepStrictEqual(submitted.metadata, storedMetadata)
-        || !isDeepStrictEqual(submitted.options, storedOptions.get(id) || [])) {
+        || !isDeepStrictEqual(withoutPrice(submitted.options), withoutPrice(storedOptions.get(id) || []))) {
       cashierAdvancedFieldError('item');
     }
   }
@@ -289,6 +307,8 @@ function persistMenuDocument(db, document, oldMedia) {
   const existingCategories = idSet(db, 'menu_categories');
   const existingItems = idSet(db, 'menu_items');
   const now = sqlNow();
+  const deleteItem = db.prepare('DELETE FROM menu_items WHERE id = ?');
+  for (const id of document.deletedItemIds) deleteItem.run(id);
 
   const insertCategory = db.prepare(`
     INSERT INTO menu_categories
@@ -368,6 +388,10 @@ function persistMenuDocument(db, document, oldMedia) {
     }
   }
 
+  // Items moved out of a deleted category have been reassigned before its removal.
+  const deleteCategory = db.prepare('DELETE FROM menu_categories WHERE id = ?');
+  for (const id of document.deletedCategoryIds) deleteCategory.run(id);
+
   const retire = db.prepare(
     'UPDATE media_assets SET retired_at = COALESCE(retired_at, ?) WHERE id = ?'
   );
@@ -437,6 +461,7 @@ function buildPublicSnapshot(db, revision) {
       description: row.description ?? null,
       price: row.price_text ?? null,
       metadata: decodedMetadata(row.metadata_json),
+      featured: decodedMetadata(row.metadata_json).featured === true,
       options: optionsByItem.get(row.id) || [],
       image: null,
     };
@@ -520,6 +545,7 @@ function saveMenuWithLock(db, config, actor, input) {
     assertNoImplicitDeletes(db, document);
     assertActorCanSaveMenu(db, actor, document);
     assertMediaExists(db, document);
+    const before = loadMenuDocument(db);
     const oldMedia = referencedMediaSet(db);
     persistMenuDocument(db, document, oldMedia);
 
@@ -532,6 +558,7 @@ function saveMenuWithLock(db, config, actor, input) {
         (revision, publish_state, actor_user_id, created_at, lifecycle_retained)
       VALUES (?, 'pending', ?, ?, 0)
     `).run(revision, actor.id, now);
+    recordActivity(db, actor, 'menu.save', revision, { changes: menuChanges(before, document) });
     prepared = prepareSnapshot(config, buildPublicSnapshot(db, revision), revision);
     db.exec('COMMIT');
   } catch (error) {

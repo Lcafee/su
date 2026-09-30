@@ -3,6 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { MetadataEditor } from "./MetadataEditor";
+import { PriceOptions } from "./PriceOptions";
 
 function ItemCardComponent({
   item,
@@ -16,6 +17,7 @@ function ItemCardComponent({
   onUpdate,
   onMove,
   onUpload,
+  onDelete,
 }) {
   const nameInputRef = useRef(null);
   const dragId = `item:${item.id}`;
@@ -106,12 +108,12 @@ function ItemCardComponent({
             />
           </label>
           <label className="item-price-field">
-            <span>قیمت</span>
+            <span>{item.options.length ? "قیمت پایه (اختیاری)" : "قیمت"}</span>
             <input
               dir="auto"
               value={item.price ?? ""}
               onChange={(event) => update({ price: event.target.value || null })}
-              placeholder="مثلاً ۱۸۰"
+              placeholder={item.options.length ? "قیمت‌ها در گزینه‌های زیر" : "مثلاً ۱۸۰"}
               disabled={disabled}
               maxLength="64"
             />
@@ -133,6 +135,7 @@ function ItemCardComponent({
         </div>
 
         <div className="item-quick-actions">
+          <button type="button" className="quiet-button danger-button" onClick={() => onDelete(categoryId, item.id)} disabled={disabled || uploading}>حذف آیتم</button>
           <button
             type="button"
             className={item.archived ? "quiet-button restore-button" : "quiet-button danger-button"}
@@ -147,6 +150,8 @@ function ItemCardComponent({
       </header>
 
       <div className="item-card-body">
+          <PriceOptions options={item.options} advanced={advanced} disabled={disabled}
+            onChange={(options) => update({ options })} />
           <div className="item-detail-grid">
             <label className="item-description-field">
               <span>توضیحات</span>
@@ -182,16 +187,18 @@ function ItemCardComponent({
           </div>
 
           {advanced ? (
-            <details className="owner-settings item-owner-settings">
-              <summary>تنظیمات پیشرفته مالک</summary>
-              <MetadataEditor
+            <section className="owner-settings item-owner-settings">
+              <label className="offer-toggle">
+                <span>پیشنهاد ویژه</span>
+                <input type="checkbox" role="switch" checked={item.metadata?.featured === true}
+                  disabled={disabled} onChange={(event) => update({ metadata: { ...item.metadata, featured: event.target.checked } })} />
+                <span className="offer-toggle-track" aria-hidden="true" />
+              </label>
+              <fieldset disabled={disabled} className="metadata-controls"><MetadataEditor
                 metadata={item.metadata}
                 onChange={(metadata) => update({ metadata })}
-              />
-              {item.options.length > 0 ? (
-                <p className="preserved-note">{item.options.length} گزینه قیمت این آیتم بدون تغییر حفظ می‌شود.</p>
-              ) : null}
-            </details>
+              /></fieldset>
+            </section>
           ) : null}
       </div>
     </article>

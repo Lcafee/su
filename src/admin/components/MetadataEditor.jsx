@@ -83,20 +83,23 @@ function MetadataValue({ label, value, onChange }) {
 }
 
 export function MetadataEditor({ metadata, onChange }) {
-  const isEmpty = Array.isArray(metadata)
-    ? metadata.length === 0
-    : Object.keys(metadata || {}).length === 0;
+  const visibleMetadata = Array.isArray(metadata) ? metadata : Object.fromEntries(
+    Object.entries(metadata || {}).filter(([key]) => key !== "featured"),
+  );
+  const isEmpty = Object.keys(visibleMetadata).length === 0;
 
   return (
-    <details className="metadata-editor">
-      <summary>اطلاعات تکمیلی</summary>
+    <section className="metadata-editor" aria-label="اطلاعات تکمیلی">
+      <strong>اطلاعات تکمیلی</strong>
       <div className="metadata-fields">
         {isEmpty ? (
           <p className="empty-note">این آیتم اطلاعات تکمیلی قابل ویرایش ندارد.</p>
         ) : (
-          <MetadataValue label="اطلاعات" value={metadata} onChange={onChange} />
+          <MetadataValue label="اطلاعات" value={visibleMetadata} onChange={(value) => onChange(
+            Array.isArray(value) ? value : { ...metadata, ...value },
+          )} />
         )}
       </div>
-    </details>
+    </section>
   );
 }

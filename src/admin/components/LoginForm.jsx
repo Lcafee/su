@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BrandMark } from "./BrandMark";
 
 export function LoginForm({ busy, error, onLogin }) {
   const [username, setUsername] = useState("");
@@ -12,8 +13,7 @@ export function LoginForm({ busy, error, onLogin }) {
   return (
     <main className="login-page">
       <section className="login-card" aria-labelledby="login-title">
-        <div className="brand-mark" aria-hidden="true">L</div>
-        <p className="eyebrow">ال کافه</p>
+        <BrandMark />
         <h1 id="login-title">مدیریت منو</h1>
         <p className="login-copy">برای ویرایش منو وارد شوید.</p>
 

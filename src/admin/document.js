@@ -32,9 +32,15 @@ export function normalizeDocument(document) {
   };
 }
 
-export function toSavePayload(document) {
+export function toSavePayload(document, savedDocument = null) {
+  const categoryIds = new Set(document.categories.map((category) => category.id));
+  const itemIds = new Set(document.categories.flatMap((category) => category.items.map((item) => item.id)));
   return {
     baseRevision: document.revision,
+    ...(savedDocument ? {
+      deletedCategoryIds: savedDocument.categories.filter((category) => !categoryIds.has(category.id)).map((category) => category.id),
+      deletedItemIds: savedDocument.categories.flatMap((category) => category.items).filter((item) => !itemIds.has(item.id)).map((item) => item.id),
+    } : {}),
     categories: document.categories.map((category) => ({
       id: category.id,
       publicId: category.publicId,
@@ -134,6 +140,9 @@ export function firstDocumentIssue(document) {
     if (!category.title.trim()) return "نام همه دسته‌بندی‌ها باید وارد شود.";
     for (const item of category.items) {
       if (!item.name.trim()) return "نام همه آیتم‌ها باید وارد شود.";
+      if (item.options.some((option) => !option.label.trim() || !option.price.trim())) {
+        return `نام و قیمت همه گزینه‌های «${item.name}» باید وارد شود.`;
+      }
     }
   }
   return null;

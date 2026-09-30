@@ -83,6 +83,12 @@ function Hero() {
         <TextLink href="#story" className="home-hero-link">کشف ال کافه</TextLink>
       </div>
       <span className="home-hero-index" aria-hidden="true">L CAFE&nbsp; / &nbsp;ISFAHAN</span>
+      <a className="home-scroll-cue" href="#story" aria-label="برای دیدن ادامه صفحه به پایین بروید">
+        <svg viewBox="0 0 24 160" width="24" height="160" fill="none" aria-hidden="true">
+          <path d="M12 1v154m-8-8 8 8 8-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span>پایین بروید</span>
+      </a>
     </section>
   );
 }

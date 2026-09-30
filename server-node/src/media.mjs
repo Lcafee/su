@@ -5,6 +5,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 
 import { requireCsrf, requireUser } from './auth.mjs';
+import { recordActivity } from './activity.mjs';
 import { ApiError } from './http.mjs';
 
 const FORMAT_TO_MIME = Object.freeze({
@@ -238,7 +239,18 @@ export function registerMediaRoute(app, { db, config, mutationLock }) {
       throw new ApiError(413, 'upload_too_large', 'The uploaded image exceeds the configured size limit.');
     }
 
-    const media = await mutationLock.run(() => importMediaBuffer(db, config, sourceBytes));
+    const media = await mutationLock.run(async () => {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const result = await importMediaBuffer(db, config, sourceBytes);
+        recordActivity(db, context.user, 'media.upload', null, { mediaId: result.id });
+        db.exec('COMMIT');
+        return result;
+      } catch (error) {
+        try { db.exec('ROLLBACK'); } catch {}
+        throw error;
+      }
+    });
     reply.code(201);
     return { media };
   });

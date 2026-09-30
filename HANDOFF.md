@@ -84,10 +84,16 @@ approval. See `OPERATIONS.md` for the production runbook and
 
 Production menu copy, order, prices, photos, Sepidz codes, variants, and add-ons
 are edited only through the VPS `/admin/`, saved to SQLite, and published to the managed snapshot.
-Owners have the full editor and publish-retry control. Cashiers can perform
-normal category/item/media/order/archive/save-and-publish operations, while
-advanced category fields and item metadata/options are hidden and rejected by
-the API if changed. Accounts are created and passwords are rotated only with
+Owners choose one global Simple or Advanced mode; Advanced opens every category,
+shows all advanced fields directly, and includes the cashier activity report.
+Simple omits those fields and tools entirely. Special Offer is a minimal switch
+in Advanced, persisted through `metadata.featured` and published as `featured`.
+Cashiers only use Simple and can edit existing option prices alongside normal
+category/item/media/order/archive/delete/save-and-publish operations. Advanced
+category fields, metadata, option structure/codes, and publish retry are
+owner-only and enforced by the Node API. Apply the new `002_admin_activity`
+Node migration before activating this API version; no production migration was
+performed by the UI change. Accounts are created and passwords are rotated only with
 interactive host CLIs; rotation preserves the role and invalidates prior
 sessions through `admin_users.session_epoch`.
 Do not edit JSX, archived inputs, or the local fixture to change the live menu.

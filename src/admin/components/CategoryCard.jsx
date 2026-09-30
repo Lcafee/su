@@ -24,9 +24,14 @@ function CategoryCardComponent({
   onUpload,
   onMoveCategoryByOffset,
   onCreateItem,
+  onDeleteItem,
+  onDeleteCategory,
+  navigationTarget,
 }) {
   const [expanded, setExpanded] = useState(Boolean(category._expanded) || index === 0);
   const categoryTitleRef = useRef(null);
+  const sectionRef = useRef(null);
+  const handledNavigation = useRef(null);
   const dragId = `category:${category.id}`;
   const {
     attributes,
@@ -47,6 +52,20 @@ function CategoryCardComponent({
   const itemDragIds = visibleItems.map((item) => `item:${item.id}`);
 
   useEffect(() => {
+    if (navigationTarget?.id === category.id) setExpanded(true);
+  }, [category.id, navigationTarget]);
+
+  useEffect(() => {
+    if (navigationTarget?.id !== category.id || !expanded || handledNavigation.current === navigationTarget.sequence) return undefined;
+    const frame = requestAnimationFrame(() => {
+      sectionRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      categoryTitleRef.current?.focus({ preventScroll: true });
+      handledNavigation.current = navigationTarget.sequence;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [category.id, expanded, navigationTarget]);
+
+  useEffect(() => {
     const targetsCategory = focusTarget?.type === "category" && focusTarget.id === category.id;
     const targetsItem = focusTarget?.type === "item" && focusTarget.categoryId === category.id;
     if (!targetsCategory && !targetsItem) return undefined;
@@ -59,14 +78,15 @@ function CategoryCardComponent({
     return () => cancelAnimationFrame(frame);
   }, [category.id, focusTarget]);
 
-  const displayExpanded = autoExpand || expanded;
+  const displayExpanded = advanced || autoExpand || expanded;
   const countLabel = visibleItems.length === category.items.length
     ? `${faNumber.format(category.items.length)} آیتم`
     : `${faNumber.format(visibleItems.length)} از ${faNumber.format(category.items.length)} آیتم`;
 
   return (
     <section
-      ref={setNodeRef}
+      ref={(node) => { setNodeRef(node); sectionRef.current = node; }}
+      id={`admin-category-${category.id}`}
       style={style}
       className={`category-card${category.archived ? " is-archived" : ""}${isDragging ? " is-dragging" : ""}`}
     >
@@ -86,10 +106,10 @@ function CategoryCardComponent({
           type="button"
           className="category-toggle"
           aria-expanded={displayExpanded}
-          aria-disabled={autoExpand || undefined}
+          aria-disabled={advanced || autoExpand || undefined}
           title={autoExpand ? "نتیجه‌های جست‌وجو موقتاً باز هستند" : undefined}
           onClick={() => {
-            if (!autoExpand) setExpanded((current) => !current);
+            if (!advanced && !autoExpand) setExpanded((current) => !current);
           }}
         >
           <span className="category-title-line">
@@ -100,6 +120,8 @@ function CategoryCardComponent({
           <span className="chevron" aria-hidden="true">{displayExpanded ? "−" : "+"}</span>
         </button>
         <div className="category-header-actions">
+          <button type="button" className="quiet-button danger-button" disabled={disabled || uploadingIds.size > 0}
+            onClick={() => onDeleteCategory(category.id)}>حذف دسته</button>
           <button
             type="button"
             className="icon-button"
@@ -142,7 +164,7 @@ function CategoryCardComponent({
                 maxLength="191"
               />
             </label>
-            <label className="wide-field">
+            {advanced ? <label className="wide-field">
               <span>توضیح کوتاه دسته</span>
               <textarea
                 dir="auto"
@@ -152,12 +174,11 @@ function CategoryCardComponent({
                 disabled={disabled}
                 maxLength="4000"
               />
-            </label>
+            </label> : null}
           </div>
 
           {advanced ? (
-            <details className="owner-settings">
-              <summary>تنظیمات پیشرفته مالک</summary>
+            <section className="owner-settings">
               <div className="category-fields owner-settings-fields">
                 <label>
                   <span>نوع نمایش</span>
@@ -171,7 +192,7 @@ function CategoryCardComponent({
                   </select>
                 </label>
               </div>
-            </details>
+            </section>
           ) : null}
 
           <div className="category-item-actions">
@@ -208,6 +229,7 @@ function CategoryCardComponent({
                   onUpdate={onUpdateItem}
                   onMove={onMoveItem}
                   onUpload={onUpload}
+                  onDelete={onDeleteItem}
                 />
               ))}
             </div>

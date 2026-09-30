@@ -51,6 +51,9 @@ a { color: inherit; }
 .home-text-link:hover .home-text-link-arrow { transform: translateX(-5px); }
 .home-hero-link { color: var(--home-cream); }
 .home-hero-index { display: none; }
+.home-scroll-cue { position: absolute; bottom: max(22px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 64px; color: #fff; text-decoration: none; }
+.home-scroll-cue svg { display: block; height: clamp(96px, 18svh, 180px); width: 24px; }
+.home-scroll-cue span { font-size: 12px; text-shadow: 0 1px 6px #211916; }
 @keyframes home-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
 .home-story { position: relative; overflow: hidden; padding: 96px 24px 66px; background: var(--home-ivory); }

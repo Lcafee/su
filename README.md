@@ -49,11 +49,22 @@ reuses this same fixture and does not change the production snapshot boundary.
   static Pages entry redirect to the unified canonical `/menu`
 - `/admin/` — separately built authenticated menu editor
 
-The admin has two database-backed roles. Owners receive the complete editor and
-publish-recovery controls. Cashiers retain normal category, item, price, media,
-ordering, archive, save, and publish work while advanced category fields, item
-metadata/options, and publish retry remain owner-only. The Node API enforces this
-boundary independently of the React UI.
+The admin has two database-backed roles. Owners select one global Simple or Advanced mode;
+cashiers only receive Simple. Both can edit daily category/item details, base
+and existing option prices, images, ordering, archives, and explicit deletions.
+Category introductions/layout, item metadata, option structure/codes, and publish
+retry remain owner-only. The Node API enforces this independently of the UI.
+Advanced expands every category and shows all advanced fields directly; Simple
+omits metadata, option management, revisions, recovery tools, and reports.
+Special Offer is an owner-only switch stored as `metadata.featured` and projected
+to the public snapshot's `featured` flag during publication.
+The right-side category index opens and focuses each section (a horizontal bar
+on phones). Deletions take effect on save and can be undone before saving.
+Owners receive a paginated cashier activity report with timestamps, revisions,
+and before/after values. Menu saves and media uploads are logged transactionally;
+failed saves are not reported as completed changes. Unsaved local drafts are not
+persisted activity. Apply `server-node/migrations/002_admin_activity.sql` with the
+existing migration runner before activating the new API; see `OPERATIONS.md`.
 Admin sessions are bound to a database credential generation; the interactive
 password-rotation CLI increments it without changing either role's permissions.
 

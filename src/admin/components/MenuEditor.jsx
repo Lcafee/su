@@ -80,7 +80,7 @@ function writeMenuEditorViewState(storageKey, viewState) {
 }
 
 function itemMatches(item, query) {
-  return [item.name, item.price, item.description]
+  return [item.name, item.price, item.description, ...item.options.flatMap((option) => [option.label, option.price])]
     .filter(Boolean)
     .some((value) => String(value).toLocaleLowerCase("fa").includes(query));
 }
@@ -101,9 +101,12 @@ export function MenuEditor({
   onUpload,
   onCreateCategory,
   onCreateItem,
+  onDeleteItem,
+  onDeleteCategory,
 }) {
   const defaultVisibility = advanced ? "all" : "active";
   const [viewState, setViewState] = useState(() => readMenuEditorViewState(storageKey, advanced));
+  const [navigationTarget, setNavigationTarget] = useState(null);
   const { query, visibility, quickCategoryId } = viewState;
   const availableCategories = useMemo(
     () => categoryChoices.filter((category) => !category.archived),
@@ -111,6 +114,10 @@ export function MenuEditor({
   );
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLocaleLowerCase("fa");
+
+  useEffect(() => {
+    setViewState((current) => ({ ...current, query: "", visibility: advanced ? "all" : "active" }));
+  }, [advanced]);
 
   useEffect(() => {
     writeMenuEditorViewState(storageKey, viewState);
@@ -284,6 +291,21 @@ export function MenuEditor({
           )}
         </div>
 
+        <div className="editor-navigation-layout">
+          <nav className="category-navigation" aria-label="رفتن به دسته‌بندی">
+            <h3>دسته‌بندی‌ها</h3>
+            <div>{categoryChoices.map((category) => (
+              <button type="button" key={category.id} aria-controls={`admin-category-${category.id}`}
+                aria-current={navigationTarget?.id === category.id ? "location" : undefined}
+                onClick={() => {
+                  setViewState((current) => ({ ...current, query: "", visibility: "all" }));
+                  setNavigationTarget({ id: category.id, sequence: (navigationTarget?.sequence || 0) + 1 });
+                }}>
+                <span>{category.title || "دسته بدون نام"}</span>
+                {category.archived ? <small>آرشیوی</small> : null}
+              </button>
+            ))}</div>
+          </nav>
         <SortableContext items={categoryDragIds} strategy={verticalListSortingStrategy}>
           <div className="category-list">
             {visibleCategories.length === 0 ? (
@@ -314,11 +336,15 @@ export function MenuEditor({
                   onUpload={onUpload}
                   onMoveCategoryByOffset={onMoveCategoryByOffset}
                   onCreateItem={handleCreateItem}
+                  onDeleteItem={onDeleteItem}
+                  onDeleteCategory={onDeleteCategory}
+                  navigationTarget={navigationTarget}
                 />
               );
             })}
           </div>
         </SortableContext>
+        </div>
       </section>
     </DndContext>
   );

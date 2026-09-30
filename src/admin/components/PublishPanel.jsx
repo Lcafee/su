@@ -35,7 +35,7 @@ function publishPresentation(status) {
     return {
       tone: "pending",
       title: "منوی عمومی به‌روز شد؛ ثبت وضعیت کامل نیست",
-      message: "تغییرات در MySQL ذخیره و فایل عمومی برای مشتریان به‌روز شده است، اما ثبت وضعیت انتشار باید بازیابی شود.",
+      message: "تغییرات ذخیره و فایل عمومی برای مشتریان به‌روز شده است، اما ثبت وضعیت انتشار باید بازیابی شود.",
       recovery: true,
     };
   }
@@ -52,7 +52,7 @@ function publishPresentation(status) {
       tone: "neutral",
       title: "هنوز نسخه عمومی وجود ندارد",
       message: numericRevision(status.editRevision)
-        ? "ویرایش فعلی در MySQL ذخیره شده است؛ اولین انتشار، نسخه عمومی مشتریان را می‌سازد."
+        ? "ویرایش فعلی ذخیره شده است؛ اولین انتشار، نسخه عمومی مشتریان را می‌سازد."
         : "پس از اولین ذخیره و انتشار، نسخه عمومی منو برای مشتریان ساخته می‌شود.",
       recovery: false,
     };
@@ -61,20 +61,27 @@ function publishPresentation(status) {
     return {
       tone: "pending",
       title: "تغییرات ذخیره شد؛ انتشار در انتظار است",
-      message: `ویرایش جدید در MySQL ذخیره شده است. ${customerViewMessage(status)}`,
+      message: `ویرایش جدید ذخیره شده است. ${customerViewMessage(status)}`,
       recovery: true,
     };
   }
   return {
     tone: "success",
     title: "نسخه ذخیره‌شده و منوی عمومی هماهنگ‌اند",
-    message: `MySQL و منوی عمومی مشتریان هر دو روی نسخه ${faNumber.format(numericRevision(status.publishedRevision))} هستند.`,
+    message: `نسخه ذخیره‌شده و منوی عمومی مشتریان هر دو روی نسخه ${faNumber.format(numericRevision(status.publishedRevision))} هستند.`,
     recovery: false,
   };
 }
 
-export function PublishPanel({ status, retrying, onRetry, canRetry }) {
+export function PublishPanel({ status, retrying, onRetry, canRetry, advanced }) {
   const presentation = publishPresentation(status);
+  if (!advanced) return (
+    <section className={`publish-panel tone-${presentation.tone}`} aria-live="polite">
+      <strong>{!status ? "در حال دریافت وضعیت…" : presentation.tone === "success"
+        ? "منوی مشتریان به‌روز است." : presentation.tone === "error" || presentation.tone === "pending"
+          ? "تغییرات ذخیره شد؛ انتشار هنوز کامل نشده است." : "منو هنوز منتشر نشده است."}</strong>
+    </section>
+  );
   return (
     <section className={`publish-panel tone-${presentation.tone}`} aria-live="polite">
       <div className="publish-panel-copy">
@@ -82,7 +89,7 @@ export function PublishPanel({ status, retrying, onRetry, canRetry }) {
         <p>{presentation.message}</p>
         <dl className="revision-summary" aria-label="نسخه‌های ذخیره و انتشار">
           <div>
-            <dt>نسخه ذخیره‌شده در MySQL</dt>
+            <dt>نسخه ذخیره‌شده</dt>
             <dd>{savedRevisionLabel(status)}</dd>
           </div>
           <div>
@@ -92,7 +99,7 @@ export function PublishPanel({ status, retrying, onRetry, canRetry }) {
         </dl>
         {presentation.recovery && !canRetry ? (
           <p className="cashier-recovery-guidance">
-            برای بازیابی انتشار، وضعیت را به مالک اطلاع دهید؛ تلاش دوباره فقط در حساب مالک در دسترس است.
+            برای بازیابی انتشار، وضعیت را به مالک اطلاع دهید.
           </p>
         ) : null}
       </div>

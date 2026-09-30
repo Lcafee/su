@@ -34,6 +34,8 @@ import {
   MenuEditor,
 } from "./components/MenuEditor";
 import { PublishPanel } from "./components/PublishPanel";
+import { BrandMark } from "./components/BrandMark";
+import { ActivityReport } from "./components/ActivityReport";
 
 const faNumber = new Intl.NumberFormat("fa-IR");
 
@@ -88,14 +90,14 @@ function saveStatePresentation({
   if (hasUnsavedChanges) {
     return {
       tone: "dirty",
-      title: `${faNumber.format(changeCount)} بخش فقط روی این صفحه تغییر کرده و هنوز در MySQL ذخیره نشده است.`,
+      title: `${faNumber.format(changeCount)} بخش فقط روی این صفحه تغییر کرده و هنوز ذخیره نشده است.`,
       detail: `آخرین ویرایش ذخیره‌شده نسخه ${faNumber.format(editRevision)} است. ${publicationText}`,
     };
   }
   if (publishStatus?.state === "failed") {
     return {
       tone: "error",
-      title: `ویرایش نسخه ${faNumber.format(editRevision)} در MySQL ذخیره شده است.`,
+      title: `ویرایش نسخه ${faNumber.format(editRevision)} ذخیره شده است.`,
       detail: publicationText,
     };
   }
@@ -106,38 +108,41 @@ function saveStatePresentation({
   ) {
     return {
       tone: "pending",
-      title: `ویرایش نسخه ${faNumber.format(editRevision)} در MySQL ذخیره شده است.`,
+      title: `ویرایش نسخه ${faNumber.format(editRevision)} ذخیره شده است.`,
       detail: publicationText,
     };
   }
   return {
     tone: "saved",
-    title: `ویرایش نسخه ${faNumber.format(editRevision)} در MySQL ذخیره شده است.`,
+    title: `ویرایش نسخه ${faNumber.format(editRevision)} ذخیره شده است.`,
     detail: publicationText,
   };
 }
 
-function saveResultNotice(result, isOwner) {
+function saveResultNotice(result, isOwner, advanced) {
+  const simpleMessage = result.published && result.publishState === "published"
+    ? "تغییرات ذخیره و در منوی مشتریان منتشر شد."
+    : "تغییرات ذخیره شد؛ انتشار هنوز کامل نشده است.";
   const revision = faNumber.format(result.revision);
   if (result.publishState === "published_status_pending") {
     return {
       tone: "pending",
-      message: isOwner
-        ? `ویرایش نسخه ${revision} در MySQL ذخیره و فایل عمومی به‌روز شد؛ ثبت وضعیت انتشار را از بخش بالا بازیابی کنید.`
-        : `ویرایش نسخه ${revision} در MySQL ذخیره و فایل عمومی به‌روز شد؛ مالک باید ثبت وضعیت انتشار را بازیابی کند.`,
+      message: !advanced ? simpleMessage : isOwner
+        ? `ویرایش نسخه ${revision} ذخیره و فایل عمومی به‌روز شد؛ ثبت وضعیت انتشار را از بخش بالا بازیابی کنید.`
+        : `ویرایش نسخه ${revision} ذخیره و فایل عمومی به‌روز شد؛ مالک باید ثبت وضعیت انتشار را بازیابی کند.`,
     };
   }
   if (result.published && result.publishState === "published") {
     return {
       tone: "success",
-      message: `ویرایش نسخه ${revision} در MySQL ذخیره و در منوی عمومی منتشر شد.`,
+      message: advanced ? `ویرایش نسخه ${revision} ذخیره و در منوی عمومی منتشر شد.` : simpleMessage,
     };
   }
   return {
     tone: result.publishState === "failed" ? "error" : "pending",
-    message: isOwner
-      ? `ویرایش نسخه ${revision} در MySQL ذخیره شد؛ منوی عمومی به‌روز نشد و از بخش وضعیت انتشار قابل بازیابی است.`
-      : `ویرایش نسخه ${revision} در MySQL ذخیره شد؛ منوی عمومی به‌روز نشد و مالک باید انتشار را بازیابی کند.`,
+    message: !advanced ? simpleMessage : isOwner
+      ? `ویرایش نسخه ${revision} ذخیره شد؛ منوی عمومی به‌روز نشد و از بخش وضعیت انتشار قابل بازیابی است.`
+      : `ویرایش نسخه ${revision} ذخیره شد؛ منوی عمومی به‌روز نشد و مالک باید انتشار را بازیابی کند.`,
   };
 }
 
@@ -172,7 +177,7 @@ async function fetchEditorData() {
 function LoadingScreen() {
   return (
     <main className="system-page" aria-busy="true">
-      <div className="loading-mark" aria-hidden="true">L</div>
+      <BrandMark />
       <p>در حال آماده‌سازی مدیریت منو…</p>
     </main>
   );
@@ -207,6 +212,7 @@ export function AdminApp() {
   const [conflict, setConflict] = useState(null);
   const [undoState, setUndoState] = useState(null);
   const [focusTarget, setFocusTarget] = useState(null);
+  const [mode, setMode] = useState("simple");
 
   const applyEditorData = useCallback(({ menu, publishStatus: nextStatus }) => {
     setSavedDocument(cloneDocument(menu));
@@ -272,6 +278,7 @@ export function AdminApp() {
   const uploadInProgress = uploadingIds.size > 0;
   const editorDisabled = saving || conflict !== null;
   const isOwner = session?.user?.role === "owner";
+  const advanced = isOwner && mode === "advanced";
   const menuEditorStorageKey = menuEditorViewStorageKey(session?.user);
   const savePresentation = saveStatePresentation({
     draft,
@@ -300,6 +307,7 @@ export function AdminApp() {
       const editorData = await fetchEditorData();
       setSession(nextSession);
       applyEditorData(editorData);
+      setMode("simple");
     } catch (error) {
       setLoginError(messageForError(error));
     } finally {
@@ -373,6 +381,24 @@ export function AdminApp() {
     setUndoState(null);
   }, [draft]);
 
+  const handleDeleteItem = useCallback((categoryId, itemId) => {
+    const item = draft.categories.find((category) => category.id === categoryId)?.items.find((entry) => entry.id === itemId);
+    if (!item || !window.confirm(`آیتم «${item.name}» حذف شود؟ حذف پس از ذخیره و انتشار اعمال می‌شود. تا پیش از ذخیره می‌توانید آن را واگردانی کنید.`)) return;
+    setUndoState({ document: cloneDocument(draft), message: `آیتم «${item.name}» برای حذف انتخاب شد.` });
+    setDraft(updateCategory(draft, categoryId, {
+      items: draft.categories.find((category) => category.id === categoryId).items.filter((entry) => entry.id !== itemId),
+    }));
+    setNotice(null);
+  }, [draft]);
+
+  const handleDeleteCategory = useCallback((categoryId) => {
+    const category = draft.categories.find((entry) => entry.id === categoryId);
+    if (!category || !window.confirm(`دسته «${category.title}» و ${faNumber.format(category.items.length)} آیتم آن حذف شوند؟ حذف پس از ذخیره و انتشار اعمال می‌شود. تا پیش از ذخیره می‌توانید واگردانی کنید.`)) return;
+    setUndoState({ document: cloneDocument(draft), message: `دسته «${category.title}» برای حذف انتخاب شد.` });
+    setDraft({ ...draft, categories: draft.categories.filter((entry) => entry.id !== categoryId) });
+    setNotice(null);
+  }, [draft]);
+
   const handleCreateItem = useCallback((categoryId) => {
     if (!draft) return;
     const result = createItem(draft, categoryId);
@@ -393,7 +419,7 @@ export function AdminApp() {
       }));
       setNotice({
         tone: "success",
-        message: "تصویر آماده است. برای ذخیره در MySQL و اعمال در منوی عمومی، ذخیره و انتشار را بزنید.",
+        message: "تصویر آماده است. برای ذخیره و اعمال در منوی عمومی، ذخیره و انتشار را بزنید.",
       });
     } catch (error) {
       if (!handleSessionExpiry(error)) {
@@ -439,7 +465,7 @@ export function AdminApp() {
     setSaving(true);
     setNotice(null);
     try {
-      const result = await saveMenuDocument(session.csrfToken, toSavePayload(draft));
+      const result = await saveMenuDocument(session.csrfToken, toSavePayload(draft, savedDocument));
       const nextDocument = {
         ...draft,
         revision: result.revision,
@@ -455,7 +481,7 @@ export function AdminApp() {
         state: result.publishState,
         error: result.published ? null : "نسخه قبلی منوی عمومی همچنان فعال است.",
       });
-      setNotice(saveResultNotice(result, isOwner));
+      setNotice(saveResultNotice(result, isOwner, advanced));
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         setConflict({ currentRevision: error.details.currentRevision });
@@ -465,7 +491,7 @@ export function AdminApp() {
     } finally {
       setSaving(false);
     }
-  }, [draft, handleSessionExpiry, hasUnsavedChanges, isOwner, session, uploadInProgress]);
+  }, [draft, savedDocument, handleSessionExpiry, hasUnsavedChanges, isOwner, session, uploadInProgress]);
 
   useEffect(() => {
     function handleSaveShortcut(event) {
@@ -494,7 +520,7 @@ export function AdminApp() {
 
   const handleDownloadConflictDraft = useCallback(() => {
     if (!draft) return;
-    const blob = new Blob([JSON.stringify(toSavePayload(draft), null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(toSavePayload(draft, savedDocument), null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -502,7 +528,7 @@ export function AdminApp() {
     link.click();
     URL.revokeObjectURL(url);
     setNotice({ tone: "neutral", message: "یک نسخه از تغییرات فعلی شما دانلود شد." });
-  }, [draft]);
+  }, [draft, savedDocument]);
 
   const handleRetryPublish = useCallback(async () => {
     setRetrying(true);
@@ -552,7 +578,7 @@ export function AdminApp() {
     <div className="admin-shell">
       <header className="topbar">
         <div className="brand-lockup">
-          <div className="brand-mark small" aria-hidden="true">L</div>
+          <BrandMark small />
           <div>
             <h1>مدیریت منو</h1>
           </div>
@@ -568,15 +594,19 @@ export function AdminApp() {
           <div className="owner-workspace-heading">
             <div>
               <h2 id="role-workspace-title">{isOwner ? "کنترل مالک" : "کار روزانه صندوق‌دار"}</h2>
-              <p>
-                {isOwner
-                  ? "ویرایش کامل منو، تنظیمات پیشرفته و بازیابی انتشار در دسترس مالک است."
-                  : "عملیات روزانه منو و ذخیره و انتشار در دسترس است؛ تنظیمات پیشرفته و بازیابی انتشار فقط با مالک انجام می‌شود."}
-              </p>
+              <p>{advanced ? "تنظیمات نمایش، ساخت گزینه‌های قیمت و تنظیمات پیشرفته در دسترس است."
+                : "نام، قیمت، تصویر و وضعیت آیتم‌ها را تغییر دهید و ذخیره کنید."}</p>
             </div>
             <span className="role-chip">{isOwner ? "دسترسی کامل" : "عملیات روزانه"}</span>
           </div>
-          {isOwner ? (
+          {isOwner ? <fieldset className="mode-switch">
+            <legend>حالت پنل</legend>
+            <div>{[["simple", "ساده"], ["advanced", "پیشرفته"]].map(([value, label]) => (
+              <button type="button" key={value} aria-pressed={mode === value} className={mode === value ? "is-active" : ""}
+                onClick={() => { setMode(value); setNotice(null); }}>{label}</button>
+            ))}</div>
+          </fieldset> : <p className="simple-mode-note">حالت ساده · تغییرات ذخیره‌شده برای مدیر گزارش می‌شوند.</p>}
+          {advanced ? (
             <section className="overview" aria-label="خلاصه منو">
               <div><strong>{counts.categories}</strong><span>دسته‌بندی</span></div>
               <div><strong>{counts.activeItems}</strong><span>آیتم فعال</span></div>
@@ -589,7 +619,8 @@ export function AdminApp() {
             status={publishStatus}
             retrying={retrying}
             onRetry={handleRetryPublish}
-            canRetry={isOwner}
+            canRetry={advanced}
+            advanced={advanced}
           />
         </section>
 
@@ -627,7 +658,7 @@ export function AdminApp() {
           categoryChoices={categoryChoices}
           uploadingIds={uploadingIds}
           disabled={editorDisabled}
-          advanced={isOwner}
+          advanced={advanced}
           storageKey={menuEditorStorageKey}
           focusTarget={focusTarget}
           onUpdateCategory={handleUpdateCategory}
@@ -638,15 +669,18 @@ export function AdminApp() {
           onUpload={handleUpload}
           onCreateCategory={handleCreateCategory}
           onCreateItem={handleCreateItem}
+          onDeleteItem={handleDeleteItem}
+          onDeleteCategory={handleDeleteCategory}
         />
+        {advanced ? <ActivityReport revision={draft.revision} onSessionExpiry={handleSessionExpiry} /> : null}
       </main>
 
       <footer className="save-bar">
         <div className="save-state">
           <span className={`dirty-dot is-${savePresentation.tone}`} aria-hidden="true" />
           <span className="save-state-copy">
-            <strong>{savePresentation.title}</strong>
-            <span>{savePresentation.detail}</span>
+            <strong>{advanced ? savePresentation.title : hasUnsavedChanges ? "تغییرات ذخیره نشده دارید." : "تغییرات ذخیره شده است."}</strong>
+            {advanced ? <span>{savePresentation.detail}</span> : null}
           </span>
         </div>
         <div className="save-actions">

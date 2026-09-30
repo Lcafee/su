@@ -2,6 +2,7 @@ import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 
 import { registerAuthRoutes } from './auth.mjs';
+import { registerActivityRoutes } from './activity.mjs';
 import { installApiErrorHandler } from './http.mjs';
 import { registerMediaRoute } from './media.mjs';
 import { registerReadOnlyMenuRoutes } from './menu-read.mjs';
@@ -43,10 +44,13 @@ export async function buildApp({ db, config, logger = true }) {
     const migration = db.prepare(
       "SELECT 1 AS ok FROM schema_migrations WHERE version = '001_base'"
     ).get();
+    const activityMigration = db.prepare(
+      "SELECT 1 AS ok FROM schema_migrations WHERE version = '002_admin_activity'"
+    ).get();
     const state = db.prepare(
       'SELECT edit_revision, published_revision FROM menu_state WHERE id = 1'
     ).get();
-    if (!migration || !state) {
+    if (!migration || !activityMigration || !state) {
       reply.code(503);
       return { ok: false };
     }
@@ -59,6 +63,7 @@ export async function buildApp({ db, config, logger = true }) {
   });
 
   registerAuthRoutes(app, { db, config });
+  registerActivityRoutes(app, { db, config });
   registerReadOnlyMenuRoutes(app, { db, config });
   registerMenuWriteRoutes(app, { db, config, mutationLock });
   registerMediaRoute(app, { db, config, mutationLock });

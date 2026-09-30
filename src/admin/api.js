@@ -80,6 +80,10 @@ export function getPublishStatus() {
   return apiRequest("/admin/publish-status");
 }
 
+export function getCashierActivity(before = null) {
+  return apiRequest(`/admin/activity${before ? `?before=${encodeURIComponent(before)}` : ""}`);
+}
+
 export function retryPublish(csrf) {
   return apiRequest("/admin/publish-retry", { method: "POST", csrf });
 }
