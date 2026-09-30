@@ -139,6 +139,6 @@ Repository ACTIVE, HISTORICAL, and PRIVATE-RUNTIME ownership is defined in
 | Archived concept baseline | `preview/homepage-editorial-redesign`; retained, not deployed automatically |
 | Production snapshots | `production-*` tags; the active SHA is in PROJECT_STATE.md |
 
-The shared landing selector changes the entire page between Original (`/index.html`) and Redesign (`/redesign.html`). Styles are isolated by separate HTML entry points. Set `VITE_LANDING_MODE=original` or `redesign` once at build/deploy time to choose the site-wide root default; `.env.production` pins Original. A query `?landing=original` allows selecting Original when Redesign is the default. Redesign keeps its concept photographs and is noindex. Both versions are included in each build. GitHub Pages previews only `main`, including both pages; it never deploys the VPS.
+The Original/Redesign selector exists only in the GitHub Pages preview. Production builds include only Original; Redesign HTML, concept photos, and the selector are excluded from the VPS artifact. Both implementations remain in source. `VITE_LANDING_MODE` selects the GitHub preview default only.
 
 The `production` branch records the exact deployed VPS source, while `main` also carries subsequent deployment documentation. Update `production` only after a successful manual VPS deployment.

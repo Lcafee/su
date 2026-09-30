@@ -181,7 +181,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         landing: resolve(root, "index.html"),
-        redesign: resolve(root, "redesign.html"),
         menu: resolve(root, "menu.html"),
         menu2: resolve(root, "menu2.html"),
       },

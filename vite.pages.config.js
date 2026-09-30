@@ -152,6 +152,7 @@ function buildPagesPreview() {
 export default defineConfig({
   appType: "mpa",
   base,
+  define: { "import.meta.env.VITE_LANDING_PREVIEW": JSON.stringify("true") },
   plugins: [react(), previewSearchIsolation(), buildPagesPreview()],
   publicDir: false,
   build: {

@@ -103,4 +103,4 @@ source, back up production, deploy the exact immutable VPS release, and run the 
 health checks. For host or runtime work, follow `OPERATIONS.md` and preserve all
 persistent paths.
 
-Landing variants are kept separately as OriginalLanding/RedesignLanding and separate style sheets. The shared selector switches whole-page versions. `.env.production` selects Original globally by default; use `VITE_LANDING_MODE` to select the root version for a release. Maintain production on `main`; retain the redesign preview branch as a concept baseline.
+Landing variants are kept separately in source. Original/Redesign selection belongs only to GitHub Pages. VPS builds include Original only, without the selector or Redesign entry.

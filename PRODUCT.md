@@ -92,4 +92,4 @@
 
 Admin mode is global across the panel. Advanced shows every item's advanced settings immediately; Simple has only daily editing controls. Cashiers have Simple only. Owners activate Special Offer with a compact switch in Advanced; publication reflects it in the public menu.
 
-Original and Redesign landing versions remain independently maintained with one shared selector. Production defaults to Original. Only Original receives the longer centered white line and bottom arrow. Special Offer and all basic Price Options controls are accessible in both admin modes, including cashier Simple; external codes and metadata remain advanced.
+Original and Redesign remain separately maintained in source. Redesign and the version selector are GitHub-preview-only. VPS production includes Original with the longer white line and bottom arrow. Basic admin offer and price-option controls remain accessible in Simple.

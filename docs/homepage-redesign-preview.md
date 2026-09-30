@@ -61,4 +61,4 @@ or change the VPS. `main` and the production site are unchanged by this branch.
 
 ## Current organization
 
-The original concept branch is retained as a historical baseline. Maintained implementations now live side by side on `main`: `OriginalLanding.jsx`/`landing-original.css` and `RedesignLanding.jsx`/`landing-redesign.css`. The shared Original/Redesign selector switches the whole page through separate HTML entries. Original remains the production root default in `.env.production`; the concept is available at `/redesign.html` with noindex. Pushing this historical branch no longer replaces the maintained Pages preview.
+The original concept branch is retained as a historical baseline. Both maintained variants and their selector are available on GitHub Pages. Only Original is packaged for the VPS; Redesign and concept photographs are excluded from the production build.
