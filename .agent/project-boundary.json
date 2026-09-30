@@ -3,7 +3,10 @@
   "project_id": "lcafe-main-site",
   "project_name": "L Cafe Main Site",
   "repository": "Lcafee/su",
-  "production_domains": ["l-cafe.ir", "www.l-cafe.ir"],
+  "production_domains": [
+    "l-cafe.ir",
+    "www.l-cafe.ir"
+  ],
   "runtime": {
     "service": "lcafe-site-api",
     "runtime_user": "lcafe-site",
@@ -27,7 +30,15 @@
     "/var/lib/lcafe",
     "/etc/lcafe",
     "lcafe.service",
-    "127.0.0.1:3000"
+    "127.0.0.1:3000",
+    "Lcafee/lmoov-site",
+    "lcafe-moov.ir",
+    "/srv/lmoov-site",
+    "/var/lib/lmoov-site",
+    "/etc/lmoov-site",
+    "lmoov-php-fpm.service",
+    "lmoov-mariadb.service",
+    "127.0.0.1:3307"
   ],
   "shared_host": {
     "peer_project": "lcafe-operations",

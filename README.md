@@ -52,15 +52,15 @@ reuses this same fixture and does not change the production snapshot boundary.
 The admin has two database-backed roles. Owners select one global Simple or Advanced mode;
 cashiers only receive Simple. Both can edit daily category/item details, base
 and existing option prices, images, ordering, archives, and explicit deletions.
-Category introductions/layout, item metadata, option structure/codes, and publish
-retry remain owner-only. The Node API enforces this independently of the UI.
+Category introductions/layout, item metadata, external option codes, and publish retry remain owner-only. The Node API enforces this independently of the UI.
 Advanced expands every category and shows all advanced fields directly; Simple
 omits metadata, option management, revisions, recovery tools, and reports.
-Special Offer is an owner-only switch stored as `metadata.featured` and projected
-to the public snapshot's `featured` flag during publication.
+Special Offer and Price Options are fully editable in Simple and Advanced, including cashier Simple.
+Special Offer uses the existing `is_featured` column; legacy `metadata.featured` is preserved on read and normalized on save.
+Only external option codes, metadata, category display settings, and recovery are advanced.
 The right-side category index opens and focuses each section (a horizontal bar
 on phones). Deletions take effect on save and can be undone before saving.
-Owners receive a paginated cashier activity report with timestamps, revisions,
+Owners receive a paginated cashier activity report in Advanced with timestamps, revisions,
 and before/after values. Menu saves and media uploads are logged transactionally;
 failed saves are not reported as completed changes. Unsaved local drafts are not
 persisted activity. Apply `server-node/migrations/002_admin_activity.sql` with the
@@ -128,3 +128,15 @@ boundaries, API recovery procedure, and deployment checklist are in
 Repository ACTIVE, HISTORICAL, and PRIVATE-RUNTIME ownership is defined in
 [`GOVERNANCE.md`](GOVERNANCE.md). SEO-only planning is scoped under
 [`docs/seo/`](docs/seo/); it is not the project state or general product roadmap.
+
+## Landing versions and source maintenance
+
+| Purpose | Location |
+| --- | --- |
+| Maintained production source | `main`; Original is the deployment default |
+| Original landing | `src/landing/OriginalLanding.jsx`, `src/styles/landing-original.css` |
+| Redesign concept | `src/landing/RedesignLanding.jsx`, `src/styles/landing-redesign.css` |
+| Archived concept baseline | `preview/homepage-editorial-redesign`; retained, not deployed automatically |
+| Production snapshots | `production-*` tags; the active SHA is in PROJECT_STATE.md |
+
+The shared landing selector changes the entire page between Original (`/index.html`) and Redesign (`/redesign.html`). Styles are isolated by separate HTML entry points. Set `VITE_LANDING_MODE=original` or `redesign` once at build/deploy time to choose the site-wide root default; `.env.production` pins Original. A query `?landing=original` allows selecting Original when Redesign is the default. Redesign keeps its concept photographs and is noindex. Both versions are included in each build. GitHub Pages previews only `main`, including both pages; it never deploys the VPS.

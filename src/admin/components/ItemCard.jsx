@@ -186,14 +186,15 @@ function ItemCardComponent({
             </div>
           </div>
 
+          <label className="offer-toggle">
+            <span>پیشنهاد ویژه</span>
+            <input type="checkbox" role="switch" checked={item.featured === true}
+              disabled={disabled} onChange={(event) => update({ featured: event.target.checked })} />
+            <span className="offer-toggle-track" aria-hidden="true" />
+          </label>
+
           {advanced ? (
             <section className="owner-settings item-owner-settings">
-              <label className="offer-toggle">
-                <span>پیشنهاد ویژه</span>
-                <input type="checkbox" role="switch" checked={item.metadata?.featured === true}
-                  disabled={disabled} onChange={(event) => update({ metadata: { ...item.metadata, featured: event.target.checked } })} />
-                <span className="offer-toggle-track" aria-hidden="true" />
-              </label>
               <fieldset disabled={disabled} className="metadata-controls"><MetadataEditor
                 metadata={item.metadata}
                 onChange={(metadata) => update({ metadata })}

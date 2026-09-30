@@ -160,11 +160,7 @@ SQLite backup; no separate logging service or cleanup is required.
 
 Owners select one global Simple or Advanced mode. Advanced shows all item settings
 and the cashier report; Simple omits advanced fields and operational details.
-The Special Offer switch uses existing owner-only `metadata.featured` storage,
-projected to the public snapshot's `featured` flag; no separate migration is needed.
-Cashiers only receive Simple; the API permits
-changes to existing option prices but rejects option labels, codes, structure,
-metadata, category introduction/layout, and publish recovery. Deletions must
+Special Offer and full price-option management are basic controls available in both modes, including cashier Simple. The API preserves existing external codes and permits new options with no external code; metadata, external code changes, category introduction/layout, and recovery remain owner-only. Special Offer uses the existing `002_featured_items` schema and `is_featured` storage. Apply any missing migrations with the release runner; existing production markers are preserved. Legacy metadata offer flags are accepted and normalized on save. Deletions must
 declare the exact category/item UUIDs alongside a revision-checked menu save.
 Omitting a record without declaring its deletion remains an error. Menu row
 deletion retains media files and historical revision snapshots.

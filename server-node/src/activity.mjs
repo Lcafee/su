@@ -16,10 +16,10 @@ function entities(document) {
     const { id, title, intro, layout, archived, sortOrder } = category;
     result.set(id, { type: 'category', name: title, values: { title, intro, layout, archived, sortOrder } });
     for (const item of category.items) {
-      const { name, description, price, mediaId, metadata, options, archived: itemArchived, sortOrder: itemOrder } = item;
+      const { name, description, price, mediaId, metadata, featured, options, archived: itemArchived, sortOrder: itemOrder } = item;
       result.set(item.id, {
         type: 'item', name,
-        values: { categoryId: id, name, description, price, mediaId, metadata, options, archived: itemArchived, sortOrder: itemOrder },
+        values: { categoryId: id, name, description, price, mediaId, metadata, featured, options, archived: itemArchived, sortOrder: itemOrder },
       });
     }
   }

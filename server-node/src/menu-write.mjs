@@ -103,7 +103,12 @@ function normalizeMenuInput(input) {
         mediaId = mediaId.toLowerCase();
       }
 
-      const metadata = rawItem.metadata ?? [];
+      const legacyMetadata = rawItem.metadata ?? [];
+      const featured = rawItem.featured === undefined && legacyMetadata?.featured === undefined
+        ? null : booleanValue(rawItem.featured ?? legacyMetadata.featured, `${itemPath}.featured`);
+      const metadata = !Array.isArray(legacyMetadata) && legacyMetadata && typeof legacyMetadata === 'object'
+        ? Object.fromEntries(Object.entries(legacyMetadata).filter(([key]) => key !== 'featured'))
+        : legacyMetadata;
       if (!metadata || typeof metadata !== 'object') {
         throw new ApiError(422, 'validation_error', `${itemPath}.metadata must be an object or list.`);
       }
@@ -142,6 +147,7 @@ function normalizeMenuInput(input) {
         description: optionalText(rawItem.description, `${itemPath}.description`, 4000),
         price: optionalText(rawItem.price, `${itemPath}.price`, 64),
         mediaId,
+        featured,
         metadata,
         metadataJson,
         archived: booleanValue(rawItem.archived, `${itemPath}.archived`),
@@ -216,7 +222,7 @@ function assertActorCanSaveMenu(db, actor, document) {
     'SELECT id, public_id, intro, layout FROM menu_categories'
   ).all().map((row) => [row.id, row]));
   const storedItems = new Map(db.prepare(
-    'SELECT id, public_id, metadata_json FROM menu_items'
+    'SELECT id, public_id, metadata_json, is_featured FROM menu_items'
   ).all().map((row) => [row.id, row]));
 
   for (const [id, stored] of storedCategories) {
@@ -267,17 +273,20 @@ function assertActorCanSaveMenu(db, actor, document) {
   for (const [id, submitted] of submittedItems) {
     const stored = storedItems.get(id);
     if (!stored) {
-      if (Object.keys(submitted.metadata).length !== 0 || submitted.options.length !== 0) {
+      if (Object.keys(submitted.metadata).length !== 0 || submitted.options.some((option) => option.code !== null)) {
         cashierAdvancedFieldError('item');
       }
       continue;
     }
     let storedMetadata;
     try { storedMetadata = JSON.parse(stored.metadata_json); } catch { storedMetadata = []; }
-    // Existing option prices are daily work; option structure remains owner-only.
-    const withoutPrice = (options) => options.map(({ price, ...option }) => option);
+    if (!Array.isArray(storedMetadata) && storedMetadata && typeof storedMetadata === 'object') {
+      storedMetadata = Object.fromEntries(Object.entries(storedMetadata).filter(([key]) => key !== 'featured'));
+    }
+    // Offer and price-option management are basic work; external codes stay owner-only.
+    const codes = new Map((storedOptions.get(id) || []).map((option) => [option.id, option.code]));
     if (!isDeepStrictEqual(submitted.metadata, storedMetadata)
-        || !isDeepStrictEqual(withoutPrice(submitted.options), withoutPrice(storedOptions.get(id) || []))) {
+        || submitted.options.some((option) => option.code !== (codes.get(option.id) ?? null))) {
       cashierAdvancedFieldError('item');
     }
   }
@@ -323,13 +332,13 @@ function persistMenuDocument(db, document, oldMedia) {
   const insertItem = db.prepare(`
     INSERT INTO menu_items
       (id, category_id, public_id, name, description, price_text, media_id, metadata_json,
-       sort_order, archived_at, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       is_featured, sort_order, archived_at, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const updateItem = db.prepare(`
     UPDATE menu_items
     SET category_id = ?, public_id = ?, name = ?, description = ?, price_text = ?, media_id = ?,
-        metadata_json = ?, sort_order = ?, archived_at = ?, updated_at = ?
+        metadata_json = ?, is_featured = ?, sort_order = ?, archived_at = ?, updated_at = ?
     WHERE id = ?
   `);
   const deleteOptions = db.prepare('DELETE FROM menu_item_options WHERE item_id = ?');
@@ -340,7 +349,7 @@ function persistMenuDocument(db, document, oldMedia) {
   `);
 
   const currentCategoryArchive = db.prepare('SELECT archived_at FROM menu_categories WHERE id = ?');
-  const currentItemArchive = db.prepare('SELECT archived_at FROM menu_items WHERE id = ?');
+  const currentItemState = db.prepare('SELECT archived_at, is_featured FROM menu_items WHERE id = ?');
   const newMedia = new Set();
 
   for (const category of document.categories) {
@@ -362,19 +371,19 @@ function persistMenuDocument(db, document, oldMedia) {
 
     for (const item of category.items) {
       if (item.mediaId) newMedia.add(item.mediaId);
-      const oldItemArchive = existingItems.has(item.id)
-        ? currentItemArchive.get(item.id)?.archived_at ?? null
-        : null;
+      const oldItemState = existingItems.has(item.id) ? currentItemState.get(item.id) : null;
+      const oldItemArchive = oldItemState?.archived_at ?? null;
+      const itemFeatured = item.featured ?? (oldItemState?.is_featured === 1);
       const itemArchivedAt = item.archived ? (oldItemArchive || now) : null;
       if (existingItems.has(item.id)) {
         updateItem.run(
           category.id, item.publicId, item.name, item.description, item.price, item.mediaId,
-          item.metadataJson, item.sortOrder, itemArchivedAt, now, item.id,
+          item.metadataJson, itemFeatured ? 1 : 0, item.sortOrder, itemArchivedAt, now, item.id,
         );
       } else {
         insertItem.run(
           item.id, category.id, item.publicId, item.name, item.description, item.price, item.mediaId,
-          item.metadataJson, item.sortOrder, itemArchivedAt, now, now,
+          item.metadataJson, itemFeatured ? 1 : 0, item.sortOrder, itemArchivedAt, now, now,
         );
       }
 
@@ -446,7 +455,7 @@ function buildPublicSnapshot(db, revision) {
 
   for (const row of db.prepare(`
     SELECT i.id, i.category_id, i.public_id, i.name, i.description, i.price_text,
-           i.metadata_json, m.rendition_300_filename, m.rendition_600_filename
+           i.metadata_json, i.is_featured, m.rendition_300_filename, m.rendition_600_filename
     FROM menu_items i
     JOIN menu_categories c ON c.id = i.category_id
     LEFT JOIN media_assets m ON m.id = i.media_id
@@ -461,7 +470,7 @@ function buildPublicSnapshot(db, revision) {
       description: row.description ?? null,
       price: row.price_text ?? null,
       metadata: decodedMetadata(row.metadata_json),
-      featured: decodedMetadata(row.metadata_json).featured === true,
+      featured: decodedMetadata(row.metadata_json).featured ?? (row.is_featured === 1),
       options: optionsByItem.get(row.id) || [],
       image: null,
     };

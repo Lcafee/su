@@ -245,7 +245,7 @@ function Hero({ cueRef, heroRef, phraseRef }) {
         YOUR DAILY PAUSE
       </span>
       <span ref={cueRef} className="scroll-cue" aria-hidden="true">
-        <span className="scroll-cue-line" />
+        <span className="scroll-cue-line" /><svg className="scroll-cue-arrow" viewBox="0 0 24 14" fill="none"><path d="M2 2l10 10L22 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </span>
     </h1>
   );
@@ -391,7 +391,7 @@ function ClosingSection({ footerRef }) {
   );
 }
 
-export function LandingApp() {
+export function OriginalLanding() {
   const fieldRef = useRef(null);
   const heroRef = useRef(null);
   const phraseRef = useRef(null);

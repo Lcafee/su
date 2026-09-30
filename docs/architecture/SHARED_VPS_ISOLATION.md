@@ -144,3 +144,6 @@ If a Main Site deployment or migration exposes a problem in Operations, preserve
 ## Change rule
 
 Any future change to domains, ports, users, service names, code/data/config roots, or the shared-host topology must update this document and `.agent/project-boundary.json` in the affected repository. If the change affects both applications, both repositories' isolation documents must be updated in the same infrastructure change.
+## Third application: Lmoov
+
+Lmoov also shares this VPS. Main Site tasks must not mutate `/srv/lmoov-site`, `/var/lib/lmoov-site`, `/etc/lmoov-site`, its MariaDB instance on 3307, `lmoov-php-fpm.service`, or its Nginx files. Its production domain is `lcafe-moov.ir`. Observe service identity read-only when confirming isolation; never restart or reconfigure it during Main Site deployment.

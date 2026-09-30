@@ -1,0 +1,4 @@
+.landing-mode-selector { position:fixed; z-index:30; top:max(16px,env(safe-area-inset-top)); left:max(16px,env(safe-area-inset-left)); display:flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid rgba(243,241,236,.4); border-radius:6px; background:#471019; color:#F3F1EC; font:500 12px 'Vazirmatn',sans-serif; }
+.landing-mode-selector select { min-height:32px; max-width:120px; padding:4px; border:0; border-radius:2px; background:#471019; color:#F3F1EC; font:inherit; cursor:pointer; }
+.landing-mode-selector select:focus-visible { outline:2px solid #F3F1EC; outline-offset:2px; }
+@media(max-width:480px) { .landing-mode-selector > span { display:none; } }

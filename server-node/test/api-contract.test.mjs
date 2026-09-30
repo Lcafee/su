@@ -29,9 +29,11 @@ function fixture() {
   db.pragma('foreign_keys = ON');
   db.exec(fs.readFileSync(schemaPath, 'utf8'));
   db.exec(fs.readFileSync(path.resolve(here, '..', 'migrations', '002_admin_activity.sql'), 'utf8'));
+  db.exec(fs.readFileSync(path.resolve(here, '..', 'migrations', '002_featured_items.sql'), 'utf8'));
   const now = sqlNow();
   db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('001_base', now);
   db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('002_admin_activity', now);
+  db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('002_featured_items', now);
   db.prepare(
     'INSERT INTO menu_state (id, edit_revision, published_revision, updated_at) VALUES (1, 0, 0, ?)'
   ).run(now);
@@ -233,11 +235,8 @@ test('cashier basic prices, explicit deletion and activity reports enforce the r
   const forbiddenEdits = [
     (doc) => { doc.categories[0].intro = 'cashier intro'; },
     (doc) => { doc.categories[0].layout = 'addons'; },
-    (doc) => { doc.categories[0].items[0].metadata.featured = false; },
-    (doc) => { doc.categories[0].items[0].options[0].label = 'صندوق'; },
+    (doc) => { doc.categories[0].items[0].metadata.caption = 'advanced'; },
     (doc) => { doc.categories[0].items[0].options[0].code = 'other'; },
-    (doc) => { doc.categories[0].items[0].options = []; },
-    (doc) => { doc.categories[0].items[0].options.push({ id: crypto.randomUUID(), label: 'کوچک', price: '۱۲۰', code: null }); },
   ];
   for (const edit of forbiddenEdits) {
     const changed = structuredClone(baseline);

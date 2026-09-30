@@ -86,11 +86,9 @@ Production menu copy, order, prices, photos, Sepidz codes, variants, and add-ons
 are edited only through the VPS `/admin/`, saved to SQLite, and published to the managed snapshot.
 Owners choose one global Simple or Advanced mode; Advanced opens every category,
 shows all advanced fields directly, and includes the cashier activity report.
-Simple omits those fields and tools entirely. Special Offer is a minimal switch
-in Advanced, persisted through `metadata.featured` and published as `featured`.
+Simple omits those fields and tools entirely. Special Offer is a minimal switch in both modes, persisted as `is_featured` and published as `featured`.
 Cashiers only use Simple and can edit existing option prices alongside normal
-category/item/media/order/archive/delete/save-and-publish operations. Advanced
-category fields, metadata, option structure/codes, and publish retry are
+category/item/media/order/archive/delete/save-and-publish operations. Advanced category fields, metadata, external option codes, and publish retry are
 owner-only and enforced by the Node API. Apply the new `002_admin_activity`
 Node migration before activating this API version; no production migration was
 performed by the UI change. Accounts are created and passwords are rotated only with
@@ -104,3 +102,5 @@ For UI/code changes, edit source, validate/build locally, commit and push the in
 source, back up production, deploy the exact immutable VPS release, and run the required
 health checks. For host or runtime work, follow `OPERATIONS.md` and preserve all
 persistent paths.
+
+Landing variants are kept separately as OriginalLanding/RedesignLanding and separate style sheets. The shared selector switches whole-page versions. `.env.production` selects Original globally by default; use `VITE_LANDING_MODE` to select the root version for a release. Maintain production on `main`; retain the redesign preview branch as a concept baseline.

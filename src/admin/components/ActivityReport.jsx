@@ -5,6 +5,7 @@ const fields = {
   title: "نام دسته", intro: "توضیح دسته", layout: "نوع نمایش", archived: "آرشیو",
   sortOrder: "ترتیب", categoryId: "دسته", name: "نام آیتم", description: "توضیح",
   price: "قیمت", mediaId: "تصویر", metadata: "تنظیمات پیشرفته", options: "گزینه‌های قیمت",
+  featured: "پیشنهاد ویژه",
 };
 const operations = { create: "افزودن", update: "ویرایش", delete: "حذف" };
 const dateFormat = new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tehran" });

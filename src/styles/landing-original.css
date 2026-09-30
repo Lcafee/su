@@ -94,9 +94,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
   text-align:center;text-wrap:balance;white-space:normal}
 .scroll-cue{position:absolute;
   bottom:max(clamp(18px,3svh,30px),env(safe-area-inset-bottom,0px));left:50%;
-  width:2px;height:clamp(72px,12svh,116px);transform:translateX(-50%);
-  opacity:.74;overflow:hidden;pointer-events:none}
-.scroll-cue-line{display:block;position:absolute;inset:0;background:rgba(243,241,236,.38)}
+  width:24px;height:clamp(120px,19svh,180px);transform:translateX(-50%);
+  opacity:.9;pointer-events:none;color:var(--ink)}
+.scroll-cue-line{display:block;position:absolute;top:0;bottom:10px;left:11px;width:2px;overflow:hidden;background:rgba(243,241,236,.55)}
+.scroll-cue-arrow{position:absolute;bottom:0;left:0;width:24px;height:14px}
 .scroll-cue-line::after{content:"";position:absolute;top:0;left:0;width:2px;height:42%;
   background:var(--ink);transform:translate3d(0,-110%,0);
   animation:scroll-cue 2.5s var(--motion-ease) infinite}
@@ -352,5 +353,5 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2p
 }
 @media (max-height:520px){
   .hero-phrase{max-width:13ch;font-size:clamp(32px,min(9vw,10svh),56px);line-height:1}
-  .scroll-cue{bottom:max(10px,env(safe-area-inset-bottom,0px));height:clamp(48px,10svh,64px)}
+  .scroll-cue{bottom:max(14px,env(safe-area-inset-bottom,0px));height:clamp(96px,17svh,140px)}
 }

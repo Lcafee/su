@@ -26,6 +26,7 @@ const runtimeAssets = [
 const requiredOutput = [
   ".nojekyll",
   "index.html",
+  "redesign.html",
   "menu/index.html",
   "menu2/index.html",
   "design-studio/index.html",
@@ -87,7 +88,7 @@ async function assertSafePreviewOutput() {
     );
   }
 
-  for (const page of ["index.html", "menu/index.html", "menu2/index.html", "design-studio/index.html"]) {
+  for (const page of ["index.html", "redesign.html", "menu/index.html", "menu2/index.html", "design-studio/index.html"]) {
     const html = await readFile(resolve(outDir, page), "utf8");
     if (!/<meta name="robots" content="noindex,nofollow"\s*\/>/i.test(html)) {
       throw new Error(`${page} is missing preview search isolation.`);
@@ -159,6 +160,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         landing: resolve(root, "index.html"),
+        redesign: resolve(root, "redesign.html"),
         menu: resolve(root, "menu.html"),
         menu2: resolve(root, "menu2.html"),
         "design-studio": resolve(root, "design-studio.html"),

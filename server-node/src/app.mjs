@@ -50,7 +50,10 @@ export async function buildApp({ db, config, logger = true }) {
     const state = db.prepare(
       'SELECT edit_revision, published_revision FROM menu_state WHERE id = 1'
     ).get();
-    if (!migration || !activityMigration || !state) {
+    const featuredMigration = db.prepare(
+      "SELECT 1 AS ok FROM schema_migrations WHERE version = '002_featured_items'"
+    ).get();
+    if (!migration || !activityMigration || !featuredMigration || !state) {
       reply.code(503);
       return { ok: false };
     }

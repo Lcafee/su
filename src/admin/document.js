@@ -23,6 +23,7 @@ export function normalizeDocument(document) {
                 mediaId: item.mediaId ?? null,
                 media: item.media ?? null,
                 metadata: item.metadata ?? {},
+                featured: Boolean(item.featured),
                 archived: Boolean(item.archived),
                 options: Array.isArray(item.options) ? item.options : [],
               }))
@@ -56,6 +57,7 @@ export function toSavePayload(document, savedDocument = null) {
         price: item.price,
         mediaId: item.mediaId,
         metadata: item.metadata,
+        featured: item.featured,
         archived: item.archived,
         options: item.options.map((option) => ({
           id: option.id,
@@ -90,6 +92,7 @@ function comparableItem(item, categoryId, sortOrder) {
     price: item.price,
     mediaId: item.mediaId,
     metadata: item.metadata,
+    featured: item.featured,
     archived: item.archived,
     options: item.options,
   };
@@ -270,6 +273,7 @@ export function createItem(document, categoryId) {
     mediaId: null,
     media: null,
     metadata: {},
+    featured: false,
     archived: false,
     options: [],
   };

@@ -46,6 +46,7 @@ const buildInputFiles = [
   "404.html",
   "admin/index.html",
   "index.html",
+  "redesign.html",
   "menu.html",
   "menu2.html",
   "package.json",
@@ -180,6 +181,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         landing: resolve(root, "index.html"),
+        redesign: resolve(root, "redesign.html"),
         menu: resolve(root, "menu.html"),
         menu2: resolve(root, "menu2.html"),
       },
