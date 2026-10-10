@@ -37,7 +37,9 @@ during code deployment.
 
 ## Edit authority
 
-The VPS Admin at `/admin/` is the only production menu edit authority.
+The VPS Admin at `/admin/` and, through the same API, L Cafe Operations
+`/online-menu` (see «Service access for the Operations platform») are the
+production menu edit authorities. Both write through the Node/Fastify API.
 
 Production menu changes flow:
 
