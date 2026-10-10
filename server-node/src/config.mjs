@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import path from 'node:path';
 
 function intEnv(name, fallback, min) {
@@ -14,6 +15,18 @@ function absoluteEnv(name, fallback) {
   const value = process.env[name]?.trim() || fallback;
   if (!path.isAbsolute(value)) throw new Error(`${name} must be an absolute path`);
   return value;
+}
+
+// The service credential for a trusted server on this host (the Operations
+// platform's menu adapter). Unset means service access does not exist. Only the
+// digest is kept in memory; the token itself is never logged or returned.
+function serviceTokenDigest() {
+  const token = process.env.LCAFE_SITE_SERVICE_TOKEN?.trim() || '';
+  if (token === '') return null;
+  if (!/^[A-Za-z0-9._~+/=-]{32,512}$/.test(token)) {
+    throw new Error('LCAFE_SITE_SERVICE_TOKEN must be 32 to 512 URL-safe characters');
+  }
+  return crypto.createHash('sha256').update(token, 'utf8').digest();
 }
 
 export function loadConfig() {
@@ -38,6 +51,9 @@ export function loadConfig() {
       absoluteTimeoutSeconds: intEnv('LCAFE_SITE_ABSOLUTE_TIMEOUT_SECONDS', 28800, 60),
       maxLoginFailures: intEnv('LCAFE_SITE_MAX_LOGIN_FAILURES', 5, 1),
       loginLockSeconds: intEnv('LCAFE_SITE_LOGIN_LOCK_SECONDS', 900, 60),
+    }),
+    service: Object.freeze({
+      tokenDigest: serviceTokenDigest(),
     }),
     uploads: Object.freeze({
       maxBytes: intEnv('LCAFE_SITE_UPLOAD_MAX_BYTES', 8 * 1024 * 1024, 1),

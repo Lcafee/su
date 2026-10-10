@@ -332,3 +332,106 @@ test('cashier uploads are audited and roll back database changes if logging fail
   assert.equal(db.prepare('SELECT COUNT(*) AS count FROM media_assets').get().count, 1);
   assert.equal(db.prepare('SELECT COUNT(*) AS count FROM admin_activity').get().count, 1);
 });
+
+test('service access reuses the admin contract for a trusted loopback caller', async (t) => {
+  const { root, db, config } = fixture();
+  const token = 'service-token-for-tests-0123456789abcdef';
+  config.service = { tokenDigest: crypto.createHash('sha256').update(token, 'utf8').digest() };
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => {
+    await app.close();
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const service = (role, extra = {}) => ({
+    authorization: `Bearer ${token}`,
+    'x-lcafe-actor': encodeURIComponent('سارا@ops'),
+    'x-lcafe-actor-role': role,
+    ...extra,
+  });
+  const categoryId = crypto.randomUUID();
+  const category = {
+    id: categoryId, publicId: 'coffee', title: 'Coffee', intro: null, layout: 'grid', archived: false, items: [],
+  };
+
+  const wrong = await app.inject({
+    method: 'GET', url: '/api/admin/menu',
+    headers: { ...service('owner'), authorization: `Bearer ${token}x` },
+  });
+  assert.equal(wrong.statusCode, 401);
+  const proxied = await app.inject({
+    method: 'GET', url: '/api/admin/menu', headers: service('owner', { 'x-forwarded-for': '203.0.113.9' }),
+  });
+  assert.equal(proxied.statusCode, 401);
+  const unnamed = await app.inject({
+    method: 'GET', url: '/api/admin/menu', headers: { authorization: `Bearer ${token}` },
+  });
+  assert.equal(unnamed.statusCode, 400);
+  assert.equal(unnamed.json().error.type, 'service_actor_invalid');
+
+  // No Origin and no CSRF token: neither applies to a bearer credential.
+  const saved = await app.inject({
+    method: 'PUT', url: '/api/admin/menu',
+    headers: { ...service('owner'), 'content-type': 'application/json' },
+    payload: { baseRevision: 0, categories: [category] },
+  });
+  assert.equal(saved.statusCode, 200);
+  assert.deepEqual(saved.json(), { revision: 1, published: true, publishState: 'published' });
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root, 'managed-menu', 'current.json'), 'utf8')).revision, 1);
+
+  const cashierAdvanced = await app.inject({
+    method: 'PUT', url: '/api/admin/menu',
+    headers: { ...service('cashier'), 'content-type': 'application/json' },
+    payload: { baseRevision: 1, categories: [{ ...category, layout: 'addons' }] },
+  });
+  assert.equal(cashierAdvanced.statusCode, 403);
+  const cashierBasic = await app.inject({
+    method: 'PUT', url: '/api/admin/menu',
+    headers: { ...service('cashier'), 'content-type': 'application/json' },
+    payload: { baseRevision: 1, categories: [{ ...category, title: 'Coffee bar' }] },
+  });
+  assert.equal(cashierBasic.statusCode, 200);
+  const cashierReport = await app.inject({
+    method: 'GET', url: '/api/admin/activity', headers: service('cashier'),
+  });
+  assert.equal(cashierReport.statusCode, 403);
+
+  const report = await app.inject({ method: 'GET', url: '/api/admin/activity', headers: service('owner') });
+  assert.equal(report.statusCode, 200);
+  assert.equal(report.json().entries.length, 1);
+  assert.equal(report.json().entries[0].username, 'ops:سارا@ops');
+  assert.deepEqual(
+    db.prepare('SELECT actor_user_id, actor_username, actor_role FROM admin_activity ORDER BY id').all(),
+    [
+      { actor_user_id: null, actor_username: 'ops:سارا@ops', actor_role: 'owner' },
+      { actor_user_id: null, actor_username: 'ops:سارا@ops', actor_role: 'cashier' },
+    ],
+  );
+
+  const logout = await app.inject({ method: 'DELETE', url: '/api/session', headers: service('owner') });
+  assert.equal(logout.statusCode, 403);
+
+  // The browser admin is untouched by the service path.
+  const session = await login(app);
+  const browser = await app.inject({ method: 'GET', url: '/api/admin/menu', headers: { cookie: session.cookie } });
+  assert.equal(browser.statusCode, 200);
+  assert.equal(browser.json().revision, 2);
+});
+
+test('service access does not exist until a token is configured', async (t) => {
+  const { root, db, config } = fixture();
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => {
+    await app.close();
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const response = await app.inject({
+    method: 'GET', url: '/api/admin/menu',
+    headers: {
+      authorization: 'Bearer service-token-for-tests-0123456789abcdef',
+      'x-lcafe-actor': 'someone', 'x-lcafe-actor-role': 'owner',
+    },
+  });
+  assert.equal(response.statusCode, 401);
+});

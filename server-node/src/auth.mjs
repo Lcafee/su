@@ -118,8 +118,56 @@ export function sessionContext(db, config, request, { touch = true } = {}) {
   };
 }
 
+function serviceRejected() {
+  return new ApiError(401, 'authentication_required', 'Authentication is required.');
+}
+
+/**
+ * Service access: a trusted server on this host acting for one of its own
+ * signed-in users, instead of a browser session.
+ *
+ * The caller presents the configured token as a bearer credential and names
+ * the person and the admin role it has authorized them for. Everything after
+ * authentication is the ordinary admin path — the same role checks, revision
+ * guard, publication and activity log — so the two editors cannot diverge.
+ *
+ * Nginx adds `X-Real-IP` and `X-Forwarded-For` to every request it proxies, so
+ * a request carrying either came through the public vhost and is refused: the
+ * token works only for a direct loopback call and is worthless off this host.
+ */
+function serviceContext(config, request) {
+  const header = request.headers.authorization;
+  if (header == null) return null;
+  const match = typeof header === 'string' ? /^Bearer ([A-Za-z0-9._~+/=-]{1,512})$/.exec(header) : null;
+  const expected = config.service?.tokenDigest;
+  if (!match || !expected) throw serviceRejected();
+  if (request.headers['x-forwarded-for'] != null || request.headers['x-real-ip'] != null) {
+    throw serviceRejected();
+  }
+  const actual = crypto.createHash('sha256').update(match[1], 'utf8').digest();
+  if (!crypto.timingSafeEqual(expected, actual)) throw serviceRejected();
+
+  const role = request.headers['x-lcafe-actor-role'];
+  let actor = '';
+  try {
+    actor = decodeURIComponent(String(request.headers['x-lcafe-actor'] ?? '')).trim();
+  } catch {
+    actor = '';
+  }
+  const length = [...actor].length;
+  if ((role !== 'owner' && role !== 'cashier') || length < 1 || length > 120 || /[\u0000-\u001f\u007f]/.test(actor)) {
+    throw new ApiError(400, 'service_actor_invalid', 'The service request must name its actor and role.');
+  }
+  return {
+    service: true,
+    sessionId: null,
+    session: null,
+    user: { id: null, username: `ops:${actor}`, role },
+  };
+}
+
 export function requireUser(db, config, request) {
-  const context = sessionContext(db, config, request);
+  const context = serviceContext(config, request) || sessionContext(db, config, request);
   if (!context) {
     throw new ApiError(401, 'authentication_required', 'Authentication is required.');
   }
@@ -133,6 +181,9 @@ export function requireOwner(user) {
 }
 
 export function requireCsrf(config, request, context) {
+  // A bearer token is sent deliberately by the caller, never attached by a
+  // browser, so there is no ambient credential for a forged request to ride.
+  if (context.service) return;
   requireAllowedOrigin(request, config);
   const expected = context.session.csrfToken;
   const actual = request.headers['x-csrf-token'];
@@ -231,6 +282,9 @@ export function registerAuthRoutes(app, { db, config }) {
 
   app.delete('/api/session', async (request, reply) => {
     const context = requireUser(db, config, request);
+    if (context.service) {
+      throw new ApiError(403, 'permission_denied', 'Service access has no session to end.');
+    }
     requireCsrf(config, request, context);
     db.prepare('DELETE FROM admin_sessions WHERE id = ?').run(context.sessionId);
     clearSessionCookie(reply, config);

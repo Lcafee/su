@@ -142,6 +142,31 @@ history.
 Use only the current release's supported account/session tooling. Do not mutate
 credential/session fields with ad-hoc SQLite statements.
 
+## Service access for the Operations platform
+
+L Cafe Operations edits the menu through this API, not through its own copy:
+its `/online-menu` screen is a second client of the same endpoints, and this
+SQLite database, the publish pipeline, and managed media stay the only
+authority. The site Admin at `/admin/` is unchanged and keeps working.
+
+Service access exists only when `LCAFE_SITE_SERVICE_TOKEN` is set in
+`/etc/lcafe-site/site.env` (32 to 512 URL-safe characters; generate with
+`openssl rand -hex 32`). The same value is configured on the Operations side;
+it is a secret and follows the credential rules above. Unset, every bearer
+request is refused and the API behaves exactly as before.
+
+A service request sends `Authorization: Bearer <token>` directly to
+`127.0.0.1:3100`, plus `X-Lcafe-Actor` (the Operations user, percent-encoded)
+and `X-Lcafe-Actor-Role` (`owner` or `cashier`). It is refused when it carries
+`X-Forwarded-For` or `X-Real-IP`, which Nginx adds to everything it proxies, so
+the token cannot be used through the public vhost. Origin and CSRF checks do
+not apply to it; role limits, the revision guard, explicit deletions,
+publication, and the activity log apply unchanged. Activity rows record the
+actor as `ops:<user>` with no `actor_user_id`.
+
+Rotating the token means changing it in both environment files and restarting
+both services. Removing it disables service access without affecting `/admin/`.
+
 ## Cashier activity and admin modes
 
 Before activating the API version that supports activity reports, run the existing
