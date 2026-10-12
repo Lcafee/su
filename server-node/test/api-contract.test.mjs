@@ -30,10 +30,12 @@ function fixture() {
   db.exec(fs.readFileSync(schemaPath, 'utf8'));
   db.exec(fs.readFileSync(path.resolve(here, '..', 'migrations', '002_admin_activity.sql'), 'utf8'));
   db.exec(fs.readFileSync(path.resolve(here, '..', 'migrations', '002_featured_items.sql'), 'utf8'));
+  db.exec(fs.readFileSync(path.resolve(here, '..', 'migrations', '003_category_codes.sql'), 'utf8'));
   const now = sqlNow();
   db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('001_base', now);
   db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('002_admin_activity', now);
   db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('002_featured_items', now);
+  db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run('003_category_codes', now);
   db.prepare(
     'INSERT INTO menu_state (id, edit_revision, published_revision, updated_at) VALUES (1, 0, 0, ?)'
   ).run(now);

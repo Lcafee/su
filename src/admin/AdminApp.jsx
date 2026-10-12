@@ -472,6 +472,11 @@ export function AdminApp() {
         ...draft,
         revision: result.revision,
         publishedRevision: result.published ? result.revision : draft.publishedRevision,
+        // The server assigns each new category its permanent Excel code on save.
+        categories: draft.categories.map((category) => ({
+          ...category,
+          code: result.categoryCodes?.[category.id] ?? category.code ?? null,
+        })),
       };
       setDraft(nextDocument);
       setSavedDocument(cloneDocument(nextDocument));
@@ -682,8 +687,7 @@ export function AdminApp() {
           storageKey={menuEditorStorageKey}
           focusTarget={focusTarget}
           titleControls={isOwner ? (
-            <fieldset className="mode-switch">
-              <legend>حالت پنل</legend>
+            <fieldset className="mode-switch" aria-label="حالت پنل">
               <div>{[["simple", "ساده"], ["advanced", "پیشرفته"]].map(([value, label]) => (
                 <button type="button" key={value} aria-pressed={mode === value} className={mode === value ? "is-active" : ""}
                   onClick={() => { setMode(value); setNotice(null); }}>{label}</button>

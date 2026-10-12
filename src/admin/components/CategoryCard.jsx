@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -27,8 +27,9 @@ function CategoryCardComponent({
   onDeleteItem,
   onDeleteCategory,
   navigationTarget,
+  expanded,
+  onToggle,
 }) {
-  const [expanded, setExpanded] = useState(Boolean(category._expanded) || index === 0);
   const categoryTitleRef = useRef(null);
   const sectionRef = useRef(null);
   const handledNavigation = useRef(null);
@@ -52,10 +53,6 @@ function CategoryCardComponent({
   const itemDragIds = visibleItems.map((item) => `item:${item.id}`);
 
   useEffect(() => {
-    if (navigationTarget?.id === category.id) setExpanded(true);
-  }, [category.id, navigationTarget]);
-
-  useEffect(() => {
     if (navigationTarget?.id !== category.id || !expanded || handledNavigation.current === navigationTarget.sequence) return undefined;
     const frame = requestAnimationFrame(() => {
       sectionRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
@@ -67,9 +64,6 @@ function CategoryCardComponent({
 
   useEffect(() => {
     const targetsCategory = focusTarget?.type === "category" && focusTarget.id === category.id;
-    const targetsItem = focusTarget?.type === "item" && focusTarget.categoryId === category.id;
-    if (!targetsCategory && !targetsItem) return undefined;
-    setExpanded(true);
     if (!targetsCategory) return undefined;
     const frame = requestAnimationFrame(() => {
       categoryTitleRef.current?.focus();
@@ -78,7 +72,7 @@ function CategoryCardComponent({
     return () => cancelAnimationFrame(frame);
   }, [category.id, focusTarget]);
 
-  const displayExpanded = advanced || autoExpand || expanded;
+  const displayExpanded = autoExpand || expanded;
   const countLabel = visibleItems.length === category.items.length
     ? `${faNumber.format(category.items.length)} آیتم`
     : `${faNumber.format(visibleItems.length)} از ${faNumber.format(category.items.length)} آیتم`;
@@ -106,10 +100,10 @@ function CategoryCardComponent({
           type="button"
           className="category-toggle"
           aria-expanded={displayExpanded}
-          aria-disabled={advanced || autoExpand || undefined}
+          aria-disabled={autoExpand || undefined}
           title={autoExpand ? "نتیجه‌های جست‌وجو موقتاً باز هستند" : undefined}
           onClick={() => {
-            if (!advanced && !autoExpand) setExpanded((current) => !current);
+            if (!autoExpand) onToggle(category.id);
           }}
         >
           <span className="category-title-line">

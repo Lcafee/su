@@ -185,6 +185,12 @@ persisted changes and uploaded media, not unsaved browser drafts or historical
 actions before the migration. Include `admin_activity` in the existing full
 SQLite backup; no separate logging service or cleanup is required.
 
+Migration `003_category_codes` gives every category a permanent short code (`G01`,
+`G02`, …) for the Excel workbook and adds the counter that keeps a deleted code from
+being reused. Apply it with the release migration runner while the API is stopped,
+before activating a release that needs it; `/readyz` requires its marker. The columns
+are additive, so an earlier release keeps working against the migrated database.
+
 Owners select one global Simple or Advanced mode. Advanced shows all item settings
 and the activity report; Simple omits advanced fields and operational details.
 Special Offer and full price-option management are basic controls available in both modes, including cashier Simple. The API preserves existing external codes and permits new options with no external code; metadata, external code changes, category introduction/layout, and recovery remain owner-only. Special Offer uses the existing `002_featured_items` schema and `is_featured` storage. Apply any missing migrations with the release runner; existing production markers are preserved. Legacy metadata offer flags are accepted and normalized on save. Deletions must

@@ -25,7 +25,7 @@ export function loadMenuDocument(db) {
   const categories = [];
   const categoryIndexes = new Map();
   const categoryRows = db.prepare(`
-    SELECT id, public_id, title, intro, layout, sort_order, archived_at
+    SELECT id, public_id, code, title, intro, layout, sort_order, archived_at
     FROM menu_categories
     ORDER BY (archived_at IS NOT NULL), sort_order, id
   `).all();
@@ -34,6 +34,7 @@ export function loadMenuDocument(db) {
     categories.push({
       id: row.id,
       publicId: row.public_id,
+      code: row.code ?? null,
       title: row.title,
       intro: row.intro ?? null,
       layout: row.layout,

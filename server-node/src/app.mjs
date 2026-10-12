@@ -53,7 +53,10 @@ export async function buildApp({ db, config, logger = true }) {
     const featuredMigration = db.prepare(
       "SELECT 1 AS ok FROM schema_migrations WHERE version = '002_featured_items'"
     ).get();
-    if (!migration || !activityMigration || !featuredMigration || !state) {
+    const categoryCodeMigration = db.prepare(
+      "SELECT 1 AS ok FROM schema_migrations WHERE version = '003_category_codes'"
+    ).get();
+    if (!migration || !activityMigration || !featuredMigration || !categoryCodeMigration || !state) {
       reply.code(503);
       return { ok: false };
     }

@@ -2,6 +2,11 @@
 // .xlsx writer (stored ZIP), a reader (ZIP + browser inflate + DOMParser), and the merge
 // that applies workbook rows to the editor draft. Blank cells and absent rows never
 // change or delete anything; the result still goes through the normal save and publish.
+//
+// Rows are identified by codes people can read, never by internal UUIDs: categories by
+// their permanent server-assigned code (G01...), items and price options by the product
+// code already stored with them. A record without a code has a blank cell and is matched
+// by name. Codes are only read here; importing never creates or changes one.
 import { blankCategory, blankItem, cloneDocument, editableSignature } from "./document";
 
 const faNumber = new Intl.NumberFormat("fa-IR");
@@ -16,22 +21,22 @@ const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const SHEETS = {
   categories: {
     name: "دسته‌ها",
-    marks: ["شناسه دسته", "نام دسته"],
-    columns: [["id", "شناسه دسته", 38], ["name", "نام دسته", 28], ["description", "توضیح", 50], ["order", "ترتیب", 8]],
+    marks: ["کد دسته", "نام دسته"],
+    columns: [["code", "کد دسته", 12], ["name", "نام دسته", 28], ["description", "توضیح", 50], ["order", "ترتیب", 8]],
   },
   items: {
     name: "آیتم‌ها",
-    marks: ["شناسه آیتم", "نام آیتم"],
+    marks: ["کد آیتم", "نام آیتم"],
     columns: [
-      ["id", "شناسه آیتم", 38], ["name", "نام آیتم", 28], ["description", "توضیح", 50], ["price", "قیمت", 12],
-      ["category", "نام دسته", 24], ["categoryId", "شناسه دسته", 38], ["order", "ترتیب", 8],
+      ["code", "کد آیتم", 26], ["name", "نام آیتم", 28], ["description", "توضیح", 50], ["price", "قیمت", 12],
+      ["category", "نام دسته", 24], ["categoryCode", "کد دسته", 12], ["order", "ترتیب", 8],
     ],
   },
   variants: {
     name: "گزینه‌های قیمت",
-    marks: ["شناسه گزینه", "عنوان گزینه"],
+    marks: ["کد گزینه", "عنوان گزینه"],
     columns: [
-      ["id", "شناسه گزینه", 38], ["item", "نام آیتم", 28], ["itemId", "شناسه آیتم", 38],
+      ["code", "کد گزینه", 14], ["item", "نام آیتم", 28], ["itemCode", "کد آیتم", 26],
       ["label", "عنوان گزینه", 20], ["price", "قیمت", 12], ["order", "ترتیب", 8],
     ],
   },
@@ -40,11 +45,34 @@ const LIMITS = { name: [191, "نام"], description: [4000, "توضیح"], price
 
 // Names match regardless of spacing, half-spaces and Arabic/Persian letter variants.
 function matchKey(value) {
-  return String(value ?? "").replace(/[\s‌‎‏]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
+  return String(value ?? "").replace(/[\s\u200c\u200e\u200f]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
 }
 
 function trimText(value) {
   return String(value ?? "").replace(/\r\n?/g, "\n").trim();
+}
+
+function latinDigits(value) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹".indexOf(digit))
+    .replace(/[٠-٩]/g, (digit) => "٠١٢٣٤٥٦٧٨٩".indexOf(digit));
+}
+
+// Codes compare as text, ignoring spacing, letter case and digit script; G1 and G01 are one category.
+function codeKey(value) {
+  return latinDigits(String(value ?? ""))
+    .replace(/[\s\u200c\u200e\u200f]/g, "")
+    .toUpperCase()
+    .replace(/^G0+(?=\d)/, "G");
+}
+
+// The product codes stored with an item: its own code, or the codes it is sold under.
+function itemCodeList(item) {
+  const metadata = item.metadata && !Array.isArray(item.metadata) ? item.metadata : {};
+  return [metadata.code, ...(Array.isArray(metadata.codes) ? metadata.codes : [])]
+    .filter((code) => typeof code === "string" || typeof code === "number")
+    .map((code) => String(code).trim())
+    .filter(Boolean);
 }
 
 /* ---------- writing ---------- */
@@ -123,11 +151,12 @@ function menuRows(menu) {
   const items = [];
   const variants = [];
   menu.categories.forEach((category, categoryIndex) => {
-    categories.push([category.id, category.title, category.intro, categoryIndex + 1]);
+    categories.push([category.code, category.title, category.intro, categoryIndex + 1]);
     category.items.forEach((item, itemIndex) => {
-      items.push([item.id, item.name, item.description, item.price, category.title, category.id, itemIndex + 1]);
+      const itemCode = itemCodeList(item).join(", ");
+      items.push([itemCode, item.name, item.description, item.price, category.title, category.code, itemIndex + 1]);
       item.options.forEach((option, optionIndex) => {
-        variants.push([option.id, item.name, item.id, option.label, option.price, optionIndex + 1]);
+        variants.push([option.code, item.name, itemCode, option.label, option.price, optionIndex + 1]);
       });
     });
   });
@@ -285,22 +314,35 @@ export async function readWorkbook(file) {
 
 /* ---------- applying ---------- */
 
-function nameIndex() {
+// A lookup that keeps every record sharing a key, so ambiguity is reported, never guessed.
+function lookupIndex(keyOf) {
   const entries = new Map();
   return {
-    add(name, entity) {
-      const key = matchKey(name);
+    add(value, entity) {
+      const key = keyOf(value);
+      if (!key) return;
       if (!entries.has(key)) entries.set(key, new Set());
       entries.get(key).add(entity);
     },
-    find(name) {
-      return [...(entries.get(matchKey(name)) || [])];
+    find(value) {
+      return [...(entries.get(keyOf(value)) || [])];
     },
   };
 }
 
-// Applies workbook rows to a copy of the menu. Rows address records by identifier, or by
-// name when the identifier cell is blank; unmatched named rows create new records.
+// Every code in a cell must point at the same record. Returns { missing } for an unknown code.
+function codeMatches(cell, index) {
+  let matches = null;
+  for (const code of cell.split(/[,،;]+/).map((part) => part.trim()).filter(Boolean)) {
+    const found = index.find(code);
+    if (!found.length) return { missing: code };
+    matches = matches ? matches.filter((entity) => found.includes(entity)) : found;
+  }
+  return { matches: matches || [] };
+}
+
+// Applies workbook rows to a copy of the menu. Rows address records by code, or by name
+// when the code cell is blank; unmatched named rows create new records (without a code).
 // Returns { errors } without a document when any row is invalid.
 export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCategoryDescription = true } = {}) {
   const next = cloneDocument(menu);
@@ -309,12 +351,14 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
     errors.push(`برگه «${SHEETS[sheet].name}»، ردیف ${faNumber.format(row)}: ${message}`);
   };
 
-  const categoryById = new Map();
-  const itemById = new Map();
-  const optionById = new Map();
+  // Item codes and option codes are separate namespaces: the same number can belong to
+  // an item and to another item's price option, so each sheet only reads its own index.
+  const categoryCodes = lookupIndex(codeKey);
+  const itemCodes = lookupIndex(codeKey);
+  const optionCodes = lookupIndex(codeKey);
   // Old and new names both resolve, so a renamed record can still be referenced by either.
-  const categoryNames = nameIndex();
-  const itemNames = nameIndex();
+  const categoryNames = lookupIndex(matchKey);
+  const itemNames = lookupIndex(matchKey);
   const categoryOf = new Map();
   const itemOf = new Map();
   const positions = new Map();
@@ -322,16 +366,16 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
   const prices = [];
 
   function registerCategory(category) {
-    categoryById.set(category.id.toLowerCase(), category);
+    categoryCodes.add(category.code, category);
     categoryNames.add(category.title, category);
   }
   function registerItem(item, category) {
-    itemById.set(item.id.toLowerCase(), item);
+    for (const code of itemCodeList(item)) itemCodes.add(code, item);
     itemNames.add(item.name, item);
     categoryOf.set(item, category);
   }
   function registerOption(option, item) {
-    optionById.set(option.id.toLowerCase(), option);
+    optionCodes.add(option.code, option);
     itemOf.set(option, item);
   }
   for (const category of next.categories) {
@@ -367,14 +411,29 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
     seen.add(entity);
     return true;
   }
+  // The one record a code cell points at, or null after reporting why there is none.
+  // `among` narrows a code shared by several records; `hint` explains an unknown code.
+  function byCode(sheet, row, cell, index, label, { among = null, hint = () => "" } = {}) {
+    const { matches, missing } = codeMatches(cell, index);
+    if (missing) {
+      fail(sheet, row, `کد ${label} «${missing}» در منو وجود ندارد.${hint(missing)}`);
+      return null;
+    }
+    const narrowed = matches.length > 1 && among ? matches.filter((entity) => among.includes(entity)) : matches;
+    if (narrowed.length !== 1) {
+      fail(sheet, row, matches.length
+        ? `کد «${cell}» به چند ${label} تعلق دارد؛ نام دقیق را هم وارد کنید.`
+        : `کدهای «${cell}» به یک ${label} واحد تعلق ندارند.`);
+      return null;
+    }
+    return narrowed[0];
+  }
   function setText(target, field, value) {
     if (value && trimText(target[field]) !== value) target[field] = value;
   }
   function setPosition(sheet, row, target, value) {
     if (!value) return;
-    const position = Number(value
-      .replace(/[۰-۹]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹".indexOf(digit))
-      .replace(/[٠-٩]/g, (digit) => "٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+    const position = Number(latinDigits(value));
     if (!Number.isInteger(position) || position < 1) {
       fail(sheet, row, `ترتیب «${value}» باید عدد صحیح مثبت باشد.`);
       return;
@@ -396,16 +455,16 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
   for (const { row, values } of tables.categories || []) {
     if (!withinLimits("categories", row, values)) continue;
     let category;
-    if (values.id) {
-      category = categoryById.get(values.id.toLowerCase());
-      if (!category) {
-        fail("categories", row, `شناسه دسته «${values.id}» در منو وجود ندارد. برای ساخت دسته جدید، خانه شناسه را خالی بگذارید.`);
-        continue;
-      }
+    if (values.code) {
+      category = byCode("categories", row, values.code, categoryCodes, "دسته", {
+        among: values.name ? categoryNames.find(values.name) : null,
+        hint: () => " برای ساخت دسته جدید، خانه کد را خالی بگذارید؛ کد پس از ذخیره ساخته می‌شود.",
+      });
+      if (!category) continue;
     } else if (values.name) {
       const matches = categoryNames.find(values.name);
       if (matches.length > 1) {
-        fail("categories", row, `چند دسته با نام «${values.name}» وجود دارد؛ شناسه دسته را وارد کنید.`);
+        fail("categories", row, `چند دسته با نام «${values.name}» وجود دارد؛ کد دسته را وارد کنید.`);
         continue;
       }
       category = matches[0];
@@ -415,7 +474,7 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
         registerCategory(category);
       }
     } else {
-      fail("categories", row, "شناسه دسته یا نام دسته لازم است.");
+      fail("categories", row, "کد دسته یا نام دسته لازم است.");
       continue;
     }
     if (!firstUse("categories", row, category)) continue;
@@ -432,21 +491,18 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
   for (const { row, values } of tables.items || []) {
     if (!withinLimits("items", row, values)) continue;
     let category = null;
-    if (values.categoryId) {
-      category = categoryById.get(values.categoryId.toLowerCase());
-      if (!category) {
-        fail("items", row, `شناسه دسته «${values.categoryId}» در منو وجود ندارد.`);
-        continue;
-      }
+    if (values.categoryCode) {
+      category = byCode("items", row, values.categoryCode, categoryCodes, "دسته");
+      if (!category) continue;
       if (values.category && !categoryNames.find(values.category).includes(category)) {
-        fail("items", row, `نام دسته «${values.category}» با شناسه دسته هم‌خوان نیست؛ یکی را اصلاح یا خالی کنید.`);
+        fail("items", row, `نام دسته «${values.category}» با کد دسته هم‌خوان نیست؛ یکی را اصلاح یا خالی کنید.`);
         continue;
       }
     } else if (values.category) {
       const matches = categoryNames.find(values.category);
       if (matches.length !== 1) {
         fail("items", row, matches.length
-          ? `چند دسته با نام «${values.category}» وجود دارد؛ شناسه دسته را وارد کنید.`
+          ? `چند دسته با نام «${values.category}» وجود دارد؛ کد دسته را وارد کنید.`
           : `دسته «${values.category}» پیدا نشد؛ آن را در برگه «${SHEETS.categories.name}» اضافه کنید.`);
         continue;
       }
@@ -454,23 +510,25 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
     }
 
     let item;
-    if (values.id) {
-      item = itemById.get(values.id.toLowerCase());
-      if (!item) {
-        fail("items", row, `شناسه آیتم «${values.id}» در منو وجود ندارد. برای ساخت آیتم جدید، خانه شناسه را خالی بگذارید.`);
-        continue;
-      }
+    if (values.code) {
+      item = byCode("items", row, values.code, itemCodes, "آیتم", {
+        among: values.name ? itemNames.find(values.name) : null,
+        hint: (code) => (optionCodes.find(code).length
+          ? ` این کد متعلق به یک گزینه قیمت است، نه آیتم؛ آن را در برگه «${SHEETS.variants.name}» به‌کار ببرید.`
+          : " برای ساخت آیتم جدید، خانه کد را خالی بگذارید."),
+      });
+      if (!item) continue;
     } else if (values.name) {
       const matches = itemNames.find(values.name)
         .filter((candidate) => !category || categoryOf.get(candidate) === category);
       if (matches.length > 1) {
-        fail("items", row, `چند آیتم با نام «${values.name}» وجود دارد؛ شناسه آیتم را وارد کنید.`);
+        fail("items", row, `چند آیتم با نام «${values.name}» وجود دارد؛ کد آیتم یا دسته آن را وارد کنید.`);
         continue;
       }
       item = matches[0];
       if (!item) {
         if (!category) {
-          fail("items", row, `آیتم «${values.name}» در منو نیست؛ برای ساخت آن، نام دسته یا شناسه دسته لازم است.`);
+          fail("items", row, `آیتم «${values.name}» در منو نیست؛ برای ساخت آن، نام دسته یا کد دسته لازم است.`);
           continue;
         }
         item = Object.assign(blankItem(), { name: values.name });
@@ -478,7 +536,7 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
         registerItem(item, category);
       }
     } else {
-      fail("items", row, "شناسه آیتم یا نام آیتم لازم است.");
+      fail("items", row, "کد آیتم یا نام آیتم لازم است.");
       continue;
     }
     if (!firstUse("items", row, item)) continue;
@@ -498,21 +556,23 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
   for (const { row, values } of tables.variants || []) {
     if (!withinLimits("variants", row, values)) continue;
     let item = null;
-    if (values.itemId) {
-      item = itemById.get(values.itemId.toLowerCase());
-      if (!item) {
-        fail("variants", row, `شناسه آیتم «${values.itemId}» در منو وجود ندارد.`);
-        continue;
-      }
+    if (values.itemCode) {
+      item = byCode("variants", row, values.itemCode, itemCodes, "آیتم", {
+        among: values.item ? itemNames.find(values.item) : null,
+        hint: (code) => (optionCodes.find(code).length
+          ? " این کد متعلق به یک گزینه قیمت است؛ در ستون «کد آیتم» فقط کد خود آیتم را وارد کنید یا آن را خالی بگذارید."
+          : ""),
+      });
+      if (!item) continue;
       if (values.item && !itemNames.find(values.item).includes(item)) {
-        fail("variants", row, `نام آیتم «${values.item}» با شناسه آیتم هم‌خوان نیست؛ یکی را اصلاح یا خالی کنید.`);
+        fail("variants", row, `نام آیتم «${values.item}» با کد آیتم هم‌خوان نیست؛ یکی را اصلاح یا خالی کنید.`);
         continue;
       }
     } else if (values.item) {
       const matches = itemNames.find(values.item);
       if (matches.length !== 1) {
         fail("variants", row, matches.length
-          ? `چند آیتم با نام «${values.item}» وجود دارد؛ شناسه آیتم را وارد کنید.`
+          ? `چند آیتم با نام «${values.item}» وجود دارد؛ کد آیتم را وارد کنید.`
           : `آیتم «${values.item}» پیدا نشد؛ آن را در برگه «${SHEETS.items.name}» اضافه کنید.`);
         continue;
       }
@@ -520,24 +580,26 @@ export function applyWorkbook(menu, { tables, errors: readErrors }, { canEditCat
     }
 
     let option;
-    if (values.id) {
-      option = optionById.get(values.id.toLowerCase());
-      if (!option) {
-        fail("variants", row, `شناسه گزینه «${values.id}» در منو وجود ندارد. برای ساخت گزینه جدید، خانه شناسه را خالی بگذارید.`);
-        continue;
-      }
+    if (values.code) {
+      option = byCode("variants", row, values.code, optionCodes, "گزینه", {
+        among: item ? item.options : null,
+        hint: (code) => (itemCodes.find(code).length
+          ? ` این کد متعلق به یک آیتم است، نه گزینه قیمت؛ آن را در برگه «${SHEETS.items.name}» به‌کار ببرید.`
+          : " برای ساخت گزینه جدید، خانه کد را خالی بگذارید."),
+      });
+      if (!option) continue;
       if (item && itemOf.get(option) !== item) {
         fail("variants", row, "این گزینه به آیتم دیگری تعلق دارد؛ گزینه‌ها بین آیتم‌ها جابه‌جا نمی‌شوند.");
         continue;
       }
     } else {
       if (!item || !values.label) {
-        fail("variants", row, "برای گزینه بدون شناسه، آیتم (شناسه یا نام) و عنوان گزینه لازم است.");
+        fail("variants", row, "برای گزینه بدون کد، آیتم (کد یا نام) و عنوان گزینه لازم است.");
         continue;
       }
       const matches = item.options.filter((candidate) => matchKey(candidate.label) === matchKey(values.label));
       if (matches.length > 1) {
-        fail("variants", row, `آیتم «${item.name}» چند گزینه با عنوان «${values.label}» دارد؛ شناسه گزینه را وارد کنید.`);
+        fail("variants", row, `آیتم «${item.name}» چند گزینه با عنوان «${values.label}» دارد؛ کد گزینه را وارد کنید.`);
         continue;
       }
       option = matches[0];

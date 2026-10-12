@@ -1301,7 +1301,7 @@ small {
 .category-navigation > div { display: grid; gap: 5px; }
 .category-navigation button { min-height: 44px; border: 1px solid transparent; border-radius: 9px; padding: 10px; background: transparent; text-align: start; color: var(--ink); overflow-wrap: anywhere; }
 .category-navigation button:hover { background: #eee5e2; }
-.category-navigation button[aria-current] { background: var(--scarlet); color: #fff; }
+.category-navigation button[aria-current] { background: var(--scarlet); border-color: var(--scarlet); color: #fff; font-weight: 700; }
 .category-navigation small { color: inherit; }
 .category-card { min-width: 0; scroll-margin-top: 100px; }
 .category-header-actions { flex-wrap: wrap; }

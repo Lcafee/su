@@ -64,7 +64,11 @@ Owners receive a paginated activity report for every user in Advanced with times
 and before/after values. The save bar names the user and time of the latest saved revision.
 Excel export, a blank template, and import run in the browser without a spreadsheet
 dependency (`src/admin/menuWorkbook.js`); an import only changes the draft, blank cells and
-absent rows change nothing, and the normal save and publish step still applies. Menu saves and media uploads are logged transactionally;
+absent rows change nothing, and the normal save and publish step still applies. Workbook rows
+are identified by readable codes, never by internal UUIDs: permanent category codes (`G01`…,
+assigned by the API, migration `003_category_codes`) and the product codes already stored with
+items (`metadata.code`/`codes`) and price options. A record without a code is matched by name;
+importing never creates or changes a code. Menu saves and media uploads are logged transactionally;
 failed saves are not reported as completed changes. Unsaved local drafts are not
 persisted activity. Apply `server-node/migrations/002_admin_activity.sql` with the
 existing migration runner before activating the new API; see `OPERATIONS.md`.

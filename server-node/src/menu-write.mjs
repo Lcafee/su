@@ -312,6 +312,34 @@ function referencedMediaSet(db) {
   );
 }
 
+// Excel-facing category codes (G01, G02, ...) are assigned once, in order of first
+// appearance, and are never renumbered or reused. UUIDs remain the real keys.
+function assignCategoryCodes(db) {
+  const pending = db.prepare(`
+    SELECT id FROM menu_categories WHERE code IS NULL
+    ORDER BY (archived_at IS NOT NULL), sort_order, id
+  `).all();
+  if (pending.length === 0) return;
+  let sequence = Math.max(
+    db.prepare('SELECT category_code_seq FROM menu_state WHERE id = 1').get().category_code_seq,
+    db.prepare(
+      'SELECT COALESCE(MAX(CAST(SUBSTR(code, 2) AS INTEGER)), 0) AS highest FROM menu_categories'
+    ).get().highest,
+  );
+  const setCode = db.prepare('UPDATE menu_categories SET code = ? WHERE id = ?');
+  for (const { id } of pending) {
+    sequence += 1;
+    setCode.run(`G${String(sequence).padStart(2, '0')}`, id);
+  }
+  db.prepare('UPDATE menu_state SET category_code_seq = ? WHERE id = 1').run(sequence);
+}
+
+function categoryCodes(db) {
+  return Object.fromEntries(
+    db.prepare('SELECT id, code FROM menu_categories').all().map((row) => [row.id, row.code]),
+  );
+}
+
 function persistMenuDocument(db, document, oldMedia) {
   const existingCategories = idSet(db, 'menu_categories');
   const existingItems = idSet(db, 'menu_items');
@@ -400,6 +428,7 @@ function persistMenuDocument(db, document, oldMedia) {
   // Items moved out of a deleted category have been reassigned before its removal.
   const deleteCategory = db.prepare('DELETE FROM menu_categories WHERE id = ?');
   for (const id of document.deletedCategoryIds) deleteCategory.run(id);
+  assignCategoryCodes(db);
 
   const retire = db.prepare(
     'UPDATE media_assets SET retired_at = COALESCE(retired_at, ?) WHERE id = ?'
@@ -594,7 +623,13 @@ function saveMenuWithLock(db, config, actor, input) {
     }
   }
 
-  return { revision, published, publishState, lastEdit: publishStatus(db).lastEdit };
+  return {
+    revision,
+    published,
+    publishState,
+    lastEdit: publishStatus(db).lastEdit,
+    categoryCodes: categoryCodes(db),
+  };
 }
 
 function retryPublishWithLock(db, config) {

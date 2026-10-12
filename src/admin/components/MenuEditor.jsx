@@ -108,6 +108,13 @@ export function MenuEditor({
   const defaultVisibility = advanced ? "all" : "active";
   const [viewState, setViewState] = useState(() => readMenuEditorViewState(storageKey, advanced));
   const [navigationTarget, setNavigationTarget] = useState(null);
+  // The single open category; the side navigation highlights the same one.
+  const [activeCategoryId, setActiveCategoryId] = useState(() => document.categories[0]?.id ?? null);
+  const [handledFocusTarget, setHandledFocusTarget] = useState(focusTarget);
+  if (focusTarget !== handledFocusTarget) {
+    setHandledFocusTarget(focusTarget);
+    if (focusTarget) setActiveCategoryId(focusTarget.type === "item" ? focusTarget.categoryId : focusTarget.id);
+  }
   const { query, visibility, quickCategoryId } = viewState;
   const availableCategories = useMemo(
     () => categoryChoices.filter((category) => !category.archived),
@@ -296,8 +303,9 @@ export function MenuEditor({
             <h3>دسته‌بندی‌ها</h3>
             <div>{categoryChoices.map((category) => (
               <button type="button" key={category.id} aria-controls={`admin-category-${category.id}`}
-                aria-current={navigationTarget?.id === category.id ? "location" : undefined}
+                aria-current={activeCategoryId === category.id ? "location" : undefined}
                 onClick={() => {
+                  setActiveCategoryId(category.id);
                   setViewState((current) => ({ ...current, query: "", visibility: "all" }));
                   setNavigationTarget({ id: category.id, sequence: (navigationTarget?.sequence || 0) + 1 });
                 }}>
@@ -339,6 +347,8 @@ export function MenuEditor({
                   onDeleteItem={onDeleteItem}
                   onDeleteCategory={onDeleteCategory}
                   navigationTarget={navigationTarget}
+                  expanded={activeCategoryId === category.id}
+                  onToggle={(categoryId) => setActiveCategoryId((current) => (current === categoryId ? null : categoryId))}
                 />
               );
             })}
