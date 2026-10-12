@@ -271,7 +271,7 @@ test('cashier basic prices, explicit deletion and activity reports enforce the r
   assert.equal((await app.inject({ method: 'GET', url: '/api/admin/activity', headers: headers(cashier) })).statusCode, 403);
   const report = await app.inject({ method: 'GET', url: '/api/admin/activity', headers: headers(owner) });
   assert.equal(report.statusCode, 200);
-  const entries = report.json().entries;
+  const entries = report.json().entries.filter((entry) => entry.role === 'cashier');
   assert.equal(entries.length, 2);
   assert.ok(entries.every((entry) => entry.username === 'cashier' && !Number.isNaN(Date.parse(entry.createdAt))));
   assert.equal(entries[0].details.changes.find((change) => change.id === itemId).operation, 'delete');
@@ -299,7 +299,7 @@ test('cashier basic prices, explicit deletion and activity reports enforce the r
   const pageOne = (await app.inject({ method: 'GET', url: '/api/admin/activity', headers: headers(owner) })).json();
   const pageTwo = (await app.inject({ method: 'GET', url: `/api/admin/activity?before=${pageOne.nextCursor}`, headers: headers(owner) })).json();
   assert.equal(pageOne.entries.length, 50);
-  assert.equal(pageTwo.entries.length, 4);
+  assert.equal(pageTwo.entries.length, db.prepare('SELECT COUNT(*) AS count FROM admin_activity').get().count - 50);
   assert.equal(pageTwo.nextCursor, null);
   assert.ok(pageTwo.entries.every((entry) => entry.id < pageOne.nextCursor));
 });
@@ -398,7 +398,7 @@ test('service access reuses the admin contract for a trusted loopback caller', a
 
   const report = await app.inject({ method: 'GET', url: '/api/admin/activity', headers: service('owner') });
   assert.equal(report.statusCode, 200);
-  assert.equal(report.json().entries.length, 1);
+  assert.equal(report.json().entries.length, 2);
   assert.equal(report.json().entries[0].username, 'ops:سارا@ops');
   assert.deepEqual(
     db.prepare('SELECT actor_user_id, actor_username, actor_role FROM admin_activity ORDER BY id').all(),

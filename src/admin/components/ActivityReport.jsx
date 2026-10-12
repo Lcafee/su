@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { getCashierActivity } from "../api";
+import { getActivity } from "../api";
 
 const fields = {
   title: "نام دسته", intro: "توضیح دسته", layout: "نوع نمایش", archived: "آرشیو",
@@ -8,6 +8,8 @@ const fields = {
   featured: "پیشنهاد ویژه",
 };
 const operations = { create: "افزودن", update: "ویرایش", delete: "حذف" };
+const roles = { owner: "مالک", cashier: "صندوق‌دار" };
+const faNumber = new Intl.NumberFormat("fa-IR");
 const dateFormat = new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tehran" });
 
 function valueText(value, field) {
@@ -15,6 +17,15 @@ function valueText(value, field) {
   if (typeof value === "boolean") return value ? "بله" : "خیر";
   if (field === "options") return value.map((option) => `${option.label}: ${option.price}`).join(" / ") || "—";
   return typeof value === "object" ? JSON.stringify(value) : String(value);
+}
+
+function targetText(entry) {
+  if (entry.action !== "menu.save") return "تصویر";
+  const names = entry.details.changes.map((change) => `${change.type === "category" ? "دسته" : "آیتم"} «${change.name}»`);
+  if (!names.length) return "بدون تغییر محتوا";
+  return names.length > 3
+    ? `${names.slice(0, 3).join("، ")} و ${faNumber.format(names.length - 3)} مورد دیگر`
+    : names.join("، ");
 }
 
 function ActivityReportComponent({ revision, onSessionExpiry }) {
@@ -28,7 +39,7 @@ function ActivityReportComponent({ revision, onSessionExpiry }) {
     setBusy(true);
     setError("");
     try {
-      const result = await getCashierActivity(before);
+      const result = await getActivity(before);
       if (id !== requestId.current) return;
       setEntries((current) => before ? [...current, ...result.entries] : result.entries);
       setCursor(result.nextCursor);
@@ -47,17 +58,18 @@ function ActivityReportComponent({ revision, onSessionExpiry }) {
   return (
     <section className="activity-report" aria-labelledby="activity-title" aria-busy={busy}>
       <div className="editor-toolbar">
-        <div><h2 id="activity-title">گزارش تغییرات صندوق‌دار</h2>
+        <div><h2 id="activity-title">گزارش تغییرات</h2>
           <p>تغییرات ذخیره‌شده و بارگذاری تصاویر با نام کاربر و زمان ثبت می‌شوند.</p></div>
         <button className="quiet-button" type="button" disabled={busy} onClick={() => load()}>{busy ? "در حال دریافت…" : "به‌روزرسانی گزارش"}</button>
       </div>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
-      {!entries.length && !busy && !error ? <p>هنوز تغییری از صندوق‌دار ثبت نشده است.</p> : null}
+      {!entries.length && !busy && !error ? <p>هنوز تغییری ثبت نشده است.</p> : null}
       <div className="activity-list">
         {entries.map((entry) => (
           <details className="activity-entry" key={entry.id}>
-            <summary><strong>{entry.username}</strong>
+            <summary><strong>{entry.username}{roles[entry.role] ? ` · ${roles[entry.role]}` : ""}</strong>
               <span>{entry.action === "menu.save" ? `ذخیره منو · نسخه ${entry.revision}` : "بارگذاری تصویر"}</span>
+              <span>{targetText(entry)}</span>
               <time dateTime={entry.createdAt}>{dateFormat.format(new Date(entry.createdAt))}</time>
             </summary>
             {entry.action === "media.upload" ? <p>شناسه تصویر: <bdi>{entry.details.mediaId}</bdi></p> : (

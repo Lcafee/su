@@ -244,9 +244,9 @@ export function moveItem(document, itemId, targetCategoryId, overItemId = null) 
   };
 }
 
-export function createCategory(document) {
+export function blankCategory() {
   const id = crypto.randomUUID();
-  const category = {
+  return {
     id,
     publicId: `category-${id.replaceAll("-", "").slice(0, 12)}`,
     title: "دسته‌بندی جدید",
@@ -256,15 +256,11 @@ export function createCategory(document) {
     items: [],
     _expanded: true,
   };
-  return {
-    document: { ...document, categories: [...document.categories, category] },
-    categoryId: id,
-  };
 }
 
-export function createItem(document, categoryId) {
+export function blankItem() {
   const id = crypto.randomUUID();
-  const item = {
+  return {
     id,
     publicId: `item-${id.replaceAll("-", "").slice(0, 12)}`,
     name: "آیتم جدید",
@@ -277,6 +273,20 @@ export function createItem(document, categoryId) {
     archived: false,
     options: [],
   };
+}
+
+export function createCategory(document) {
+  const category = blankCategory();
+  const id = category.id;
+  return {
+    document: { ...document, categories: [...document.categories, category] },
+    categoryId: id,
+  };
+}
+
+export function createItem(document, categoryId) {
+  const item = blankItem();
+  const id = item.id;
   return {
     document: {
       ...document,

@@ -1290,6 +1290,11 @@ small {
 .mode-switch button { min-height: 44px; padding: 8px 24px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--paper); color: var(--ink); }
 .mode-switch button.is-active { background: var(--scarlet); color: white; border-color: var(--scarlet); }
 .simple-mode-note { color: var(--muted); font-size: .85rem; }
+.editor-title { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 20px; }
+.editor-title .mode-switch { margin: 0; }
+.editor-toolbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.editor-results-bar { justify-content: flex-end; }
+.import-errors ul { margin: 8px 0 12px; padding-inline-start: 20px; line-height: 1.9; }
 .editor-navigation-layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 20px; align-items: start; }
 .category-navigation { position: sticky; top: 90px; max-height: calc(100dvh - 220px); overflow-y: auto; }
 .category-navigation h3 { margin: 0 0 12px; font-size: .95rem; }

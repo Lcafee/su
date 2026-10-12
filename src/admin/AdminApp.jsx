@@ -16,7 +16,6 @@ import {
   createCategory,
   createItem,
   documentChangeCount,
-  documentCounts,
   editableSignature,
   firstDocumentIssue,
   moveCategory,
@@ -36,8 +35,19 @@ import {
 import { PublishPanel } from "./components/PublishPanel";
 import { BrandMark } from "./components/BrandMark";
 import { ActivityReport } from "./components/ActivityReport";
+import { applyWorkbook, downloadWorkbook, readWorkbook } from "./menuWorkbook";
 
 const faNumber = new Intl.NumberFormat("fa-IR");
+const editDateFormat = new Intl.DateTimeFormat("fa-IR", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Tehran" });
+
+// The editor and time come from the server's record of the latest saved revision.
+function lastEditText(lastEdit) {
+  if (!lastEdit?.at) return "هنوز ویرایشی ذخیره نشده است.";
+  const date = editDateFormat.format(new Date(lastEdit.at));
+  return lastEdit.username
+    ? `آخرین ویرایش توسط ${lastEdit.username} در تاریخ ${date} انجام شده`
+    : `آخرین ویرایش در تاریخ ${date} انجام شده`;
+}
 
 function numericRevision(value) {
   const revision = Number(value);
@@ -66,7 +76,7 @@ function publicationStateText(status, editRevision, publishedRevision, isOwner) 
   if (status?.state === "not_published" || !publishedRevision) {
     return "هنوز نسخه عمومی برای مشتریان ساخته نشده است.";
   }
-  return `مشتریان نسخه عمومی ${faNumber.format(publishedRevision)} را می‌بینند؛ نسخه ذخیره‌شده و عمومی هماهنگ‌اند.`;
+  return "";
 }
 
 function saveStatePresentation({
@@ -87,36 +97,26 @@ function saveStatePresentation({
     isOwner,
   );
 
+  const lastEdit = lastEditText(publishStatus?.lastEdit);
+
   if (hasUnsavedChanges) {
     return {
       tone: "dirty",
       title: `${faNumber.format(changeCount)} بخش فقط روی این صفحه تغییر کرده و هنوز ذخیره نشده است.`,
-      detail: `آخرین ویرایش ذخیره‌شده نسخه ${faNumber.format(editRevision)} است. ${publicationText}`,
+      detail: lastEdit,
     };
   }
   if (publishStatus?.state === "failed") {
-    return {
-      tone: "error",
-      title: `ویرایش نسخه ${faNumber.format(editRevision)} ذخیره شده است.`,
-      detail: publicationText,
-    };
+    return { tone: "error", title: lastEdit, detail: publicationText };
   }
   if (
     publishStatus?.state === "pending"
     || publishStatus?.state === "published_status_pending"
     || publishedRevision < editRevision
   ) {
-    return {
-      tone: "pending",
-      title: `ویرایش نسخه ${faNumber.format(editRevision)} ذخیره شده است.`,
-      detail: publicationText,
-    };
+    return { tone: "pending", title: lastEdit, detail: publicationText };
   }
-  return {
-    tone: "saved",
-    title: `ویرایش نسخه ${faNumber.format(editRevision)} ذخیره شده است.`,
-    detail: publicationText,
-  };
+  return { tone: "saved", title: lastEdit, detail: publicationText };
 }
 
 function saveResultNotice(result, isOwner, advanced) {
@@ -213,6 +213,8 @@ export function AdminApp() {
   const [undoState, setUndoState] = useState(null);
   const [focusTarget, setFocusTarget] = useState(null);
   const [mode, setMode] = useState("simple");
+  const [importErrors, setImportErrors] = useState(null);
+  const importInput = useRef(null);
 
   const applyEditorData = useCallback(({ menu, publishStatus: nextStatus }) => {
     setSavedDocument(cloneDocument(menu));
@@ -222,6 +224,7 @@ export function AdminApp() {
     setNotice(null);
     setUndoState(null);
     setFocusTarget(null);
+    setImportErrors(null);
   }, []);
 
   const initialize = useCallback(async () => {
@@ -270,7 +273,6 @@ export function AdminApp() {
     () => draft?.categories.map(({ id, title, archived }) => ({ id, title, archived })) || [],
     [categoryChoiceSignature],
   );
-  const counts = useMemo(() => (draft ? documentCounts(draft) : null), [draft]);
   const changeCount = useMemo(
     () => documentChangeCount(draft, savedDocument),
     [draft, savedDocument],
@@ -480,6 +482,7 @@ export function AdminApp() {
         publishedRevision: result.published ? result.revision : draft.publishedRevision,
         state: result.publishState,
         error: result.published ? null : "نسخه قبلی منوی عمومی همچنان فعال است.",
+        lastEdit: result.lastEdit ?? null,
       });
       setNotice(saveResultNotice(result, isOwner, advanced));
     } catch (error) {
@@ -529,6 +532,40 @@ export function AdminApp() {
     URL.revokeObjectURL(url);
     setNotice({ tone: "neutral", message: "یک نسخه از تغییرات فعلی شما دانلود شد." });
   }, [draft, savedDocument]);
+
+  const handleExportWorkbook = useCallback((template = false) => {
+    if (template) downloadWorkbook(null, "l-cafe-menu-template.xlsx");
+    else if (draft) downloadWorkbook(draft, `l-cafe-menu-revision-${draft.revision}.xlsx`);
+  }, [draft]);
+
+  // An import only changes the draft on this page; saving and publishing stay a separate step.
+  const handleImportWorkbook = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !draft) return;
+    setNotice(null);
+    let result;
+    try {
+      result = applyWorkbook(draft, await readWorkbook(file), { canEditCategoryDescription: isOwner });
+    } catch {
+      result = { errors: ["فایل خوانده نشد. یک فایل اکسل با پسوند xlsx و حجم کمتر از ۵ مگابایت انتخاب کنید."] };
+    }
+    if (result.errors.length) {
+      setImportErrors(result.errors);
+      return;
+    }
+    setImportErrors(null);
+    if (!result.changed) {
+      setNotice({ tone: "neutral", message: "فایل اکسل تغییری نسبت به منوی این صفحه ندارد." });
+      return;
+    }
+    setUndoState({ document: cloneDocument(draft), message: "تغییرات فایل اکسل روی این صفحه اعمال شد." });
+    setDraft(result.document);
+    setNotice({
+      tone: "success",
+      message: `${faNumber.format(result.counts.categories)} ردیف دسته، ${faNumber.format(result.counts.items)} ردیف آیتم و ${faNumber.format(result.counts.variants)} ردیف گزینه قیمت از فایل اکسل خوانده شد. برای ثبت نهایی، ذخیره و انتشار را بزنید.`,
+    });
+  }, [draft, isOwner]);
 
   const handleRetryPublish = useCallback(async () => {
     setRetrying(true);
@@ -590,42 +627,25 @@ export function AdminApp() {
       </header>
 
       <main className="admin-main">
-        <section className="owner-workspace role-workspace" aria-labelledby="role-workspace-title">
-          <div className="owner-workspace-heading">
-            <div>
-              <h2 id="role-workspace-title">{isOwner ? "کنترل مالک" : "کار روزانه صندوق‌دار"}</h2>
-              <p>{advanced ? "تنظیمات نمایش، ساخت گزینه‌های قیمت و تنظیمات پیشرفته در دسترس است."
-                : "نام، قیمت، گزینه‌های قیمت، پیشنهاد ویژه و تصویر آیتم‌ها را تغییر دهید و ذخیره کنید."}</p>
-            </div>
-            <span className="role-chip">{isOwner ? "دسترسی کامل" : "عملیات روزانه"}</span>
-          </div>
-          {isOwner ? <fieldset className="mode-switch">
-            <legend>حالت پنل</legend>
-            <div>{[["simple", "ساده"], ["advanced", "پیشرفته"]].map(([value, label]) => (
-              <button type="button" key={value} aria-pressed={mode === value} className={mode === value ? "is-active" : ""}
-                onClick={() => { setMode(value); setNotice(null); }}>{label}</button>
-            ))}</div>
-          </fieldset> : <p className="simple-mode-note">حالت ساده · تغییرات ذخیره‌شده برای مدیر گزارش می‌شوند.</p>}
-          {advanced ? (
-            <section className="overview" aria-label="خلاصه منو">
-              <div><strong>{counts.categories}</strong><span>دسته‌بندی</span></div>
-              <div><strong>{counts.activeItems}</strong><span>آیتم فعال</span></div>
-              <div><strong>{counts.archivedItems}</strong><span>آیتم آرشیوی</span></div>
-              <div><strong>{draft.revision}</strong><span>نسخه ویرایش</span></div>
-            </section>
-          ) : null}
-
-          <PublishPanel
-            status={publishStatus}
-            retrying={retrying}
-            onRetry={handleRetryPublish}
-            canRetry={advanced}
-            advanced={advanced}
-          />
-        </section>
+        <PublishPanel
+          status={publishStatus}
+          retrying={retrying}
+          onRetry={handleRetryPublish}
+          canRetry={advanced}
+          advanced={advanced}
+        />
 
         {notice ? (
           <p className={`notice tone-${notice.tone}`} role="status">{notice.message}</p>
+        ) : null}
+
+        {importErrors ? (
+          <section className="notice tone-error import-errors" role="alert">
+            <strong>ورود از اکسل انجام نشد و هیچ تغییری اعمال نشد.</strong>
+            <ul>{importErrors.slice(0, 20).map((message, index) => <li key={index}>{message}</li>)}</ul>
+            {importErrors.length > 20 ? <p>و {faNumber.format(importErrors.length - 20)} خطای دیگر.</p> : null}
+            <button type="button" className="quiet-button" onClick={() => setImportErrors(null)}>بستن</button>
+          </section>
         ) : null}
 
         {undoState ? (
@@ -661,6 +681,31 @@ export function AdminApp() {
           advanced={advanced}
           storageKey={menuEditorStorageKey}
           focusTarget={focusTarget}
+          titleControls={isOwner ? (
+            <fieldset className="mode-switch">
+              <legend>حالت پنل</legend>
+              <div>{[["simple", "ساده"], ["advanced", "پیشرفته"]].map(([value, label]) => (
+                <button type="button" key={value} aria-pressed={mode === value} className={mode === value ? "is-active" : ""}
+                  onClick={() => { setMode(value); setNotice(null); }}>{label}</button>
+              ))}</div>
+            </fieldset>
+          ) : null}
+          toolbarActions={(
+            <>
+              <button type="button" className="quiet-button" onClick={() => handleExportWorkbook()}>خروجی اکسل</button>
+              <button type="button" className="quiet-button" onClick={() => importInput.current?.click()} disabled={editorDisabled}>
+                ورود از اکسل
+              </button>
+              <button type="button" className="quiet-button" onClick={() => handleExportWorkbook(true)}>قالب خالی اکسل</button>
+              <input
+                ref={importInput}
+                type="file"
+                hidden
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={handleImportWorkbook}
+              />
+            </>
+          )}
           onUpdateCategory={handleUpdateCategory}
           onUpdateItem={handleUpdateItem}
           onMoveCategory={handleMoveCategory}
@@ -679,8 +724,8 @@ export function AdminApp() {
         <div className="save-state">
           <span className={`dirty-dot is-${savePresentation.tone}`} aria-hidden="true" />
           <span className="save-state-copy">
-            <strong>{advanced ? savePresentation.title : hasUnsavedChanges ? "تغییرات ذخیره نشده دارید." : "تغییرات ذخیره شده است."}</strong>
-            {advanced ? <span>{savePresentation.detail}</span> : null}
+            <strong>{advanced || !hasUnsavedChanges ? savePresentation.title : "تغییرات ذخیره نشده دارید."}</strong>
+            {(advanced || hasUnsavedChanges) && savePresentation.detail ? <span>{savePresentation.detail}</span> : null}
           </span>
         </div>
         <div className="save-actions">

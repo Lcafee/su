@@ -169,7 +169,7 @@ actor as `ops:<user>` with no `actor_user_id`.
 Rotating the token means changing it in both environment files and restarting
 both services. Removing it disables service access without affecting `/admin/`.
 
-## Cashier activity and admin modes
+## Activity report and admin modes
 
 Before activating the API version that supports activity reports, run the existing
 `server-node` migration runner against the persistent Main Site database to apply
@@ -178,15 +178,15 @@ apply production migrations. `/readyz` requires its recorded migration marker.
 
 Every successful menu save and media upload writes an append-only activity row
 in the same SQLite transaction as its database mutation. A logging failure rolls
-back the mutation. The owner-only `/api/admin/activity` endpoint reports cashier
-actions in pages of 50, including identity, UTC timestamp, revision, and field
+back the mutation. The owner-only `/api/admin/activity` endpoint reports every
+user's actions in pages of 50, including identity, role, UTC timestamp, revision, and field
 before/after values. The UI displays timestamps in Asia/Tehran. Reports cover
 persisted changes and uploaded media, not unsaved browser drafts or historical
 actions before the migration. Include `admin_activity` in the existing full
 SQLite backup; no separate logging service or cleanup is required.
 
 Owners select one global Simple or Advanced mode. Advanced shows all item settings
-and the cashier report; Simple omits advanced fields and operational details.
+and the activity report; Simple omits advanced fields and operational details.
 Special Offer and full price-option management are basic controls available in both modes, including cashier Simple. The API preserves existing external codes and permits new options with no external code; metadata, external code changes, category introduction/layout, and recovery remain owner-only. Special Offer uses the existing `002_featured_items` schema and `is_featured` storage. Apply any missing migrations with the release runner; existing production markers are preserved. Legacy metadata offer flags are accepted and normalized on save. Deletions must
 declare the exact category/item UUIDs alongside a revision-checked menu save.
 Omitting a record without declaring its deletion remains an error. Menu row

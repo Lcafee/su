@@ -80,7 +80,7 @@ export function getPublishStatus() {
   return apiRequest("/admin/publish-status");
 }
 
-export function getCashierActivity(before = null) {
+export function getActivity(before = null) {
   return apiRequest(`/admin/activity${before ? `?before=${encodeURIComponent(before)}` : ""}`);
 }
 

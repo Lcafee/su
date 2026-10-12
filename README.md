@@ -60,8 +60,11 @@ Special Offer uses the existing `is_featured` column; legacy `metadata.featured`
 Only external option codes, metadata, category display settings, and recovery are advanced.
 The right-side category index opens and focuses each section (a horizontal bar
 on phones). Deletions take effect on save and can be undone before saving.
-Owners receive a paginated cashier activity report in Advanced with timestamps, revisions,
-and before/after values. Menu saves and media uploads are logged transactionally;
+Owners receive a paginated activity report for every user in Advanced with timestamps, revisions,
+and before/after values. The save bar names the user and time of the latest saved revision.
+Excel export, a blank template, and import run in the browser without a spreadsheet
+dependency (`src/admin/menuWorkbook.js`); an import only changes the draft, blank cells and
+absent rows change nothing, and the normal save and publish step still applies. Menu saves and media uploads are logged transactionally;
 failed saves are not reported as completed changes. Unsaved local drafts are not
 persisted activity. Apply `server-node/migrations/002_admin_activity.sql` with the
 existing migration runner before activating the new API; see `OPERATIONS.md`.

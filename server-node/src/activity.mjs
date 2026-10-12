@@ -63,14 +63,14 @@ export function registerActivityRoutes(app, { db, config }) {
       throw new ApiError(422, 'validation_error', 'before must be a positive integer.');
     }
     const rows = db.prepare(`
-      SELECT id, actor_username, action, revision, details_json, created_at
+      SELECT id, actor_username, actor_role, action, revision, details_json, created_at
       FROM admin_activity
-      WHERE actor_role = 'cashier' AND (? IS NULL OR id < ?)
+      WHERE (? IS NULL OR id < ?)
       ORDER BY id DESC LIMIT 51
     `).all(before, before);
     return {
       entries: rows.slice(0, 50).map((row) => ({
-        id: row.id, username: row.actor_username, action: row.action,
+        id: row.id, username: row.actor_username, role: row.actor_role, action: row.action,
         revision: row.revision, createdAt: row.created_at, details: JSON.parse(row.details_json),
       })),
       nextCursor: rows.length > 50 ? rows[49].id : null,

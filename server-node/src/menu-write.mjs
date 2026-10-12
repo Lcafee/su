@@ -594,7 +594,7 @@ function saveMenuWithLock(db, config, actor, input) {
     }
   }
 
-  return { revision, published, publishState };
+  return { revision, published, publishState, lastEdit: publishStatus(db).lastEdit };
 }
 
 function retryPublishWithLock(db, config) {

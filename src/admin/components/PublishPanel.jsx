@@ -75,6 +75,7 @@ function publishPresentation(status) {
 
 export function PublishPanel({ status, retrying, onRetry, canRetry, advanced }) {
   const presentation = publishPresentation(status);
+  if (!presentation.recovery) return null;
   if (!advanced) return (
     <section className={`publish-panel tone-${presentation.tone}`} aria-live="polite">
       <strong>{!status ? "در حال دریافت وضعیت…" : presentation.tone === "success"

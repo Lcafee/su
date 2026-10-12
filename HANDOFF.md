@@ -85,7 +85,7 @@ approval. See `OPERATIONS.md` for the production runbook and
 Production menu copy, order, prices, photos, Sepidz codes, variants, and add-ons
 are edited only through the VPS `/admin/`, saved to SQLite, and published to the managed snapshot.
 Owners choose one global Simple or Advanced mode; Advanced opens every category,
-shows all advanced fields directly, and includes the cashier activity report.
+shows all advanced fields directly, and includes the activity report for every user.
 Simple omits those fields and tools entirely. Special Offer is a minimal switch in both modes, persisted as `is_featured` and published as `featured`.
 Cashiers only use Simple and can edit existing option prices alongside normal
 category/item/media/order/archive/delete/save-and-publish operations. Advanced category fields, metadata, external option codes, and publish retry are

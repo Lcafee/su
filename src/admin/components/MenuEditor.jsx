@@ -21,7 +21,6 @@ const FILTERS = [
   { value: "all", label: "همه" },
 ];
 
-const faNumber = new Intl.NumberFormat("fa-IR");
 const validVisibilities = new Set(FILTERS.map((filter) => filter.value));
 const viewStoragePrefix = "l-cafe-admin:view:v1:";
 
@@ -93,6 +92,8 @@ export function MenuEditor({
   advanced,
   storageKey,
   focusTarget,
+  titleControls,
+  toolbarActions,
   onUpdateCategory,
   onUpdateItem,
   onMoveCategory,
@@ -160,7 +161,6 @@ export function MenuEditor({
   const reorderDisabled = disabled || Boolean(normalizedQuery) || visibility !== "all";
   const hasFilteredView = Boolean(normalizedQuery) || visibility !== "all";
   const categoryDragIds = visibleCategories.map(({ category }) => `category:${category.id}`);
-  const visibleItemCount = visibleCategories.reduce((total, entry) => total + entry.visibleItems.length, 0);
 
   function handleDragEnd({ active, over }) {
     if (reorderDisabled || !over || active.id === over.id) return;
@@ -212,13 +212,16 @@ export function MenuEditor({
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <section className="editor-workspace" aria-labelledby="menu-editor-title">
         <div className="editor-toolbar">
-          <div>
-            <h2 id="menu-editor-title">ویرایش روزانه منو</h2>
-            <p>آیتم را پیدا کنید، همان‌جا تغییر دهید و در پایان ذخیره و انتشار را بزنید.</p>
+          <div className="editor-title">
+            <h2 id="menu-editor-title">ویرایش منو</h2>
+            {titleControls}
           </div>
-          <button type="button" className="secondary-button" onClick={handleCreateCategory} disabled={disabled}>
-            دسته‌بندی جدید
-          </button>
+          <div className="editor-toolbar-actions">
+            {toolbarActions}
+            <button type="button" className="secondary-button" onClick={handleCreateCategory} disabled={disabled}>
+              دسته‌بندی جدید
+            </button>
+          </div>
         </div>
 
         <div className="editor-controls">
@@ -276,9 +279,8 @@ export function MenuEditor({
           </div>
         </div>
 
-        <div className="editor-results-bar" aria-live="polite">
-          <span>{faNumber.format(visibleCategories.length)} دسته و {faNumber.format(visibleItemCount)} آیتم</span>
-          {hasFilteredView ? (
+        {hasFilteredView ? (
+          <div className="editor-results-bar">
             <button
               type="button"
               className="text-button"
@@ -286,10 +288,8 @@ export function MenuEditor({
             >
               پاک کردن جست‌وجو و نمایش همه
             </button>
-          ) : (
-            <span className="reorder-hint">برای تغییر ترتیب از دستگیره یا دکمه‌های جابجایی استفاده کنید.</span>
-          )}
-        </div>
+          </div>
+        ) : null}
 
         <div className="editor-navigation-layout">
           <nav className="category-navigation" aria-label="رفتن به دسته‌بندی">

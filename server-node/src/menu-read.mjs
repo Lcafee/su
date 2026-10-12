@@ -110,9 +110,15 @@ export function loadMenuDocument(db) {
 export function publishStatus(db) {
   const row = db.prepare(`
     SELECT s.edit_revision, s.published_revision,
-           r.publish_state, r.error_message, r.published_at
+           r.publish_state, r.error_message, r.published_at, r.created_at AS edited_at,
+           COALESCE((
+             SELECT a.actor_username FROM admin_activity a
+             WHERE a.action = 'menu.save' AND a.revision = s.edit_revision
+             ORDER BY a.id DESC LIMIT 1
+           ), u.username) AS editor
     FROM menu_state s
     LEFT JOIN menu_revisions r ON r.revision = s.edit_revision
+    LEFT JOIN admin_users u ON u.id = r.actor_user_id
     WHERE s.id = 1
   `).get();
   if (!row) {
@@ -124,6 +130,11 @@ export function publishStatus(db) {
     state: row.publish_state ?? 'not_published',
     error: row.error_message ?? null,
     publishedAt: row.published_at ?? null,
+    // Who saved the current edit revision and when; the editor is null when it was never recorded.
+    lastEdit: row.edited_at ? {
+      username: row.editor ?? null,
+      at: `${row.edited_at.slice(0, 10)}T${row.edited_at.slice(11, 19)}Z`,
+    } : null,
   };
 }
 
