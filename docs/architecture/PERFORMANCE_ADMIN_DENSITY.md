@@ -150,6 +150,38 @@ No horizontal overflow at any width, before or after.
   `field-sizing` degrade to the stacked layout, neutral borders and fixed
   textarea heights where unsupported.
 
+## Public pages: second pass (same day)
+
+A focused pass looked for further Landing and Menu gains that change nothing a
+visitor sees. None was found that is both safe and worth shipping, so the
+public pages carry only the font change above.
+
+Read-only check of the live site (`https://l-cafe.ir`, release `889a9ad`):
+
+- Hashed scripts, styles and WOFF2 fonts: `max-age=31536000, immutable`. HTML:
+  `must-revalidate`. Managed media: immutable. Template lists `http2`.
+- Text assets are gzip-compressed at Nginx's default level and there is no
+  Brotli: the shared React chunk travels as 69,801 bytes against 60,060 at
+  gzip -9. `gzip_comp_level 6` (or `gzip_static` with precompressed files)
+  would save about 12 kB on a first Menu visit. Host configuration.
+- The current TTF Fahkwang is served as `application/octet-stream` with no
+  `Cache-Control` and no compression; the WOFF2 in this branch falls under the
+  immutable rule.
+- The hashed Menu mural (260,758 bytes) is `must-revalidate` (item 2 below).
+
+Why the larger levers were not pulled under a strict no-visible-change rule:
+
+- **Landing first paint.** Prerendering would paint the hero before React
+  loads, but it changes the loading sequence in ways a visitor can see: the
+  scroll cue sits at 0.9 opacity until the script sets 0.82; a visitor who
+  scrolls before hydration would watch already-visible sections hide and then
+  animate in when the reveal script arms them; and the hero phrase could show
+  in the fallback face before Fahkwang swaps in. Each needs a design decision.
+- **Menu.** Its scripts and styles are already small and its content comes from
+  the published snapshot at runtime. The remaining cost is native paint from
+  the rendered effects, and `content-visibility` would break the stable
+  document geometry that category anchors and the mural's travel depend on.
+
 ## Not done (recommendations, in order of expected benefit)
 
 1. **Prerender the Landing at build time.** Landing FCP equals LCP because
