@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-30T00:00:00+03:30",
+  "generatedAt": "2026-10-13T00:00:00+03:30",
   "title": "Design System: L Cafe",
   "extensions": {
     "colorMeta": {
@@ -104,7 +104,7 @@
       "refersTo": "admin-primary",
       "description": "Commits or creates inside the Admin operating workspace.",
       "html": "<button class=\"ds-admin-primary\" type=\"button\" dir=\"rtl\">ذخیره و انتشار</button>",
-      "css": ".ds-admin-primary{min-height:44px;padding:0 18px;border:1px solid #681F2D;border-radius:10px;background:#681F2D;color:#F3F1EC;font:600 14px Vazirmatn,system-ui,sans-serif}.ds-admin-primary:hover{background:#4F1722}.ds-admin-primary:focus-visible{outline:2px solid #681F2D;outline-offset:3px}.ds-admin-primary:disabled{opacity:.55}"
+      "css": ".ds-admin-primary{min-height:36px;padding:0 12px;border:1px solid #681F2D;border-radius:8px;background:#681F2D;color:#FFFFFF;font:700 13px Vazirmatn,system-ui,sans-serif}.ds-admin-primary:hover{background:#4F1722}.ds-admin-primary:focus-visible{outline:2px solid #681F2D;outline-offset:2px}@media (pointer:coarse){.ds-admin-primary{min-height:44px}}.ds-admin-primary:disabled{opacity:.55}"
     },
     {
       "name": "Admin Field",
@@ -112,14 +112,14 @@
       "refersTo": "admin-field",
       "description": "Persistent-label paper field for production-backed editing.",
       "html": "<label class=\"ds-admin-field\" dir=\"rtl\"><span>نام آیتم</span><input value=\"نام آیتم\"></label>",
-      "css": ".ds-admin-field{display:grid;gap:6px;color:#35141B;font:600 13px/1.5 Vazirmatn,system-ui,sans-serif}.ds-admin-field input{min-height:44px;padding:0 12px;border:1px solid #DED5D1;border-radius:10px;background:#FFFDF9;color:#35141B;font:400 14px Vazirmatn,system-ui,sans-serif}.ds-admin-field input:focus-visible{outline:2px solid #681F2D;outline-offset:1px;border-color:#681F2D}"
+      "css": ".ds-admin-field{display:grid;gap:4px;color:#59464A;font:650 12px/1.4 Vazirmatn,system-ui,sans-serif}.ds-admin-field input{min-height:36px;padding:0 10px;border:1px solid #C9B7B4;border-radius:8px;background:#FFFFFF;color:#35141B;font:400 14px Vazirmatn,system-ui,sans-serif}.ds-admin-field input:focus-visible{outline:2px solid #681F2D;outline-offset:-1px;border-color:#681F2D}@media (pointer:coarse){.ds-admin-field input{min-height:44px;font-size:16px}}"
     },
     {
       "name": "Admin Status Panel",
       "kind": "custom",
       "description": "Text-led success, pending, conflict, undo, and error state with semantic tone.",
       "html": "<section class=\"ds-admin-status\" role=\"status\" dir=\"rtl\"><strong>تغییر ذخیره شد</strong><span>نسخه منتشرشده به‌روز است.</span></section>",
-      "css": ".ds-admin-status{display:grid;gap:4px;padding:14px 16px;border:1px solid #B9D7C6;border-radius:12px;background:#E9F4EE;color:#246B4A;font-family:Vazirmatn,system-ui,sans-serif}.ds-admin-status strong{font-size:14px}.ds-admin-status span{font-size:13px;line-height:1.7}"
+      "css": ".ds-admin-status{display:grid;gap:2px;padding:8px 12px;border:1px solid #B9D7C6;border-radius:8px;background:#E9F4EE;color:#246B4A;font-family:Vazirmatn,system-ui,sans-serif}.ds-admin-status strong{font-size:14px}.ds-admin-status span{font-size:13px;line-height:1.7}"
     },
     {
       "name": "Admin Role Chip",
@@ -147,7 +147,7 @@
       { "name": "The Fallback-First Rule", "body": "Decorative effects enhance an already visible static structure; they never replace it.", "section": "elevation" }
     ],
     "dos": [
-      "Do preserve RTL, visible focus, skip links, and 44px effective targets.",
+      "Do preserve RTL, visible focus, skip links, and 44px effective targets on touch; Admin may use 32–36px controls with a fine pointer only.",
       "Do keep Menu search, category anchors, and fallback states in stable flow.",
       "Do make Admin role, save, conflict, archive, and upload state explicit."
     ],

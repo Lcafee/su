@@ -75,6 +75,14 @@ existing migration runner before activating the new API; see `OPERATIONS.md`.
 Admin sessions are bound to a database credential generation; the interactive
 password-rotation CLI increments it without changing either role's permissions.
 
+The admin loads in three parts. The entry chunk holds React, the session check
+and the sign-in screen; `src/admin/editorWorkspace.js` (editor, drag and drop,
+activity report) is fetched in parallel with the menu data once a session
+exists; `src/admin/menuWorkbook.js` is fetched when the operator is idle or
+first uses Excel. Its layout is dense by design and documented in `DESIGN.md`
+(The Admin Density Rule); measurements and the re-runnable checks are in
+`docs/architecture/PERFORMANCE_ADMIN_DENSITY.md`.
+
 Vite builds Landing and the canonical Menu as public React entry points.
 `menu2.html` is a lightweight compatibility redirect for static hosts. Public
 links, QR codes, metadata, and crawlers continue to use `/menu` as the only
@@ -86,7 +94,10 @@ canonical Menu.
 - `src/menu/` owns the unified grid/list Menu rendering plus shared snapshot,
   preference, runtime, and category-navigation behavior.
 - `src/menu2/` owns only the legacy compatibility redirect.
-- `src/admin/` owns the isolated admin bundle.
+- `src/admin/` owns the isolated admin bundle: `AdminApp.jsx` (session,
+  draft state, save/publish), `editorWorkspace.js` (lazy editor chunk),
+  `editorViewState.js` (per-user search/filter continuity), and `admin.css`
+  (the only admin stylesheet).
 - `src/styles/` preserves the approved visual system.
 - `assets/` owns code-managed fonts, brand assets, icons, and public imagery.
 - SQLite is authoritative for edited production menu data; the public menu fetches only

@@ -7,11 +7,21 @@ colors:
   ivory: "#F3F1EC"
   ivory-deep: "#E6E5E1"
   admin-paper: "#FFFDF9"
+  admin-surface: "#FFFFFF"
+  admin-sunken: "#F6F2EF"
+  admin-tint: "#F8EEEE"
+  admin-tint-soft: "#FAF4F3"
   admin-ink: "#35141B"
+  admin-label: "#59464A"
   admin-muted: "#76676A"
+  admin-line: "#DED5D1"
+  admin-line-strong: "#C9B7B4"
   success: "#246B4A"
+  success-bg: "#E9F4EE"
   pending: "#8A5B12"
+  pending-bg: "#FFF4DD"
   error: "#A22A38"
+  error-bg: "#FBEAEC"
 typography:
   display:
     fontFamily: "Sahel, Vazirmatn, system-ui, sans-serif"
@@ -25,8 +35,8 @@ typography:
 rounded:
   editorial-edge: "2px"
   public-surface: "12px"
-  admin-control: "10px"
-  admin-panel: "16px"
+  admin-control: "8px"
+  admin-panel: "12px"
   pill: "999px"
 spacing:
   landing-gutter: "clamp(20px, 6vw, 80px)"
@@ -50,13 +60,14 @@ components:
     height: "44px"
   admin-primary:
     backgroundColor: "{colors.menu-scarlet}"
-    textColor: "{colors.ivory}"
+    textColor: "{colors.admin-surface}"
     rounded: "{rounded.admin-control}"
-    height: "44px"
+    height: "36px with a fine pointer, 44px on touch"
   admin-field:
-    backgroundColor: "{colors.admin-paper}"
+    backgroundColor: "{colors.admin-surface}"
     textColor: "{colors.admin-ink}"
     rounded: "{rounded.admin-control}"
+    height: "36px with a fine pointer, 44px on touch"
 ---
 
 # Design System: L Cafe
@@ -134,12 +145,38 @@ controls. Canonical `/menu` owns both the historical two-column grid and the
 row-list treatment in one stable component tree; grid is the first-use default.
 Fallback-snapshot states remain in normal document flow.
 
-Admin is an Operate surface. The top bar identifies the operator; owner-only
-controls are grouped separately; daily editing starts with search, active/
-archived filters, quick creation, and category/item work areas. Archive/restore,
-undo, conflict recovery, and a persistent save bar remain visible where the
-operator needs them. Narrow layouts stack controls without removing their
-labels or recovery actions.
+Admin is an Operate surface built for density. The top bar identifies the
+operator; owner-only controls are grouped separately; daily editing starts with
+search, active/archived filters, quick creation, and category/item work areas.
+Archive/restore, undo, conflict recovery, and a persistent save bar remain
+visible where the operator needs them. Narrow layouts stack controls without
+removing their labels or recovery actions.
+
+**The Admin Density Rule.** Every label, description, field, option, and action
+stays on screen; density comes from arrangement, never from hiding. All admin
+styling lives in `src/admin/admin.css` and reads only the tokens declared in
+its `:root`.
+
+- **Control height follows the pointer.** `--control` is 36px and
+  `--control-sm` 32px with a fine pointer; both become 44px under
+  `(pointer: coarse)`, where form fields also use 16px text so iOS does not
+  zoom on focus.
+- **Cards size themselves.** `.category-card` and `.item-card` are inline-size
+  containers. An item header is one row (handle, thumbnail, name, price,
+  category, actions) from 44rem of card width, drops its actions to a second
+  row from 34rem, and below that becomes a rail (handle above thumbnail) beside
+  the fields. The item body is two columns from 40rem. Browsers without
+  container queries keep the stacked layout.
+- **Page breakpoints only move the chrome.** From 861px the category navigation
+  is a sticky sidebar; below it is one sticky row, heading beside a scrolling
+  strip. At 520px and below the top bar scrolls away and the strip owns the
+  sticky edge.
+- **The save bar is sticky, not fixed.** It sizes to its content and wraps the
+  status above the two actions when they do not fit on one line, so no page
+  padding has to guess its height.
+- **Segmented controls share one style.** The Simple/Advanced switch and the
+  visibility filter use the same tinted selected state; filled scarlet is
+  reserved for primary actions and the current category.
 
 Safe-area padding belongs to page-level gutters and fixed actions. No surface
 uses device-model branches. Public anchors and category tracking depend on
@@ -167,8 +204,9 @@ and navigation surfaces use quiet 12–14px rounding; disclosure remains a
 plain underlined word with an expanded hit area. Pills are reserved for compact
 state, role, and option labels.
 
-Admin controls use consistent medium rounding, while work panels use a larger
-radius. Destructive actions remain textually explicit and are not disguised as
+Admin controls use 8px rounding and work panels 12px; item blocks inside a
+category use the control radius so nested surfaces step down instead of
+repeating the panel. Destructive actions remain textually explicit and are not disguised as
 neutral controls. Borders are thin and structural; nested boxes are avoided.
 
 ## Components
@@ -225,7 +263,10 @@ neutral controls. Borders are thin and structural; nested boxes are avoided.
 
 ### Do:
 
-- **Do** preserve RTL, visible focus, skip links, and 44px effective targets.
+- **Do** preserve RTL, visible focus, skip links, and 44px effective targets on
+  touch. Admin may use 32–36px controls with a fine pointer only.
+- **Do** keep the Admin focus ring a solid 2px scarlet outline; a translucent
+  ring does not reach 3:1 against ivory.
 - **Do** keep Landing copy and imagery readable when animation fails or is reduced.
 - **Do** keep Menu category anchors and fallback states in stable flow.
 - **Do** make Admin role, save, conflict, archive, and upload state explicit.
