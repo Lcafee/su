@@ -1,8 +1,10 @@
 # Performance and admin density (2026-10-13)
 
-Branch `codex/performance-admin-density-20261013`, based on `f6cbc83`. Not pushed,
-merged, released or deployed. No migration, no API response change, no change to
-any label, field, option, action or permission.
+Branch `codex/performance-admin-density-20261013`, based on `f6cbc83`. Deployed
+to production as release `d25254b` on 2026-10-13 06:46 UTC with the owner's
+approval of that exact commit; live state is recorded in `PROJECT_STATE.md`.
+Not merged into `main`. No migration, no API response change, no change to any
+label, field, option, action or permission.
 
 ## What changed, by surface
 
