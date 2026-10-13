@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -13,6 +13,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
+import { readMenuEditorViewState, writeMenuEditorViewState } from "../editorViewState";
 import { CategoryCard } from "./CategoryCard";
 
 const FILTERS = [
@@ -21,62 +22,10 @@ const FILTERS = [
   { value: "all", label: "همه" },
 ];
 
-const validVisibilities = new Set(FILTERS.map((filter) => filter.value));
-const viewStoragePrefix = "l-cafe-admin:view:v1:";
-
-export function menuEditorViewStorageKey(user) {
-  if (!user?.username || !user?.role) return null;
-  return `${viewStoragePrefix}${encodeURIComponent(user.username)}:${encodeURIComponent(user.role)}`;
-}
-
-export function clearMenuEditorViewState(storageKey = null) {
-  if (typeof window === "undefined") return;
-  try {
-    if (storageKey) {
-      window.sessionStorage.removeItem(storageKey);
-      return;
-    }
-    for (let index = window.sessionStorage.length - 1; index >= 0; index -= 1) {
-      const key = window.sessionStorage.key(index);
-      if (key?.startsWith(viewStoragePrefix)) window.sessionStorage.removeItem(key);
-    }
-  } catch {
-    // Session storage can be unavailable; view continuity must never block editing.
-  }
-}
-
-function readMenuEditorViewState(storageKey, advanced) {
-  const fallback = {
-    query: "",
-    visibility: advanced ? "all" : "active",
-    quickCategoryId: "",
-  };
-  if (!storageKey || typeof window === "undefined") return fallback;
-  try {
-    const stored = JSON.parse(window.sessionStorage.getItem(storageKey));
-    if (!stored || typeof stored !== "object") return fallback;
-    return {
-      query: typeof stored.query === "string" ? stored.query : fallback.query,
-      visibility: validVisibilities.has(stored.visibility) ? stored.visibility : fallback.visibility,
-      quickCategoryId: typeof stored.quickCategoryId === "string" ? stored.quickCategoryId : "",
-    };
-  } catch {
-    return fallback;
-  }
-}
-
-function writeMenuEditorViewState(storageKey, viewState) {
-  if (!storageKey || typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(storageKey, JSON.stringify({
-      query: viewState.query,
-      visibility: viewState.visibility,
-      quickCategoryId: viewState.quickCategoryId,
-    }));
-  } catch {
-    // Editing remains available when session storage is disabled or full.
-  }
-}
+// Module constants: dnd-kit memoizes sensors by option identity, and a new sensor
+// set re-renders every draggable card through its context.
+const POINTER_SENSOR_OPTIONS = { activationConstraint: { distance: 8 } };
+const KEYBOARD_SENSOR_OPTIONS = { coordinateGetter: sortableKeyboardCoordinates };
 
 function itemMatches(item, query) {
   return [item.name, item.price, item.description, ...item.options.flatMap((option) => [option.label, option.price])]
@@ -142,11 +91,22 @@ export function MenuEditor({
   }, [availableCategories, quickCategoryId]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
+    useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS),
   );
 
+  // Editing one item replaces only its category object, so results for the others are
+  // reused by identity and their memoized cards skip the render.
+  const visibleCache = useRef(new WeakMap());
   const visibleCategories = useMemo(() => document.categories.flatMap((category) => {
+    const cached = visibleCache.current.get(category);
+    if (cached && cached.query === normalizedQuery && cached.visibility === visibility) return cached.entry;
+    const entry = visibleEntry(category);
+    visibleCache.current.set(category, { query: normalizedQuery, visibility, entry });
+    return entry;
+  }), [document.categories, normalizedQuery, visibility]);
+
+  function visibleEntry(category) {
     const categoryArchived = category.archived;
     const categoryMatches = category.title.toLocaleLowerCase("fa").includes(normalizedQuery);
     const statusItems = category.items.filter((item) => {
@@ -163,11 +123,17 @@ export function MenuEditor({
     const shouldShow = categoryMatchesStatus
       && (categoryMatches || visibleItems.length > 0 || (!normalizedQuery && visibility !== "archived"));
     return shouldShow ? [{ category, visibleItems }] : [];
-  }), [document.categories, normalizedQuery, visibility]);
+  }
 
   const reorderDisabled = disabled || Boolean(normalizedQuery) || visibility !== "all";
   const hasFilteredView = Boolean(normalizedQuery) || visibility !== "all";
-  const categoryDragIds = visibleCategories.map(({ category }) => `category:${category.id}`);
+  // Same reason as the item ids in CategoryCard: a new array here re-renders every
+  // sortable category through dnd-kit's context.
+  const categoryIdsKey = JSON.stringify(visibleCategories.map(({ category }) => category.id));
+  const categoryDragIds = useMemo(
+    () => JSON.parse(categoryIdsKey).map((id) => `category:${id}`),
+    [categoryIdsKey],
+  );
 
   function handleDragEnd({ active, over }) {
     if (reorderDisabled || !over || active.id === over.id) return;
@@ -192,24 +158,30 @@ export function MenuEditor({
     }
   }
 
-  function handleCreateCategory() {
-    prepareViewForCreatedEntity();
-    onCreateCategory();
-  }
-
-  function prepareViewForCreatedEntity() {
+  // These reach the memoized category and item cards, so their identity stays stable
+  // across the re-render every keystroke causes.
+  const prepareViewForCreatedEntity = useCallback(() => {
     setViewState((current) => ({
       ...current,
       query: current.query.trim() ? "" : current.query,
       visibility: current.visibility === "archived" ? defaultVisibility : current.visibility,
     }));
+  }, [defaultVisibility]);
+
+  function handleCreateCategory() {
+    prepareViewForCreatedEntity();
+    onCreateCategory();
   }
 
-  function handleCreateItem(categoryId) {
+  const handleCreateItem = useCallback((categoryId) => {
     if (!categoryId) return;
     prepareViewForCreatedEntity();
     onCreateItem(categoryId);
-  }
+  }, [onCreateItem, prepareViewForCreatedEntity]);
+
+  const handleToggleCategory = useCallback((categoryId) => {
+    setActiveCategoryId((current) => (current === categoryId ? null : categoryId));
+  }, []);
 
   function handleResetView() {
     setViewState((current) => ({ ...current, query: "", visibility: "all" }));
@@ -348,7 +320,7 @@ export function MenuEditor({
                   onDeleteCategory={onDeleteCategory}
                   navigationTarget={navigationTarget}
                   expanded={activeCategoryId === category.id}
-                  onToggle={(categoryId) => setActiveCategoryId((current) => (current === categoryId ? null : categoryId))}
+                  onToggle={handleToggleCategory}
                 />
               );
             })}

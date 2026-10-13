@@ -1,8 +1,11 @@
-/* Fahkwang — self-hosted under the SIL Open Font License 1.1. */
+/* Fahkwang — self-hosted under the SIL Open Font License 1.1.
+   The WOFF2 is a lossless repack of the TTF beside it (same glyphs, metrics and
+   layout tables); the TTF stays as the source and as a fallback. */
 @font-face {
   font-family: 'Fahkwang';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url(Fahkwang-SemiBold.ttf) format('truetype');
+  src: url(Fahkwang-SemiBold.woff2) format('woff2'),
+       url(Fahkwang-SemiBold.ttf) format('truetype');
 }

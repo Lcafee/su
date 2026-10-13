@@ -147,7 +147,16 @@ test('session, csrf and atomic snapshot flow preserve the admin contract', async
     payload: { baseRevision: 0, categories: [] },
   });
   assert.equal(saveOne.statusCode, 200);
-  assert.deepEqual(saveOne.json(), { revision: 1, published: true, publishState: 'published' });
+  // A save also reports who made the latest edit and the codes of new categories.
+  const saveOneBody = saveOne.json();
+  assert.match(saveOneBody.lastEdit.at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+  assert.deepEqual(saveOneBody, {
+    revision: 1,
+    published: true,
+    publishState: 'published',
+    lastEdit: { username: 'admin', at: saveOneBody.lastEdit.at },
+    categoryCodes: {},
+  });
 
   const currentOne = JSON.parse(fs.readFileSync(path.join(root, 'managed-menu', 'current.json'), 'utf8'));
   assert.equal(currentOne.revision, 1);
@@ -378,7 +387,15 @@ test('service access reuses the admin contract for a trusted loopback caller', a
     payload: { baseRevision: 0, categories: [category] },
   });
   assert.equal(saved.statusCode, 200);
-  assert.deepEqual(saved.json(), { revision: 1, published: true, publishState: 'published' });
+  const savedBody = saved.json();
+  assert.match(savedBody.lastEdit.at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+  assert.deepEqual(savedBody, {
+    revision: 1,
+    published: true,
+    publishState: 'published',
+    lastEdit: { username: 'ops:سارا@ops', at: savedBody.lastEdit.at },
+    categoryCodes: { [category.id]: 'G01' },
+  });
   assert.equal(JSON.parse(fs.readFileSync(path.join(root, 'managed-menu', 'current.json'), 'utf8')).revision, 1);
 
   const cashierAdvanced = await app.inject({
