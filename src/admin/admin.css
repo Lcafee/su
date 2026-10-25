@@ -1432,6 +1432,36 @@ small {
   margin: 0;
 }
 
+.metadata-entry {
+  display: flex;
+  min-width: 0;
+  align-items: end;
+  gap: 6px;
+}
+
+.metadata-entry > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.metadata-entry.is-compound {
+  grid-column: 1 / -1;
+  align-items: start;
+}
+
+.metadata-add {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
+  align-items: end;
+  gap: 8px 12px;
+  margin-top: 8px;
+}
+
+.metadata-add > small {
+  grid-column: 1 / -1;
+}
+
 @container item (min-width: 34rem) {
   .item-card-header {
     grid-template-columns: auto auto minmax(0, 1fr);

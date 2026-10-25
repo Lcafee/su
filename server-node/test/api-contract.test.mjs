@@ -454,3 +454,50 @@ test('service access does not exist until a token is configured', async (t) => {
   });
   assert.equal(response.statusCode, 401);
 });
+
+test('an empty metadata list from the PHP admin reads and saves as an object that takes fields', async (t) => {
+  const { root, db, config } = fixture();
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => { await app.close(); db.close(); fs.rmSync(root, { recursive: true, force: true }); });
+  const owner = await login(app);
+  const now = sqlNow();
+  db.prepare(`INSERT INTO admin_users
+    (id, username, password_hash, role, created_at, updated_at)
+    VALUES (2, 'cashier', ?, 'cashier', ?, ?)`).run(bcrypt.hashSync('cashier-secret', 4), now, now);
+  const cashierLogin = await app.inject({ method: 'POST', url: '/api/session/login',
+    headers: { origin: config.allowedOrigin }, payload: { username: 'cashier', password: 'cashier-secret' } });
+  const cashier = { cookie: String(cashierLogin.headers['set-cookie']).split(';', 1)[0], csrf: cashierLogin.json().csrfToken };
+  const headers = (session) => ({ cookie: session.cookie, origin: config.allowedOrigin, 'x-csrf-token': session.csrf });
+  const save = (session, payload) => app.inject({ method: 'PUT', url: '/api/admin/menu', headers: headers(session), payload });
+  const getDocument = async () => (await app.inject({ method: 'GET', url: '/api/admin/menu', headers: headers(owner) })).json();
+  const payload = (document) => ({ baseRevision: document.revision, categories: document.categories });
+  const itemId = crypto.randomUUID();
+  const seed = { baseRevision: 0, categories: [{ id: crypto.randomUUID(), publicId: 'cold', title: 'سرد', intro: null, layout: 'grid', archived: false,
+    items: [{ id: itemId, publicId: 'ice-lemon', name: 'آیس لمون', description: null, price: '۱۵۰', mediaId: null, metadata: {}, archived: false, options: [] }] }] };
+  assert.equal((await save(owner, seed)).statusCode, 200);
+  db.prepare("UPDATE menu_items SET metadata_json = '[]' WHERE id = ?").run(itemId);
+
+  const legacy = await getDocument();
+  assert.deepEqual(legacy.categories[0].items[0].metadata, {});
+
+  // A cashier save that leaves it alone passes, whichever form the editor sends back.
+  for (const [metadata, price] of [[{}, '۱۶۰'], [[], '۱۷۰']]) {
+    const doc = await getDocument();
+    doc.categories[0].items[0].metadata = metadata;
+    doc.categories[0].items[0].price = price;
+    const response = await save(cashier, payload(doc));
+    assert.equal(response.statusCode, 200, response.body);
+  }
+
+  const doc = await getDocument();
+  doc.categories[0].items[0].metadata = { code: '24034' };
+  assert.equal((await save(owner, payload(doc))).statusCode, 200);
+  assert.deepEqual(JSON.parse(db.prepare('SELECT metadata_json FROM menu_items WHERE id = ?').get(itemId).metadata_json), { code: '24034' });
+
+  const bare = await getDocument();
+  delete bare.categories[0].items[0].metadata;
+  bare.categories[0].items[0].name = 'آیس لمون تازه';
+  const cleared = await save(owner, payload(bare));
+  assert.equal(cleared.statusCode, 200, cleared.body);
+  assert.equal(db.prepare('SELECT metadata_json FROM menu_items WHERE id = ?').get(itemId).metadata_json, '{}');
+});
