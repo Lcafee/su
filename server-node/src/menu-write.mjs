@@ -103,12 +103,12 @@ function normalizeMenuInput(input) {
         mediaId = mediaId.toLowerCase();
       }
 
-      const legacyMetadata = rawItem.metadata ?? [];
+      const legacyMetadata = rawItem.metadata ?? {};
       const featured = rawItem.featured === undefined && legacyMetadata?.featured === undefined
         ? null : booleanValue(rawItem.featured ?? legacyMetadata.featured, `${itemPath}.featured`);
       const metadata = !Array.isArray(legacyMetadata) && legacyMetadata && typeof legacyMetadata === 'object'
         ? Object.fromEntries(Object.entries(legacyMetadata).filter(([key]) => key !== 'featured'))
-        : legacyMetadata;
+        : emptyListAsObject(legacyMetadata);
       if (!metadata || typeof metadata !== 'object') {
         throw new ApiError(422, 'validation_error', `${itemPath}.metadata must be an object or list.`);
       }
@@ -279,10 +279,11 @@ function assertActorCanSaveMenu(db, actor, document) {
       continue;
     }
     let storedMetadata;
-    try { storedMetadata = JSON.parse(stored.metadata_json); } catch { storedMetadata = []; }
+    try { storedMetadata = JSON.parse(stored.metadata_json); } catch { storedMetadata = {}; }
     if (!Array.isArray(storedMetadata) && storedMetadata && typeof storedMetadata === 'object') {
       storedMetadata = Object.fromEntries(Object.entries(storedMetadata).filter(([key]) => key !== 'featured'));
     }
+    storedMetadata = emptyListAsObject(storedMetadata);
     // Offer and price-option management are basic work; external codes stay owner-only.
     const codes = new Map((storedOptions.get(id) || []).map((option) => [option.id, option.code]));
     if (!isDeepStrictEqual(submitted.metadata, storedMetadata)
@@ -438,6 +439,11 @@ function persistMenuDocument(db, document, oldMedia) {
     'UPDATE media_assets SET retired_at = NULL, orphan_candidate_at = NULL WHERE id = ?'
   );
   for (const id of newMedia) activate.run(id);
+}
+
+/** The PHP admin stored "no metadata" as `[]`; it means the same as `{}`, which can take fields. */
+function emptyListAsObject(metadata) {
+  return Array.isArray(metadata) && metadata.length === 0 ? {} : metadata;
 }
 
 function decodedMetadata(json) {

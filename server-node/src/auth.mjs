@@ -97,7 +97,10 @@ export function sessionContext(db, config, request, { touch = true } = {}) {
     return null;
   }
 
-  if (touch) {
+  // Requests that land in the same second would store the value already there;
+  // skipping them saves a synchronous WAL commit per request (the admin loads its
+  // menu and publish status in parallel right after the session check).
+  if (touch && row.last_seen !== nowSeconds) {
     db.prepare('UPDATE admin_sessions SET last_seen = ? WHERE id = ?').run(nowSeconds, sessionId);
     row.last_seen = nowSeconds;
   }

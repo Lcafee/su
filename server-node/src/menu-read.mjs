@@ -8,6 +8,8 @@ function mediaUrl(filename) {
 function decodedMetadata(json) {
   try {
     const value = JSON.parse(json);
+    // The PHP admin stored "no metadata" as `[]`; editors get the `{}` they can add fields to.
+    if (Array.isArray(value) && value.length === 0) return {};
     return value && typeof value === 'object' ? value : {};
   } catch {
     return {};

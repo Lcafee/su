@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -50,7 +50,13 @@ function CategoryCardComponent({
     transform: CSS.Transform.toString(transform),
     transition,
   };
-  const itemDragIds = visibleItems.map((item) => `item:${item.id}`);
+  // dnd-kit re-renders every sortable item when this array changes identity, so it is
+  // rebuilt only when the set or order of items changes, not on each keystroke.
+  const itemIdsKey = JSON.stringify(visibleItems.map((item) => item.id));
+  const itemDragIds = useMemo(
+    () => JSON.parse(itemIdsKey).map((id) => `item:${id}`),
+    [itemIdsKey],
+  );
 
   useEffect(() => {
     if (navigationTarget?.id !== category.id || !expanded || handledNavigation.current === navigationTarget.sequence) return undefined;

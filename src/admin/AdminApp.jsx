@@ -27,15 +27,25 @@ import {
   updateItem,
 } from "./document";
 import { LoginForm } from "./components/LoginForm";
-import {
-  clearMenuEditorViewState,
-  menuEditorViewStorageKey,
-  MenuEditor,
-} from "./components/MenuEditor";
 import { PublishPanel } from "./components/PublishPanel";
 import { BrandMark } from "./components/BrandMark";
-import { ActivityReport } from "./components/ActivityReport";
-import { applyWorkbook, downloadWorkbook, readWorkbook } from "./menuWorkbook";
+import { clearMenuEditorViewState, menuEditorViewStorageKey } from "./editorViewState";
+
+// The editing workspace (editor, drag and drop, activity report) and the Excel
+// round trip are separate chunks: sign-in loads neither, and a failed load can be
+// retried instead of being cached as a rejection.
+let workspaceRequest = null;
+function loadWorkspace() {
+  workspaceRequest ??= import("./editorWorkspace").catch((error) => {
+    workspaceRequest = null;
+    throw error;
+  });
+  return workspaceRequest;
+}
+
+function loadWorkbook() {
+  return import("./menuWorkbook");
+}
 
 const faNumber = new Intl.NumberFormat("fa-IR");
 const editDateFormat = new Intl.DateTimeFormat("fa-IR", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Tehran" });
@@ -174,6 +184,13 @@ async function fetchEditorData() {
   return { menu: normalizeDocument(menu), publishStatus };
 }
 
+// Menu data and the workspace chunk travel in parallel, so a signed-in operator
+// waits for one round of requests, not two.
+async function fetchEditor() {
+  const [editorData, workspace] = await Promise.all([fetchEditorData(), loadWorkspace()]);
+  return { editorData, workspace };
+}
+
 function LoadingScreen() {
   return (
     <main className="system-page" aria-busy="true">
@@ -214,7 +231,12 @@ export function AdminApp() {
   const [focusTarget, setFocusTarget] = useState(null);
   const [mode, setMode] = useState("simple");
   const [importErrors, setImportErrors] = useState(null);
+  const [workspace, setWorkspace] = useState(null);
   const importInput = useRef(null);
+  // Handlers read the latest draft from here instead of closing over it, so the
+  // callbacks handed to the memoized editor cards keep one identity while typing.
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   const applyEditorData = useCallback(({ menu, publishStatus: nextStatus }) => {
     setSavedDocument(cloneDocument(menu));
@@ -234,7 +256,9 @@ export function AdminApp() {
       const nextSession = await getSession();
       setSession(nextSession);
       if (nextSession.authenticated) {
-        applyEditorData(await fetchEditorData());
+        const { editorData, workspace: nextWorkspace } = await fetchEditor();
+        setWorkspace(nextWorkspace);
+        applyEditorData(editorData);
       } else {
         clearMenuEditorViewState();
       }
@@ -251,10 +275,16 @@ export function AdminApp() {
     initialize();
   }, [initialize]);
 
+  // The saved side only changes on load and save; serializing it once keeps each
+  // keystroke to a single pass over the draft.
+  const savedSignature = useMemo(
+    () => (savedDocument ? editableSignature(savedDocument) : null),
+    [savedDocument],
+  );
   const hasUnsavedChanges = useMemo(() => {
-    if (!draft || !savedDocument) return false;
-    return editableSignature(draft) !== editableSignature(savedDocument);
-  }, [draft, savedDocument]);
+    if (!draft || savedSignature === null) return false;
+    return editableSignature(draft) !== savedSignature;
+  }, [draft, savedSignature]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) return undefined;
@@ -304,9 +334,12 @@ export function AdminApp() {
   const handleLogin = useCallback(async (username, password) => {
     setLoginBusy(true);
     setLoginError("");
+    // The workspace chunk downloads while the credentials are being checked.
+    loadWorkspace().catch(() => {});
     try {
       const nextSession = await loginSession(username, password);
-      const editorData = await fetchEditorData();
+      const { editorData, workspace: nextWorkspace } = await fetchEditor();
+      setWorkspace(nextWorkspace);
       setSession(nextSession);
       applyEditorData(editorData);
       setMode("simple");
@@ -324,6 +357,7 @@ export function AdminApp() {
   }, []);
 
   const handleUpdateCategory = useCallback((categoryId, patch) => {
+    const draft = draftRef.current;
     if (Object.prototype.hasOwnProperty.call(patch, "archived") && draft) {
       const category = draft.categories.find((candidate) => candidate.id === categoryId);
       if (!category) return;
@@ -344,9 +378,10 @@ export function AdminApp() {
       return;
     }
     mutateDraft((current) => updateCategory(current, categoryId, patch));
-  }, [draft, mutateDraft]);
+  }, [mutateDraft]);
 
   const handleUpdateItem = useCallback((categoryId, itemId, patch) => {
+    const draft = draftRef.current;
     if (Object.prototype.hasOwnProperty.call(patch, "archived") && draft) {
       const category = draft.categories.find((candidate) => candidate.id === categoryId);
       const item = category?.items.find((candidate) => candidate.id === itemId);
@@ -360,7 +395,7 @@ export function AdminApp() {
       return;
     }
     mutateDraft((current) => updateItem(current, categoryId, itemId, patch));
-  }, [draft, mutateDraft]);
+  }, [mutateDraft]);
 
   const handleMoveCategory = useCallback((categoryId, overCategoryId) => {
     mutateDraft((current) => moveCategory(current, categoryId, overCategoryId));
@@ -375,15 +410,17 @@ export function AdminApp() {
   }, [mutateDraft]);
 
   const handleCreateCategory = useCallback(() => {
+    const draft = draftRef.current;
     if (!draft) return;
     const result = createCategory(draft);
     setDraft(result.document);
     setFocusTarget({ type: "category", id: result.categoryId });
     setNotice(null);
     setUndoState(null);
-  }, [draft]);
+  }, []);
 
   const handleDeleteItem = useCallback((categoryId, itemId) => {
+    const draft = draftRef.current;
     const item = draft.categories.find((category) => category.id === categoryId)?.items.find((entry) => entry.id === itemId);
     if (!item || !window.confirm(`آیتم «${item.name}» حذف شود؟ حذف پس از ذخیره و انتشار اعمال می‌شود. تا پیش از ذخیره می‌توانید آن را واگردانی کنید.`)) return;
     setUndoState({ document: cloneDocument(draft), message: `آیتم «${item.name}» برای حذف انتخاب شد.` });
@@ -391,24 +428,26 @@ export function AdminApp() {
       items: draft.categories.find((category) => category.id === categoryId).items.filter((entry) => entry.id !== itemId),
     }));
     setNotice(null);
-  }, [draft]);
+  }, []);
 
   const handleDeleteCategory = useCallback((categoryId) => {
+    const draft = draftRef.current;
     const category = draft.categories.find((entry) => entry.id === categoryId);
     if (!category || !window.confirm(`دسته «${category.title}» و ${faNumber.format(category.items.length)} آیتم آن حذف شوند؟ حذف پس از ذخیره و انتشار اعمال می‌شود. تا پیش از ذخیره می‌توانید واگردانی کنید.`)) return;
     setUndoState({ document: cloneDocument(draft), message: `دسته «${category.title}» برای حذف انتخاب شد.` });
     setDraft({ ...draft, categories: draft.categories.filter((entry) => entry.id !== categoryId) });
     setNotice(null);
-  }, [draft]);
+  }, []);
 
   const handleCreateItem = useCallback((categoryId) => {
+    const draft = draftRef.current;
     if (!draft) return;
     const result = createItem(draft, categoryId);
     setDraft(result.document);
     setFocusTarget({ type: "item", id: result.itemId, categoryId });
     setNotice(null);
     setUndoState(null);
-  }, [draft]);
+  }, []);
 
   const handleUpload = useCallback(async (categoryId, itemId, file) => {
     setUploadingIds((current) => new Set(current).add(itemId));
@@ -538,20 +577,37 @@ export function AdminApp() {
     setNotice({ tone: "neutral", message: "یک نسخه از تغییرات فعلی شما دانلود شد." });
   }, [draft, savedDocument]);
 
-  const handleExportWorkbook = useCallback((template = false) => {
-    if (template) downloadWorkbook(null, "l-cafe-menu-template.xlsx");
-    else if (draft) downloadWorkbook(draft, `l-cafe-menu-revision-${draft.revision}.xlsx`);
-  }, [draft]);
+  const handleExportWorkbook = useCallback(async (template = false) => {
+    const draft = draftRef.current;
+    if (!template && !draft) return;
+    let workbook;
+    try {
+      workbook = await loadWorkbook();
+    } catch {
+      setNotice({ tone: "error", message: messageForError() });
+      return;
+    }
+    if (template) workbook.downloadWorkbook(null, "l-cafe-menu-template.xlsx");
+    else workbook.downloadWorkbook(draft, `l-cafe-menu-revision-${draft.revision}.xlsx`);
+  }, []);
 
   // An import only changes the draft on this page; saving and publishing stay a separate step.
   const handleImportWorkbook = useCallback(async (event) => {
+    const draft = draftRef.current;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !draft) return;
     setNotice(null);
+    let workbook;
+    try {
+      workbook = await loadWorkbook();
+    } catch {
+      setNotice({ tone: "error", message: messageForError() });
+      return;
+    }
     let result;
     try {
-      result = applyWorkbook(draft, await readWorkbook(file), { canEditCategoryDescription: isOwner });
+      result = workbook.applyWorkbook(draft, await workbook.readWorkbook(file), { canEditCategoryDescription: isOwner });
     } catch {
       result = { errors: ["فایل خوانده نشد. یک فایل اکسل با پسوند xlsx و حجم کمتر از ۵ مگابایت انتخاب کنید."] };
     }
@@ -570,7 +626,19 @@ export function AdminApp() {
       tone: "success",
       message: `${faNumber.format(result.counts.categories)} ردیف دسته، ${faNumber.format(result.counts.items)} ردیف آیتم و ${faNumber.format(result.counts.variants)} ردیف گزینه قیمت از فایل اکسل خوانده شد. برای ثبت نهایی، ذخیره و انتشار را بزنید.`,
     });
-  }, [draft, isOwner]);
+  }, [isOwner]);
+
+  // Fetch the Excel chunk while the operator is idle so export and import answer at once.
+  useEffect(() => {
+    if (!workspace) return undefined;
+    const warm = () => { loadWorkbook().catch(() => {}); };
+    if (typeof window.requestIdleCallback !== "function") {
+      const timer = window.setTimeout(warm, 1500);
+      return () => window.clearTimeout(timer);
+    }
+    const handle = window.requestIdleCallback(warm, { timeout: 4000 });
+    return () => window.cancelIdleCallback(handle);
+  }, [workspace]);
 
   const handleRetryPublish = useCallback(async () => {
     setRetrying(true);
@@ -614,7 +682,8 @@ export function AdminApp() {
   if (!session?.authenticated) {
     return <LoginForm busy={loginBusy} error={loginError} onLogin={handleLogin} />;
   }
-  if (!draft || !savedDocument) return <LoadingScreen />;
+  if (!draft || !savedDocument || !workspace) return <LoadingScreen />;
+  const { MenuEditor, ActivityReport } = workspace;
 
   return (
     <div className="admin-shell">

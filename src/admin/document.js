@@ -22,7 +22,7 @@ export function normalizeDocument(document) {
                 price: item.price ?? null,
                 mediaId: item.mediaId ?? null,
                 media: item.media ?? null,
-                metadata: item.metadata ?? {},
+                metadata: Array.isArray(item.metadata) && item.metadata.length === 0 ? {} : item.metadata ?? {},
                 featured: Boolean(item.featured),
                 archived: Boolean(item.archived),
                 options: Array.isArray(item.options) ? item.options : [],

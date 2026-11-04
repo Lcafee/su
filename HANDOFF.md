@@ -17,7 +17,10 @@ Nginx
                    -> SQLite + private persistent state
 ```
 
-The public and admin UIs remain separate React + Vite entry points. Nginx serves
+The public and admin UIs remain separate React + Vite entry points. The admin
+entry is the sign-in shell only; the editing workspace and the Excel round trip
+are lazy chunks (`src/admin/editorWorkspace.js`, `src/admin/menuWorkbook.js`),
+so a release ships several hashed admin scripts instead of one. Nginx serves
 customer-facing pages, snapshots, and managed media directly. Only authenticated
 Admin/API traffic reaches the isolated Node/Fastify control plane. The unified
 Menu fetches `managed-menu/current.json`, then `previous.json` as recovery,
@@ -95,6 +98,9 @@ performed by the UI change. Accounts are created and passwords are rotated only 
 interactive host CLIs; rotation preserves the role and invalidates prior
 sessions through `admin_users.session_epoch`.
 Do not edit JSX, archived inputs, or the local fixture to change the live menu.
+The admin's dense layout changes presentation only: every label, field, option,
+action and permission is unchanged, and `DESIGN.md` (The Admin Density Rule)
+is the authority for its spacing, breakpoints and control sizes.
 Both roles and migrations `001_menu_admin` and `002_admin_roles` are active in
 production; the exact mutable record remains in `PROJECT_STATE.md`.
 
