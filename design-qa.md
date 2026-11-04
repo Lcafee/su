@@ -1,5 +1,25 @@
 # Mobile seasonal menu — verified 2026-11-04
 
+## Refined motion candidate
+
+- Native ScrollTimeline animates the cake transform and supporting opacity.
+  The same pure path drives the cached requestAnimationFrame fallback.
+- Scaling spans the entire 360px journey rather than collapsing during its
+  first fifth. The viewport center moves continuously without reversing.
+- The image is anchored inside its section, not a fixed overlay chasing a
+  moving target. It joins document flow at the end and reverses without drift.
+- No time-based entrance animation runs or restarts. The shadow is lighter.
+- Copy remains in one position and reveals only after the image clears it.
+  Background motion waits until the cake settles; visible shaders are paused.
+- Browser verification at 320px and 390px: exact return to entry, no text/image
+  collision while copy is visible, no horizontal overflow or console errors.
+  Forced fallback and reduced-motion behavior also pass.
+- Six behavior tests and production builds/validation pass. Physical-device
+  frame rate has not been measured. The previous lab metrics below are for the
+  earlier loading optimization, not a measurement of this new motion.
+- Local autoplay/scrubbing preview: `/preview/seasonal-motion.html`.
+  This preview page is not included in production build inputs.
+
 ## Approved implementation
 
 - Actual pumpkin cake cutout, with transparent 350px/700px WebP assets.

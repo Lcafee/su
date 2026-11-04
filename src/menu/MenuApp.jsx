@@ -1,9 +1,11 @@
 import {
   Component,
+  createContext,
   lazy,
   memo,
   Suspense,
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -19,6 +21,8 @@ import { findSeasonalProduct } from "./seasonalFeature.mjs";
 const LazyMetalFx = lazy(() =>
   import("metal-fx").then(({ MetalFx }) => ({ default: MetalFx })),
 );
+
+const SeasonalMotionContext = createContext(false);
 
 const PLACEHOLDER_IMAGE = {
   src: sitePath("assets/menu/opt/item-placeholder.webp"),
@@ -91,6 +95,7 @@ class MetalFxBoundary extends Component {
 }
 
 function SafeMetalFx(props) {
+  const sceneActive = useContext(SeasonalMotionContext);
   const markerRef = useRef(null);
   const [active, setActive] = useState(false);
 
@@ -114,7 +119,7 @@ function SafeMetalFx(props) {
       {active && supportsMetalFx() ? (
         <MetalFxBoundary>
           <Suspense fallback={null}>
-            <LazyMetalFx {...props} />
+            <LazyMetalFx {...props} paused={props.paused || sceneActive} />
           </Suspense>
         </MetalFxBoundary>
       ) : null}
@@ -736,6 +741,22 @@ export function MenuApp({
   const [catalogRequested, setCatalogRequested] = useState(false);
   const seasonalItem = findSeasonalProduct(categories);
   const hasSeasonalIntro = enhancedMetalFx && Boolean(seasonalItem);
+  const [sceneActive, setSceneActive] = useState(hasSeasonalIntro && !reducedMotion);
+  useEffect(() => {
+    let last;
+    const update = () => {
+      const end = Number(document.querySelector('.seasonal-feature')?.dataset.motionEnd) || 360;
+      const active = hasSeasonalIntro && !reducedMotion && window.scrollY < end;
+      if (active !== last) { last = active; setSceneActive(active); }
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [hasSeasonalIntro, reducedMotion]);
   const deferCatalog = hasSeasonalIntro && !window.location.hash
     && !metalFxReady && !catalogRequested;
   const viewAnchorRef = useRef(null);
@@ -767,7 +788,7 @@ export function MenuApp({
   }, [menuView]);
 
   return (
-    <>
+    <SeasonalMotionContext.Provider value={sceneActive}>
       <a className="skip" href="#menu">
         رفتن به منو
       </a>
@@ -828,6 +849,6 @@ export function MenuApp({
         open={navigation.navOpen}
       />
       <MenuFooter />
-    </>
+    </SeasonalMotionContext.Provider>
   );
 }

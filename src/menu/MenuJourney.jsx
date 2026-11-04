@@ -19,6 +19,7 @@ export function MenuJourney() {
     let frame = 0;
     let needsMeasure = true;
     let disposed = false;
+    let lastOffset = null;
 
     const paint = () => {
       frame = 0;
@@ -27,8 +28,14 @@ export function MenuJourney() {
         paintingTravel = Math.max(0, painting.clientHeight - artwork.clientHeight);
         needsMeasure = false;
       }
-      const progress = clamp(window.scrollY / scrollDistance);
-      artwork.style.setProperty("--journey-offset", `${motion.matches ? 0 : -paintingTravel * progress}px`);
+      const scene = document.querySelector('.seasonal-feature[data-motion="full"]');
+      const quietUntil = Number(scene?.dataset.motionEnd) || 0;
+      const progress = clamp(Math.max(0, window.scrollY - quietUntil) / Math.max(1, scrollDistance - quietUntil));
+      const offset = motion.matches ? 0 : -paintingTravel * progress;
+      if (offset !== lastOffset) {
+        artwork.style.setProperty("--journey-offset", `${offset}px`);
+        lastOffset = offset;
+      }
     };
     const schedule = () => { if (!disposed && !frame) frame = requestAnimationFrame(paint); };
     const measure = () => { needsMeasure = true; schedule(); };

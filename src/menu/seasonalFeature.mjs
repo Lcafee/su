@@ -15,16 +15,31 @@ export function keepSeasonalIntro(hash, enabled) {
   return enabled && !hash;
 }
 
-export function seasonalFrame(source, target, progress) {
+export function seasonalFrame(source, target, progress, travel = 360) {
   const t = clamp(progress);
+  if (t === 0) return { ...source, progress: 0 };
+  if (t === 1) return { ...target, progress: 1 };
   const eased = t * t * (3 - 2 * t);
-  // Enter the photo column first; the later descent must never cross the copy.
-  const approach = 1 - (1 - clamp(t / .22)) ** 3;
+  const width = source.width + (target.width - source.width) * eased;
+  const height = source.height + (target.height - source.height) * eased;
+  const sourceCenterY = source.y + source.height / 2;
+  const distanceY = target.y + target.height / 2 - sourceCenterY;
+  // One document coordinate system: the browser supplies normal page scrolling.
+  // Match the finger at entry, then join document flow with zero local velocity.
+  const vertical = distanceY > 0 && distanceY < travel
+    ? 1 - (1 - t) ** (travel / distanceY)
+    : eased;
   return {
-    x: source.x + (target.x - source.x) * approach,
-    y: source.y + (target.y - source.y) * eased,
-    width: source.width + (target.width - source.width) * approach,
-    height: source.height + (target.height - source.height) * approach,
+    x: source.x + source.width / 2
+      + (target.x + target.width / 2 - source.x - source.width / 2) * eased - width / 2,
+    y: sourceCenterY + distanceY * vertical - height / 2,
+    width,
+    height,
     progress: t,
   };
+}
+
+export function seasonalDetailsOpacity(progress) {
+  const t = clamp((progress - .84) / .16);
+  return t * t * (3 - 2 * t);
 }

@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import pumpkinLarge from '../../assets/menu/seasonal/pumpkin-700.webp';
 import pumpkinSmall from '../../assets/menu/seasonal/pumpkin-350.webp';
-import { seasonalFrame } from './seasonalFeature.mjs';
+import { seasonalFrame, seasonalDetailsOpacity } from './seasonalFeature.mjs';
 import '../styles/seasonal-feature.css';
 
 export const pumpkinImage = {
@@ -18,76 +18,96 @@ export function SeasonalFeature({ item, reducedMotion }) {
   const flightRef = useRef(null);
 
   useLayoutEffect(() => {
-    if (reducedMotion) return undefined;
     const root = rootRef.current;
+    if (reducedMotion) return undefined;
     const flight = flightRef.current;
     const halo = sourceRef.current.querySelector('.seasonal-halo');
     const details = dockRef.current.nextElementSibling;
+    const travel = 360;
     let frame = 0;
     let disposed = false;
-    let source = null;
-    let travel = 1;
-    let detailsOffset = 0;
-    let destination = null;
-    let visible = false;
+    let animations = [];
+    let source;
+    let target;
+    let start = 0;
     let lastProgress = -1;
-    const measure = () => {
-      const bounds = sourceRef.current.getBoundingClientRect();
-      const rootBounds = root.getBoundingClientRect();
-      const target = dockRef.current.getBoundingClientRect();
-      source = { x: bounds.left, y: bounds.top + window.scrollY, width: bounds.width, height: bounds.height };
-      travel = Math.max(1, sourceRef.current.parentElement.offsetHeight * .72);
-      const gap = parseFloat(getComputedStyle(dockRef.current.parentElement).columnGap) || 0;
-      detailsOffset = (target.width + gap) / 2;
-      const height = bounds.height * target.width / bounds.width;
-      destination = { x: target.left, y: target.top - rootBounds.top + (target.height - height) / 2, width: target.width, height };
-      flight.style.width = `${source.width}px`;
-      flight.style.height = `${source.height}px`;
-      lastProgress = -1;
-    };
+    let native = false;
+    const transform = (next) => `translate3d(${next.x}px,${next.y}px,0) scale(${next.width / source.width})`;
     const paint = () => {
       frame = 0;
-      const bounds = root.getBoundingClientRect();
-      const inView = bounds.bottom > 0 && bounds.top < window.innerHeight;
-      if (visible !== inView) {
-        flight.style.visibility = inView ? 'visible' : 'hidden';
-        visible = inView;
-      }
-      if (!inView) return;
-      const progress = Math.max(0, Math.min(1, -bounds.top / travel));
-      const origin = { ...source, y: source.y - window.scrollY * .28 };
-      const next = seasonalFrame(origin, {
-        ...destination,
-        y: bounds.top + destination.y,
-      }, progress);
-      flight.style.transform = `translate3d(${next.x}px,${next.y}px,0) scale(${next.width / source.width},${next.height / source.height})`;
-      if (progress !== lastProgress) {
-        const docked = progress >= .98 ? 'true' : 'false';
-        if (root.dataset.docked !== docked) root.dataset.docked = docked;
-        halo.style.opacity = 1 - Math.min(1, progress * 1.8);
-        const approach = source.width === destination.width ? 1 : (source.width - next.width) / (source.width - destination.width);
-        details.style.transform = `translateX(${detailsOffset * (1 - approach)}px)`;
-        lastProgress = progress;
-      }
+      if (native || disposed) return;
+      const progress = Math.max(0, Math.min(1, (window.scrollY - start) / travel));
+      if (progress === lastProgress) return;
+      flight.style.transform = transform(seasonalFrame(source, target, progress, travel));
+      halo.style.opacity = 1 - Math.min(1, progress / .8);
+      details.style.opacity = seasonalDetailsOpacity(progress);
+      lastProgress = progress;
     };
-    const schedule = () => { if (!disposed && !frame) frame = requestAnimationFrame(paint); };
-    const resize = () => { measure(); schedule(); };
-    const observer = new ResizeObserver(resize);
+    const measure = () => {
+      if (disposed) return;
+      const rootBounds = root.getBoundingClientRect();
+      const origin = sourceRef.current.getBoundingClientRect();
+      const dock = dockRef.current.getBoundingClientRect();
+      source = { x: origin.left - rootBounds.left, y: origin.top - rootBounds.top,
+        width: origin.width, height: origin.height };
+      const height = source.height * dock.width / source.width;
+      target = { x: dock.left - rootBounds.left,
+        y: dock.top - rootBounds.top + (dock.height - height) / 2,
+        width: dock.width, height };
+      start = Math.max(0, rootBounds.top + window.scrollY - 80);
+      root.dataset.motionEnd = String(start + travel);
+      flight.style.left = '0px';
+      flight.style.top = '0px';
+      flight.style.width = `${source.width}px`;
+      flight.style.height = `${source.height}px`;
+      flight.style.transform = transform(source);
+      animations.forEach(animation => animation.cancel());
+      animations = [];
+      native = false;
+      if (typeof ScrollTimeline !== 'undefined' && 'rangeStart' in Animation.prototype) {
+        try {
+          const timeline = new ScrollTimeline({ source: document.scrollingElement, axis: 'block' });
+          const options = { timeline, rangeStart: `${start}px`, rangeEnd: `${start + travel}px`,
+            duration: 1, fill: 'both', easing: 'linear' };
+          const frames = Array.from({ length: 73 }, (_, index) => {
+            const progress = index / 72;
+            return { offset: progress, transform: transform(seasonalFrame(source, target, progress, travel)) };
+          });
+          animations.push(flight.animate(frames, options));
+          animations.push(halo.animate([{ opacity: 1 }, { offset: .8, opacity: 0 }, { opacity: 0 }], options));
+          animations.push(details.animate(Array.from({ length: 73 }, (_, index) => ({
+            offset: index / 72, opacity: seasonalDetailsOpacity(index / 72),
+          })), options));
+          native = true;
+        } catch {
+          animations.forEach(animation => animation.cancel());
+          animations = [];
+        }
+      }
+      root.dataset.motionEngine = native ? 'native' : 'fallback';
+      lastProgress = -1;
+      paint();
+    };
+    const schedule = () => {
+      if (!native && !disposed && !frame) frame = requestAnimationFrame(paint);
+    };
+    const observer = new ResizeObserver(measure);
     observer.observe(root);
     window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', measure);
     measure();
-    paint();
-    document.fonts?.ready.then(() => { if (!disposed) resize(); });
+    document.fonts?.ready.then(() => { if (!disposed) measure(); });
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
+      animations.forEach(animation => animation.cancel());
       observer.disconnect();
       window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', measure);
       halo.style.removeProperty('opacity');
-      details.style.removeProperty('transform');
-      delete root.dataset.docked;
+      details.style.removeProperty('opacity');
+      delete root.dataset.motionEngine;
+      delete root.dataset.motionEnd;
     };
   }, [reducedMotion, item.id]);
 

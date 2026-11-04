@@ -135,7 +135,12 @@ a missing weight. Preload the primary faces; load secondary weights on demand.
 Mobile menu item names use 16–17.5px, standard prices 15px, and variant prices
 14px; compact list rows use 17px names and 15.5px prices. The seasonal name is
 22px and its price 19px. Descriptions retain their existing reading scale and
-the seasonal product retains its scroll geometry.
+the seasonal product uses a continuous 360px scroll journey. Its initial width
+is capped at 270px and its destination uses 48% of the summary row. Position
+and scale change together; the copy stays fixed and fades in after clearance.
+Native ScrollTimeline drives transform/opacity where supported; the fallback
+uses the same cached document-coordinate path. No timed entrance replays on
+reverse scroll. Mural motion and decorative shaders stay quiet during the scene.
 Admin retains its independent Sahel/Vazirmatn system and operating hierarchy.
 
 - **Display:** Peyda 800 for primary public headings; 700 for secondary headings.

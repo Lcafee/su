@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>پیش‌نمایش حرکت کیک — موبایل</title>
+<link rel="stylesheet" href="/assets/fonts/vazirmatn.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e6e5e1;color:#681f2d;font:14px/1.8 Vazirmatn,sans-serif;display:grid;justify-items:center;padding:16px 12px 28px;gap:12px}
+h1{font-size:16px;margin:0;font-weight:600}p{margin:0;font-size:12px}header{text-align:center}nav{display:flex;gap:8px;align-items:center;justify-content:center}
+button,a{font:inherit;color:inherit;border:1px solid #681f2d55;background:#f3f1ec;border-radius:6px;min-height:40px;padding:4px 14px;cursor:pointer;text-decoration:none}
+button[aria-pressed=true]{background:#681f2d;color:#f3f1ec}.device{overflow:hidden;position:relative;border-radius:18px;box-shadow:0 10px 35px #681f2d22;border:1px solid #681f2d33}
+iframe{position:absolute;top:0;left:0;width:390px;height:844px;border:0;transform-origin:top left;background:#f3f1ec}
+input{width:min(390px,100%);accent-color:#681f2d;direction:ltr}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #681f2d;outline-offset:3px}
+</style>
+</head>
+<body>
+<header><h1>پیش‌نمایش حرکت کیک در موبایل</h1><p>رفت و برگشت خودکار؛ برای امتحان دستی، پخش را متوقف کن.</p></header>
+<nav><button id="play" aria-pressed="true">توقف</button><button id="restart">از ابتدا</button><a href="/menu.html">منوی کامل</a></nav>
+<div class="device"><iframe src="/menu.html" title="منوی موبایل ال کافه"></iframe></div>
+<input type="range" id="scrub" min="0" max="430" value="0" aria-label="موقعیت اسکرول پیش‌نمایش">
+<script type="module">
+const frame=document.querySelector('iframe'),device=document.querySelector('.device');
+const play=document.querySelector('#play'),scrub=document.querySelector('#scrub');
+let running=!matchMedia('(prefers-reduced-motion:reduce)').matches,started=0,raf=0;
+function fit(){const scale=Math.min(1,(innerWidth-26)/390);device.style.width=`${390*scale}px`;device.style.height=`${844*scale}px`;frame.style.transform=`scale(${scale})`}
+fit();addEventListener('resize',fit);
+function setRunning(value){running=value;play.textContent=value?'توقف':'پخش';play.setAttribute('aria-pressed',String(value))}
+function render(now){
+ if(running){
+  if(!started)started=now;
+  const time=(now-started)%10800;
+  const fraction=time<800?0:time<4800?(1-Math.cos(Math.PI*(time-800)/4000))/2:time<5800?1:time<9800?(1+Math.cos(Math.PI*(time-5800)/4000))/2:0;
+  const top=430*fraction;
+  frame.contentWindow.scrollTo({top,behavior:'instant'});scrub.value=String(top);
+ }
+ raf=requestAnimationFrame(render);
+}
+play.onclick=()=>{setRunning(!running);started=0};
+document.querySelector('#restart').onclick=()=>{started=0;frame.contentWindow.scrollTo({top:0,behavior:'instant'});setRunning(true)};
+scrub.oninput=()=>{setRunning(false);frame.contentWindow.scrollTo({top:Number(scrub.value),behavior:'instant'})};
+frame.onload=async()=>{
+ const doc=frame.contentDocument;
+ await doc.fonts.ready;
+ await new Promise(resolve=>{const check=()=>doc.querySelector('.seasonal-feature')?resolve():requestAnimationFrame(check);check()});
+ const cake=doc.querySelector('.seasonal-flight img');if(cake)await cake.decode().catch(()=>{});
+ setRunning(running);started=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(render);
+};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)setRunning(false)});
+</script>
+</body>
+</html>
