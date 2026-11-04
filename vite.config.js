@@ -98,12 +98,18 @@ function serveManagedMenuFixture() {
     `${base}managed-menu/previous.json`,
   ]);
   const fixtureAssetPrefix = `${base}assets/menu/opt/`;
+  const previewMediaPrefix = `${base}managed-media/`;
   const middleware = async (request, response, next) => {
     const pathname = new URL(request.url || "/", "http://localhost").pathname;
     const photoName = pathname.startsWith(fixtureAssetPrefix)
       ? pathname.slice(fixtureAssetPrefix.length)
       : "";
-    const fixturePhoto = /^[a-z0-9-]+\.webp$/i.test(photoName)
+    const previewPhotoName = pathname.startsWith(previewMediaPrefix)
+      ? pathname.slice(previewMediaPrefix.length)
+      : "";
+    const fixturePhoto = /^[a-z0-9-]+\.webp$/i.test(previewPhotoName)
+      ? resolve(root, "preview/menu-media", previewPhotoName)
+      : /^[a-z0-9-]+\.webp$/i.test(photoName)
       ? resolve(root, "assets/menu/opt", photoName)
       : null;
     const fixtureJson = fixturePaths.has(pathname) ? menuFixturePath : null;

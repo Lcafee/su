@@ -13,6 +13,8 @@ import {
 import { sitePath } from "../sitePath";
 import { MenuBrandMark } from "./MenuBrandMark";
 import { useMenuNavigation } from "./MenuRuntime";
+import { SeasonalFeature, pumpkinImage } from "./SeasonalFeature.jsx";
+import { findSeasonalProduct } from "./seasonalFeature.mjs";
 
 const LazyMetalFx = lazy(() =>
   import("metal-fx").then(({ MetalFx }) => ({ default: MetalFx })),
@@ -89,14 +91,34 @@ class MetalFxBoundary extends Component {
 }
 
 function SafeMetalFx(props) {
-  if (!supportsMetalFx()) return null;
+  const markerRef = useRef(null);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const host = markerRef.current?.parentElement;
+    if (!host || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      // Initialize on first approach. MetalFx already pauses outside the viewport
+      // and on hidden tabs; keeping visited instances avoids shader recreation.
+      setActive(true);
+      observer.disconnect();
+    }, { rootMargin: "120px" });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <MetalFxBoundary>
-      <Suspense fallback={null}>
-        <LazyMetalFx {...props} />
-      </Suspense>
-    </MetalFxBoundary>
+    <>
+      <span ref={markerRef} hidden aria-hidden="true" />
+      {active && supportsMetalFx() ? (
+        <MetalFxBoundary>
+          <Suspense fallback={null}>
+            <LazyMetalFx {...props} />
+          </Suspense>
+        </MetalFxBoundary>
+      ) : null}
+    </>
   );
 }
 
@@ -109,14 +131,37 @@ function useDeferredEnhancement(enabled) {
       return undefined;
     }
 
-    const reveal = () => setReady(true);
-    if ("requestIdleCallback" in window) {
-      const idleCallback = window.requestIdleCallback(reveal, { timeout: 1400 });
-      return () => window.cancelIdleCallback(idleCallback);
+    let cancelled = false;
+    let idleCallback;
+    let fallback;
+    let paintFrame;
+    const reveal = () => { if (!cancelled) setReady(true); };
+    const schedule = () => {
+      if (cancelled) return;
+      if ("requestIdleCallback" in window) {
+        idleCallback = window.requestIdleCallback(reveal, { timeout: 1400 });
+      } else {
+        fallback = window.setTimeout(reveal, 700);
+      }
+    };
+    const hero = document.querySelector(".seasonal-flight img, .seasonal-static");
+    if (hero) {
+      // Paint the product before mounting the rest of the catalog or shaders.
+      Promise.allSettled([hero.decode(), document.fonts?.ready]).then(() => {
+        if (cancelled) return;
+        paintFrame = requestAnimationFrame(() => {
+          paintFrame = requestAnimationFrame(schedule);
+        });
+      });
+    } else {
+      schedule();
     }
-
-    const fallback = window.setTimeout(reveal, 700);
-    return () => window.clearTimeout(fallback);
+    return () => {
+      cancelled = true;
+      window.cancelIdleCallback?.(idleCallback);
+      window.clearTimeout(fallback);
+      window.cancelAnimationFrame(paintFrame);
+    };
   }, [enabled]);
 
   return ready;
@@ -343,12 +388,30 @@ function FeaturedPhotoTreatment() {
 
 const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const imageRef = useRef(null);
+  const photoRef = useRef(null);
+  const [nearby, setNearby] = useState(() =>
+    eager || typeof IntersectionObserver === "undefined");
   const [ready, setReady] = useState(false);
   const [fallback, setFallback] = useState(false);
   const [terminalFallback, setTerminalFallback] = useState(false);
   const photo = fallback || !item.image ? PLACEHOLDER_IMAGE : item.image;
   const usingPlaceholder = fallback || !item.image;
   const featured = item.featured === true;
+  const seasonal = Boolean(findSeasonalProduct([{ items: [item] }]));
+  const loadImage = eager || nearby;
+
+  useEffect(() => {
+    if (loadImage) return undefined;
+    // Native lazy-loading can fetch several screens of menu photos, competing
+    // with the entry artwork. Reveal URLs only as the customer approaches.
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setNearby(true);
+      observer.disconnect();
+    }, { rootMargin: "600px" });
+    observer.observe(photoRef.current);
+    return () => observer.disconnect();
+  }, [loadImage]);
 
   useEffect(() => {
     setFallback(false);
@@ -363,15 +426,18 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   }, [photo.src]);
 
   return (
-    <div className="item-photo t-avatar" data-ready={ready ? "" : undefined}
+    <div ref={photoRef} className="item-photo t-avatar" data-ready={ready ? "" : undefined}
+      data-seasonal-photo={seasonal ? "" : undefined}
       data-featured-frame={featured ? "refined" : undefined}>
       {terminalFallback ? (
         <span className="item-photo-empty" aria-hidden="true" />
       ) : (
+        <picture>
+        {seasonal ? <source media="(max-width: 759px)" srcSet={loadImage ? pumpkinImage.srcSet : undefined} sizes="46vw" /> : null}
         <img
           ref={imageRef}
-          src={photo.src}
-          srcSet={photo.srcSet || undefined}
+          src={loadImage ? photo.src : undefined}
+          srcSet={loadImage ? photo.srcSet || undefined : undefined}
           sizes="(max-width: 420px) calc(50vw - 15px), (max-width: 759px) calc(46vw - 5px), (max-width: 899px) calc(46vw - 9px), (max-width: 1199px) calc(441px - 4vw), 393px"
           width={photo.width || 600}
           height={photo.height || 600}
@@ -390,6 +456,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
             setTerminalFallback(true);
           }}
         />
+        </picture>
       )}
       {featured ? <FeaturedPhotoTreatment /> : null}
     </div>
@@ -666,11 +733,17 @@ export function MenuApp({
   const enhancedMetalFx = useMediaQuery(MOBILE_MENU_QUERY);
   const metalFxReady = useDeferredEnhancement(true);
   const [menuView, setMenuView] = useState(readMenuViewPreference);
+  const [catalogRequested, setCatalogRequested] = useState(false);
+  const seasonalItem = findSeasonalProduct(categories);
+  const hasSeasonalIntro = enhancedMetalFx && Boolean(seasonalItem);
+  const deferCatalog = hasSeasonalIntro && !window.location.hash
+    && !metalFxReady && !catalogRequested;
   const viewAnchorRef = useRef(null);
   const navigation = useMenuNavigation({
     categories,
     focusOnMount,
     reducedMotion,
+    hasSeasonalIntro,
   });
 
   const selectMenuView = useCallback((nextView) => {
@@ -703,7 +776,10 @@ export function MenuApp({
           activeTitle={navigation.activeTitle}
           metalFxReady={metalFxReady}
           navOpen={navigation.navOpen}
-          onToggle={navigation.toggleNavigation}
+          onToggle={() => {
+            setCatalogRequested(true);
+            navigation.toggleNavigation();
+          }}
           reducedMotion={reducedMotion}
           triggerRef={navigation.triggerRef}
         />
@@ -727,12 +803,15 @@ export function MenuApp({
             ) : null}
           </aside>
         ) : null}
-        {navigation.renderableCategories.map((category, index) => (
+        {hasSeasonalIntro ? (
+          <SeasonalFeature item={seasonalItem} reducedMotion={reducedMotion} />
+        ) : null}
+        {navigation.renderableCategories.map((category, index) => index > 0 && deferCatalog ? null : (
           <CategorySection
             key={category.id}
             category={category}
             enhancedMetalFx={enhancedMetalFx}
-            firstCategory={index === 0}
+            firstCategory={index === 0 && !hasSeasonalIntro}
             metalFxReady={metalFxReady}
             reducedMotion={reducedMotion}
             registerSection={navigation.registerSection}

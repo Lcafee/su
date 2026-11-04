@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { loadMenuSnapshot } from "./menuSnapshot";
+import { keepSeasonalIntro } from "./seasonalFeature.mjs";
 
 function hasMenuItems(snapshot) {
   return snapshot.categories.some((category) => category.items.length > 0);
@@ -27,7 +28,7 @@ function categoryHash(id) {
   return `#${encodeURIComponent(id)}`;
 }
 
-export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
+export function useMenuNavigation({ categories, focusOnMount, reducedMotion, hasSeasonalIntro = false }) {
   const renderableCategories = useMemo(
     () => categories.filter((category) => category.items.length > 0),
     [categories],
@@ -50,6 +51,7 @@ export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
   const [visibleCategoryId, setVisibleCategoryId] = useState(initialCategoryRef.current.id);
   const [navOpen, setNavOpen] = useState(false);
   const sectionRefs = useRef(new Map());
+  const categoryObserverRef = useRef(null);
   const linkRefs = useRef(new Map());
   const navRef = useRef(null);
   const triggerRef = useRef(null);
@@ -72,8 +74,14 @@ export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
   firstRenderableIdRef.current = firstRenderableId;
 
   const registerSection = useCallback((id, node) => {
-    if (node) sectionRefs.current.set(id, node);
-    else sectionRefs.current.delete(id);
+    const previous = sectionRefs.current.get(id);
+    if (previous) categoryObserverRef.current?.unobserve(previous);
+    if (node) {
+      sectionRefs.current.set(id, node);
+      categoryObserverRef.current?.observe(node);
+    } else {
+      sectionRefs.current.delete(id);
+    }
   }, []);
 
   const closeNavigation = useCallback((returnFocus = false) => {
@@ -160,6 +168,12 @@ export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
   }, [setSelectedCategory]);
 
   const reconcileFromLocation = useCallback(({ focus = false, force = false } = {}) => {
+    if (keepSeasonalIntro(window.location.hash, hasSeasonalIntro)) {
+      closeNavigation(false);
+      cancelPendingNavigation();
+      window.scrollTo({ top: 0, behavior: "instant" });
+      return;
+    }
     const hashId = safeHashId();
     const id = renderableCategoryIdsRef.current.has(hashId)
       ? hashId
@@ -185,7 +199,7 @@ export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
     setVisibleCategoryId((current) => (current === id ? current : id));
     closeNavigation(false);
     requestNavigation(id, { behavior: "auto", focus });
-  }, [closeNavigation, requestNavigation]);
+  }, [closeNavigation, requestNavigation, cancelPendingNavigation, hasSeasonalIntro]);
 
   useEffect(() => {
     schedulePendingNavigation();
@@ -239,10 +253,14 @@ export function useMenuNavigation({ categories, focusOnMount, reducedMotion }) {
       { rootMargin: "-18% 0px -72% 0px" },
     );
 
+    categoryObserverRef.current = observer;
     for (const [id, section] of sectionRefs.current) {
       if (renderableCategoryIds.has(id)) observer.observe(section);
     }
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (categoryObserverRef.current === observer) categoryObserverRef.current = null;
+    };
   }, [applyVisibleCategory, renderableCategories, renderableCategoryIds]);
 
   useEffect(() => {

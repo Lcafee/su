@@ -34,7 +34,7 @@ const menu2Html = readText("menu2.html");
 const sitemap = readText("sitemap.xml");
 const robots = readText("robots.txt");
 const htaccess = readText(".htaccess");
-const landingSource = readText("src/landing/LandingApp.jsx");
+const landingSource = readText("src/landing/OriginalLanding.jsx");
 const menuSource = readText("src/menu/MenuApp.jsx");
 const menu2Source = readText("src/menu2/main.jsx");
 const publicTexts = new Map([
@@ -43,7 +43,7 @@ const publicTexts = new Map([
   ["menu2.html", menu2Html],
   ["404.html", source404],
   ["sitemap.xml", sitemap],
-  ["src/landing/LandingApp.jsx", landingSource],
+  ["src/landing/OriginalLanding.jsx", landingSource],
   ["src/menu/MenuApp.jsx", menuSource],
   ["src/menu2/main.jsx", menu2Source],
 ]);
@@ -59,7 +59,7 @@ if (!indexHtml.includes(`"telephone": "${PHONE_E164}"`)) {
 }
 for (const [file, text] of [
   ["index.html", indexHtml],
-  ["src/landing/LandingApp.jsx", landingSource],
+  ["src/landing/OriginalLanding.jsx", landingSource],
 ]) {
   if (!text.includes(PLACE_ID)) fail(`${file} does not use the canonical Google Place ID`);
   if (/destination=32\.|[?&](?:lat|lng|query)=32\./.test(text)) {
@@ -92,10 +92,10 @@ if (!source404.includes(`href="${PUBLIC_MENU_URL}"`)) {
   fail("404.html does not link to the canonical menu URL");
 }
 if (landingSource.includes('sitePath("menu.html")')) {
-  fail("LandingApp still links to the physical menu.html entry");
+  fail("OriginalLanding still links to the physical menu.html entry");
 }
 for (const [file, text] of [
-  ["src/landing/LandingApp.jsx", landingSource],
+  ["src/landing/OriginalLanding.jsx", landingSource],
   ["src/menu/MenuApp.jsx", menuSource],
 ]) {
   if (!text.includes(`href="tel:${PHONE_E164}"`) || !text.includes(PHONE_DISPLAY)) {

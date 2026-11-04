@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Hand-written, copied into the production build, and deliberately free of
      the React runtime: an error page that needs React to render is an error page that
-     disappears exactly when something is already wrong. Plain HTML, the two
+     disappears exactly when something is already wrong. Plain HTML, self-hosted
      self-hosted faces, and one link out. -->
 <!-- This page carries no RTL wrapper of its own, so dir here is not a
      formality: without it the whole page renders left-to-right. Centred text
@@ -24,14 +24,14 @@
      not optional even same-origin - fonts fetch in CORS mode, and a preload
      without it is a second, separate download rather than a warm cache hit. -->
 <link rel="preload" href="__BASE_PATH__assets/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="__BASE_PATH__assets/fonts/Sahel-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="__BASE_PATH__assets/fonts/PeydaWeb-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
 
 <link rel="stylesheet" href="__BASE_PATH__assets/fonts/vazirmatn.css">
-<link rel="stylesheet" href="__BASE_PATH__assets/fonts/sahel.css">
+<link rel="stylesheet" href="__BASE_PATH__assets/fonts/public-type.css">
 <style>
 :root{
-  --font:'Vazirmatn',system-ui,sans-serif;
-  --display:'Sahel','Vazirmatn',system-ui,sans-serif;
+  --font:var(--font-body);
+  --display:var(--font-display);
   --bg:#471019;
   --ink:#F3F1EC;
   --ink-strong:rgba(243,241,236,.82);
@@ -55,12 +55,12 @@ main{position:relative;z-index:1;min-height:100svh;min-height:100vh;
   gap:clamp(18px,3.2vw,26px);padding:clamp(64px,12vw,120px) var(--gutter);
   text-align:center}
 img.mark{width:clamp(120px,26vw,190px);height:auto;margin-bottom:clamp(10px,2vw,18px)}
-h1{margin:0;font-family:var(--display);font-weight:700;
+h1{margin:0;font-family:var(--display);font-weight:800;
   font-size:clamp(30px,6.4vw,52px);line-height:1.3;letter-spacing:-.005em;color:var(--ink)}
 p{margin:0;max-width:42ch;font:400 clamp(15px,4vw,17px)/2.1 var(--font);color:var(--ink-strong)}
 a.cta{display:inline-flex;align-items:center;min-height:44px;margin-top:clamp(8px,2vw,14px);
   padding:0 30px;background:var(--ink);color:var(--bg);
-  font:500 clamp(13px,3.4vw,14px)/1 var(--font);text-decoration:none;border-radius:2px}
+  font:500 clamp(13px,3.4vw,14px)/1 var(--font-ui);text-decoration:none;border-radius:2px}
 a.cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 </style>
 </head>

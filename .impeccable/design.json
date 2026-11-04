@@ -32,11 +32,19 @@
     "typographyMeta": {
       "display": {
         "displayName": "Persian Display",
-        "purpose": "Sahel Bold for Landing sections and Menu category headings."
+        "purpose": "Peyda ExtraBold/Bold for public Landing sections and Menu category headings; Admin retains Sahel."
       },
       "body": {
         "displayName": "Interface and Reading",
-        "purpose": "Vazirmatn for public copy, menu content, prices, Admin fields, controls, and state."
+        "purpose": "Vazirmatn for public descriptions and reading copy, Latin fallback, and the independent Admin interface."
+      },
+      "title": {
+        "displayName": "Public Item and Price",
+        "purpose": "User-supplied Doran NoEn Bold 700 for public item names and bare Persian prices."
+      },
+      "label": {
+        "displayName": "Public Controls",
+        "purpose": "User-supplied Doran NoEn Medium 500 for public navigation and controls."
       },
       "hero-latin": {
         "displayName": "Hero Latin",

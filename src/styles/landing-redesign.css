@@ -5,8 +5,8 @@
   --home-black: #292320;
   --home-gray: #746b64;
   --home-cream: #faf5ec;
-  --home-body: 'Vazirmatn', system-ui, sans-serif;
-  --home-display: 'Sahel', 'Vazirmatn', system-ui, sans-serif;
+  --home-body: var(--font-body);
+  --home-display: var(--font-display);
   --home-ease: cubic-bezier(.22, 1, .36, 1);
 }
 
@@ -46,7 +46,7 @@ a { color: inherit; }
 .home-hero-content { position: absolute; top: 32%; right: 24px; left: 24px; text-align: right; animation: home-rise 850ms var(--home-ease) both; }
 .home-hero-content h1 { margin: 0; font: 700 clamp(38px, 10.8vw, 52px)/1.48 var(--home-display); letter-spacing: -.025em; text-wrap: balance; }
 .home-hero-content p { max-width: 28ch; margin: 16px 0 24px; color: rgba(250, 245, 236, .9); font: 400 clamp(15px, 4vw, 17px)/1.9 var(--home-body); }
-.home-text-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 48px; border-bottom: 1px solid currentColor; font: 500 17px/1.4 var(--home-body); text-decoration: none; transition: gap 300ms var(--home-ease), opacity 200ms ease; }
+.home-text-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 48px; border-bottom: 1px solid currentColor; font: 500 17px/1.4 var(--font-ui); text-decoration: none; transition: gap 300ms var(--home-ease), opacity 200ms ease; }
 .home-text-link-arrow { font: 300 24px/1 var(--home-body); transition: transform 300ms var(--home-ease); }
 .home-text-link:hover .home-text-link-arrow { transform: translateX(-5px); }
 .home-hero-link { color: var(--home-cream); }

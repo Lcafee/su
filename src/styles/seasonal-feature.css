@@ -1,0 +1,26 @@
+.seasonal-feature{display:none}
+@media(max-width:759px){
+ .seasonal-feature{display:block;position:relative;--seasonal-exit:0;padding:0 var(--gutter);isolation:isolate}
+ .seasonal-intro{position:relative;height:380px;text-align:center;max-width:430px;margin:0 auto;padding-top:24px}
+ .seasonal-badge{display:inline-block;background:var(--scarlet);color:var(--ivory);font:500 12px/1.6 var(--item-font);padding:3px 13px;border-radius:2px}
+ .seasonal-art{position:relative;width:85%;height:320px;margin:0 auto}
+ .seasonal-halo{position:absolute;inset:12% -4% 5%;border-radius:46% 44% 34% 40%;background:#813b46;transform:rotate(-9deg);opacity:calc(1 - var(--seasonal-exit))}
+ .seasonal-static{position:relative;width:100%;height:100%;object-fit:contain}
+ .seasonal-feature[data-motion="full"] .seasonal-static{visibility:hidden}
+ .seasonal-flight{position:fixed;z-index:8;top:0;left:0;pointer-events:none;transform-origin:top left;will-change:transform;visibility:hidden}
+ .seasonal-flight img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 10px rgba(var(--scarlet-rgb),.14));animation:seasonal-arrive 720ms cubic-bezier(.16,1,.3,1) both}
+ .seasonal-feature[data-docked="true"] .seasonal-flight img{animation:none}
+ .seasonal-landing h2{font:700 22px/1.6 var(--item-font);margin:0;color:var(--scarlet)}
+ .seasonal-landing p{font:400 14px/1.85 var(--font);color:var(--ink-strong);margin:6px 0}
+ .seasonal-price{display:block;font:700 19px/1.6 var(--item-font);margin:7px 0;color:var(--scarlet);font-variant-numeric:tabular-nums}
+ .seasonal-landing{position:relative;display:grid;grid-template-columns:42% minmax(0,1fr);gap:16px;align-items:center;min-height:210px;padding:16px 0;margin-bottom:12px;scroll-margin-top:18px}
+ .seasonal-details{text-align:center;transform:translateX(var(--seasonal-details-shift,0px));min-width:0}
+ .seasonal-dock{width:100%;height:180px}
+ .seasonal-dock img{width:100%;height:100%;object-fit:contain}
+ .seasonal-landing h2{margin-top:8px}
+ .seasonal-landing .seasonal-badge{padding:3px 10px}
+ .item-photo[data-seasonal-photo] img{object-fit:contain!important;padding:10px;background:var(--ivory)}
+ @keyframes seasonal-arrive{from{transform:translateY(12px) rotate(-1deg)}to{transform:translateY(0) rotate(0)}}
+}
+@media(max-width:359px){.seasonal-art{height:285px}.seasonal-intro{height:345px}.seasonal-landing{gap:12px}}
+@media(prefers-reduced-motion:reduce){.seasonal-flight img{animation:none!important}.seasonal-halo{opacity:1}}

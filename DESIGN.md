@@ -14,8 +14,14 @@ colors:
   error: "#A22A38"
 typography:
   display:
-    fontFamily: "Sahel, Vazirmatn, system-ui, sans-serif"
+    fontFamily: "Peyda, Vazirmatn, system-ui, sans-serif"
+    fontWeight: 800
+  title:
+    fontFamily: "Doran, Vazirmatn, system-ui, sans-serif"
     fontWeight: 700
+  label:
+    fontFamily: "Doran, Vazirmatn, system-ui, sans-serif"
+    fontWeight: 500
   body:
     fontFamily: "Vazirmatn, system-ui, sans-serif"
     fontWeight: 400
@@ -103,19 +109,29 @@ private runtime values to make a screen look complete.
 
 ## Typography
 
-**Display Font:** Sahel Bold with Vazirmatn fallback.  
+**Public Display Font:** Peyda ExtraBold/Bold with Vazirmatn fallback.
+
+**Public Item/UI Font:** Doran NoEn Bold/Medium with Vazirmatn for Latin.
+
 **Body Font:** Vazirmatn.  
 **Hero Latin Font:** Fahkwang SemiBold, reserved for `YOUR DAILY PAUSE`.
 
-Sahel is used at its shipped 700 weight for Persian display moments. Vazirmatn
-carries item names, prices, controls, metadata, form fields, and operating copy.
-Admin hierarchy relies more on weight and spacing than oversized headings.
+Public faces come from the user-supplied `peyda.zip` and `Doran Pro.zip`.
+`assets/fonts/public-type.css` owns their role tokens. Ship only WOFF2: Peyda
+700/800 and the smaller Persian Doran NoEn 500/700 faces. Doran has no shipped
+600 face here, so item names and prices use its real 700 rather than requesting
+a missing weight. Preload the primary faces; load secondary weights on demand.
+Mobile menu item names use 16–17.5px, standard prices 15px, and variant prices
+14px; compact list rows use 17px names and 15.5px prices. The seasonal name is
+22px and its price 19px. Descriptions retain their existing reading scale and
+the seasonal product retains its scroll geometry.
+Admin retains its independent Sahel/Vazirmatn system and operating hierarchy.
 
-- **Display:** Sahel 700 for Landing section and Menu category headings.
-- **Title:** Vazirmatn 600 for menu items, admin panel headings, and key states.
+- **Display:** Peyda 800 for primary public headings; 700 for secondary headings.
+- **Title:** Doran 700 for public menu items and the seasonal item name.
 - **Body:** Vazirmatn 400 with generous Persian line-height for descriptive copy.
-- **Label:** Vazirmatn 500–600 for navigation, fields, filters, roles, and status.
-- **Price:** bare Persian numerals, visually prominent, with no unit or separator.
+- **Label:** Doran 500 for public navigation and controls; 700 for emphasis.
+- **Price:** Doran 700, tabular bare Persian numerals, with no unit or separator.
 
 **The Bare Numeral Rule.** Menu prices remain exactly as supplied; typography
 must never add a currency word, unit, separator, or inferred value.
