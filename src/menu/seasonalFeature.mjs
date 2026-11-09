@@ -15,6 +15,16 @@ export function keepSeasonalIntro(hash, enabled) {
   return enabled && !hash;
 }
 
+export function catalogWithoutSeasonal(categories) {
+  const seasonal = findSeasonalProduct(categories);
+  if (!seasonal) return categories;
+  return categories.flatMap(category => {
+    if (!category.items?.some(item => item.id === seasonal.id)) return [category];
+    const items = category.items.filter(item => item.id !== seasonal.id);
+    return items.length ? [{ ...category, items }] : [];
+  });
+}
+
 export function seasonalFrame(source, target, progress, travel = 360) {
   const t = clamp(progress);
   if (t === 0) return { ...source, progress: 0 };

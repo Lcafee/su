@@ -3,6 +3,15 @@
   "generatedAt": "2026-10-13T00:00:00+03:30",
   "title": "Design System: L Cafe",
   "extensions": {
+    "marbleFeature": {
+      "scope": "Uses the original seasonal section and catalog language; no separate visual identity",
+      "productAsset": "assets/menu/seasonal/marble-cutout.png",
+      "colors": "Existing maroon, ivory and foreground alpha tokens only",
+      "typography": "Existing Doran 22px summary and 16px variant prices, with Vazirmatn description and variant labels",
+      "floatingTypography": "Existing Peyda ExtraBold 800; 54px live numeral, 17px caption and serrated limited-offer seal",
+      "floatingStock": "Shared confirmed remaining count, with zero/unknown word states; replaces the fixed daily-cap label",
+      "motion": "Original 360px reversible ScrollTimeline path, with reduced-motion static fallback"
+    },
     "colorMeta": {
       "landing-maroon": {
         "role": "primary",

@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -15,8 +16,9 @@ import {
 import { sitePath } from "../sitePath";
 import { MenuBrandMark } from "./MenuBrandMark";
 import { useMenuNavigation } from "./MenuRuntime";
-import { SeasonalFeature, pumpkinImage } from "./SeasonalFeature.jsx";
-import { findSeasonalProduct } from "./seasonalFeature.mjs";
+import { SeasonalFeature, marbleImage } from "./SeasonalFeature.jsx";
+import { MarbleStockProvider } from './MarbleStock';
+import { catalogWithoutSeasonal, findSeasonalProduct } from "./seasonalFeature.mjs";
 
 const LazyMetalFx = lazy(() =>
   import("metal-fx").then(({ MetalFx }) => ({ default: MetalFx })),
@@ -399,8 +401,8 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const [ready, setReady] = useState(false);
   const [fallback, setFallback] = useState(false);
   const [terminalFallback, setTerminalFallback] = useState(false);
-  const photo = fallback || !item.image ? PLACEHOLDER_IMAGE : item.image;
-  const usingPlaceholder = fallback || !item.image;
+  const photo = fallback ? PLACEHOLDER_IMAGE : findSeasonalProduct([{ items: [item] }]) ? marbleImage : item.image || PLACEHOLDER_IMAGE;
+  const usingPlaceholder = photo === PLACEHOLDER_IMAGE;
   const featured = item.featured === true;
   const seasonal = Boolean(findSeasonalProduct([{ items: [item] }]));
   const loadImage = eager || nearby;
@@ -438,7 +440,6 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
         <span className="item-photo-empty" aria-hidden="true" />
       ) : (
         <picture>
-        {seasonal ? <source media="(max-width: 759px)" srcSet={loadImage ? pumpkinImage.srcSet : undefined} sizes="46vw" /> : null}
         <img
           ref={imageRef}
           src={loadImage ? photo.src : undefined}
@@ -740,13 +741,14 @@ export function MenuApp({
   const [menuView, setMenuView] = useState(readMenuViewPreference);
   const [catalogRequested, setCatalogRequested] = useState(false);
   const seasonalItem = findSeasonalProduct(categories);
-  const hasSeasonalIntro = enhancedMetalFx && Boolean(seasonalItem);
-  const [sceneActive, setSceneActive] = useState(hasSeasonalIntro && !reducedMotion);
+  const catalogCategories = useMemo(() => catalogWithoutSeasonal(categories), [categories]);
+  const hasSeasonalIntro = Boolean(seasonalItem);
+  const [sceneActive, setSceneActive] = useState(hasSeasonalIntro && enhancedMetalFx && !reducedMotion);
   useEffect(() => {
     let last;
     const update = () => {
       const end = Number(document.querySelector('.seasonal-feature')?.dataset.motionEnd) || 360;
-      const active = hasSeasonalIntro && !reducedMotion && window.scrollY < end;
+      const active = hasSeasonalIntro && enhancedMetalFx && !reducedMotion && window.scrollY < end;
       if (active !== last) { last = active; setSceneActive(active); }
     };
     update();
@@ -756,12 +758,12 @@ export function MenuApp({
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
     };
-  }, [hasSeasonalIntro, reducedMotion]);
+  }, [hasSeasonalIntro, enhancedMetalFx, reducedMotion]);
   const deferCatalog = hasSeasonalIntro && !window.location.hash
     && !metalFxReady && !catalogRequested;
   const viewAnchorRef = useRef(null);
   const navigation = useMenuNavigation({
-    categories,
+    categories: catalogCategories,
     focusOnMount,
     reducedMotion,
     hasSeasonalIntro,
@@ -788,6 +790,7 @@ export function MenuApp({
   }, [menuView]);
 
   return (
+    <MarbleStockProvider item={seasonalItem} snapshotSource={snapshotSource}>
     <SeasonalMotionContext.Provider value={sceneActive}>
       <a className="skip" href="#menu">
         رفتن به منو
@@ -825,7 +828,7 @@ export function MenuApp({
           </aside>
         ) : null}
         {hasSeasonalIntro ? (
-          <SeasonalFeature item={seasonalItem} reducedMotion={reducedMotion} />
+          <SeasonalFeature item={seasonalItem} reducedMotion={reducedMotion || !enhancedMetalFx} />
         ) : null}
         {navigation.renderableCategories.map((category, index) => index > 0 && deferCatalog ? null : (
           <CategorySection
@@ -850,5 +853,6 @@ export function MenuApp({
       />
       <MenuFooter />
     </SeasonalMotionContext.Provider>
+    </MarbleStockProvider>
   );
 }

@@ -103,7 +103,7 @@ export function MetadataEditor({ metadata, onChange }) {
 
   const record = metadata && typeof metadata === "object" ? metadata : {};
   // «featured» is the offer switch above, stored by the API on its own.
-  const entries = Object.entries(record).filter(([key]) => key !== "featured");
+  const entries = Object.entries(record).filter(([key]) => !['featured', 'dailyRemaining', 'dailyDate', 'marbleBrownie'].includes(key));
   const key = newKey.trim();
   const keyIssue = key === "featured"
     ? "پیشنهاد ویژه با کلید «پیشنهاد ویژه» تنظیم می‌شود."

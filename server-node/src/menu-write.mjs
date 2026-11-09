@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
+import { validateDailyStock, stockComparableMetadata } from './daily-stock.mjs';
 
 import { requireCsrf, requireOwner, requireUser } from './auth.mjs';
 import { ApiError, booleanValue, optionalText, requiredText, requireObjectBody } from './http.mjs';
@@ -112,6 +113,7 @@ function normalizeMenuInput(input) {
       if (!metadata || typeof metadata !== 'object') {
         throw new ApiError(422, 'validation_error', `${itemPath}.metadata must be an object or list.`);
       }
+      validateDailyStock(metadata);
       const metadataJson = JSON.stringify(metadata);
       if (Buffer.byteLength(metadataJson, 'utf8') > 16_384) {
         throw new ApiError(422, 'validation_error', `${itemPath}.metadata is too large.`);
@@ -286,7 +288,9 @@ function assertActorCanSaveMenu(db, actor, document) {
     storedMetadata = emptyListAsObject(storedMetadata);
     // Offer and price-option management are basic work; external codes stay owner-only.
     const codes = new Map((storedOptions.get(id) || []).map((option) => [option.id, option.code]));
-    if (!isDeepStrictEqual(submitted.metadata, storedMetadata)
+    const seasonal = stored.public_id === 'item-cd02bda6aac3' || String(storedMetadata.code) === '22001' || storedMetadata.marbleBrownie === true;
+    const comparable = (value) => stockComparableMetadata(value, seasonal);
+    if (!isDeepStrictEqual(comparable(submitted.metadata), comparable(storedMetadata))
         || submitted.options.some((option) => option.code !== (codes.get(option.id) ?? null))) {
       cashierAdvancedFieldError('item');
     }

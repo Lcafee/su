@@ -25,3 +25,14 @@ SHAs or migration status elsewhere.
 | Blockers | None for this completed Main Site deployment. Other-service health is unverified due to the project-scope approval restriction; no other service was targeted by the accepted deployment commands. | Completed scoped deployment |
 | Current phase | Refined seasonal motion is live: one continuous 360px journey, native ScrollTimeline with cached fallback, smaller scale difference, stable copy reveal, lighter shadow, no replaying timed entrance, and quieter mural/shaders. Six behavior tests and complete build/validation pass; existing Admin/API fixes and published menu data are preserved. | Approved release 800b1b1 and live checks |
 | Next action | Normal monitoring; this approved deployment is complete. Physical-device frame-rate and Safari checks remain outside the browser verification performed here. | Successful production verification |
+
+## Pending Marble Brownie release — 2026-11-09
+
+Marble Brownie source is prepared on `release/mobile-menu-preserve-live`:
+header-only promotion on mobile/desktop, live manual daily stock, user-approved
+content and 450/540 variant prices. Production SHA and published menu state above
+remain unchanged. Local 13-unit-test suite, release validation, public/Admin
+builds, dist validation and 320/390/1440 browser checks pass, including catalog
+nonduplication and navigation staying open. The release branch runs Linux Node
+API CI, including the new cashier stock-publication contract test. Exact pushed
+commit approval is required before release generation under AGENTS.md.

@@ -501,3 +501,34 @@ test('an empty metadata list from the PHP admin reads and saves as an object tha
   assert.equal(cleared.statusCode, 200, cleared.body);
   assert.equal(db.prepare('SELECT metadata_json FROM menu_items WHERE id = ?').get(itemId).metadata_json, '{}');
 });
+
+test('cashier can activate and publish daily marble stock but cannot change protected metadata', async (t) => {
+  const { root, db, config } = fixture();
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => { await app.close(); db.close(); fs.rmSync(root, { recursive: true, force: true }); });
+  const owner = await login(app);
+  const now = sqlNow();
+  db.prepare(`INSERT INTO admin_users (id, username, password_hash, role, created_at, updated_at) VALUES (2, 'cashier', ?, 'cashier', ?, ?)`)
+    .run(bcrypt.hashSync('cashier-secret', 4), now, now);
+  const loginResponse = await app.inject({ method: 'POST', url: '/api/session/login', headers: { origin: config.allowedOrigin }, payload: { username: 'cashier', password: 'cashier-secret' } });
+  assert.equal(loginResponse.statusCode, 200);
+  const cashier = { cookie: String(loginResponse.headers['set-cookie']).split(';', 1)[0], csrf: loginResponse.json().csrfToken };
+  const headers = s => ({ cookie: s.cookie, origin: config.allowedOrigin, 'x-csrf-token': s.csrf });
+  const save = (session, doc) => app.inject({ method: 'PUT', url: '/api/admin/menu', headers: headers(session), payload: { baseRevision: doc.revision, categories: doc.categories } });
+  const read = async () => (await app.inject({ method: 'GET', url: '/api/admin/menu', headers: headers(owner) })).json();
+  const seed = { revision: 0, categories: [{ id: crypto.randomUUID(), publicId: 'desserts', title: 'دسر', intro: null, layout: 'grid', archived: false, items: [
+    { id: crypto.randomUUID(), publicId: 'item-cd02bda6aac3', name: 'پامکین', description: null, price: '۵۵۰', mediaId: null, metadata: { code: '22001' }, options: [], archived: false },
+    { id: crypto.randomUUID(), publicId: 'other-cake', name: 'کیک دیگر', description: null, price: '۳۰۰', mediaId: null, metadata: {}, options: [], archived: false },
+  ] }] };
+  assert.equal((await save(owner, seed)).statusCode, 200);
+  let doc = await read();
+  Object.assign(doc.categories[0].items[0], { name: 'ماربل براونی', metadata: { code: '22001', marbleBrownie: true, dailyRemaining: 7, dailyDate: '2026-11-09' } });
+  assert.equal((await save(cashier, doc)).statusCode, 200);
+  const published = JSON.parse(fs.readFileSync(path.join(config.paths.managedMenu, 'current.json'), 'utf8'));
+  assert.equal(published.categories[0].items[0].metadata.dailyRemaining, 7);
+  assert.equal(published.categories[0].items[0].metadata.code, '22001');
+  for (const n of [0, 10]) { doc = await read(); doc.categories[0].items[0].metadata.dailyRemaining = n; assert.equal((await save(cashier, doc)).statusCode, 200); }
+  doc = await read(); doc.categories[0].items[0].metadata.dailyRemaining = 11; assert.equal((await save(cashier, doc)).statusCode, 422);
+  doc = await read(); doc.categories[0].items[0].metadata.code = 'changed'; assert.equal((await save(cashier, doc)).statusCode, 403);
+  doc = await read(); doc.categories[0].items[1].metadata.dailyRemaining = 4; assert.equal((await save(cashier, doc)).statusCode, 403);
+});

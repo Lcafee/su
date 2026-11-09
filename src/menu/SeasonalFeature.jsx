@@ -1,14 +1,15 @@
-import { useLayoutEffect, useRef } from 'react';
-import pumpkinLarge from '../../assets/menu/seasonal/pumpkin-700.webp';
-import pumpkinSmall from '../../assets/menu/seasonal/pumpkin-350.webp';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import marbleCutout from '../../assets/menu/seasonal/marble-cutout.png';
+import { FloatingMarbleStock } from './MarbleStock';
+
 import { seasonalFrame, seasonalDetailsOpacity } from './seasonalFeature.mjs';
 import '../styles/seasonal-feature.css';
 
-export const pumpkinImage = {
-  src: pumpkinLarge,
-  srcSet: `${pumpkinSmall} 350w, ${pumpkinLarge} 700w`,
-  width: 700,
-  height: 766,
+export const marbleImage = {
+  src: marbleCutout,
+
+  width: 850,
+  height: 774,
 };
 
 export function SeasonalFeature({ item, reducedMotion }) {
@@ -17,11 +18,33 @@ export function SeasonalFeature({ item, reducedMotion }) {
   const dockRef = useRef(null);
   const flightRef = useRef(null);
 
+  useEffect(() => {
+    const root = rootRef.current;
+    const source = sourceRef.current;
+    if (reducedMotion) return undefined;
+    const bounds = source.getBoundingClientRect();
+    let inView = bounds.bottom > 0 && bounds.top < window.innerHeight;
+    const update = () => { root.dataset.labelsActive = String(inView && !document.hidden); };
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      update();
+    });
+    observer?.observe(source);
+    document.addEventListener('visibilitychange', update);
+    update();
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', update);
+      delete root.dataset.labelsActive;
+    };
+  }, [reducedMotion]);
+
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (reducedMotion) return undefined;
     const flight = flightRef.current;
     const halo = sourceRef.current.querySelector('.seasonal-halo');
+    const labels = sourceRef.current.querySelector('.seasonal-labels');
     const details = dockRef.current.nextElementSibling;
     const travel = 360;
     let frame = 0;
@@ -40,6 +63,7 @@ export function SeasonalFeature({ item, reducedMotion }) {
       if (progress === lastProgress) return;
       flight.style.transform = transform(seasonalFrame(source, target, progress, travel));
       halo.style.opacity = 1 - Math.min(1, progress / .8);
+      labels.style.opacity = 1 - Math.min(1, progress / .8);
       details.style.opacity = seasonalDetailsOpacity(progress);
       lastProgress = progress;
     };
@@ -75,6 +99,7 @@ export function SeasonalFeature({ item, reducedMotion }) {
           });
           animations.push(flight.animate(frames, options));
           animations.push(halo.animate([{ opacity: 1 }, { offset: .8, opacity: 0 }, { opacity: 0 }], options));
+          animations.push(labels.animate([{ opacity: 1 }, { offset: .8, opacity: 0 }, { opacity: 0 }], options));
           animations.push(details.animate(Array.from({ length: 73 }, (_, index) => ({
             offset: index / 72, opacity: seasonalDetailsOpacity(index / 72),
           })), options));
@@ -105,6 +130,7 @@ export function SeasonalFeature({ item, reducedMotion }) {
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', measure);
       halo.style.removeProperty('opacity');
+      labels.style.removeProperty('opacity');
       details.style.removeProperty('opacity');
       delete root.dataset.motionEngine;
       delete root.dataset.motionEnd;
@@ -116,23 +142,33 @@ export function SeasonalFeature({ item, reducedMotion }) {
       <div className="seasonal-intro">
         <div className="seasonal-art" ref={sourceRef}>
           <span className="seasonal-halo" aria-hidden="true" />
-          {reducedMotion ? <img className="seasonal-static" src={pumpkinLarge} srcSet={pumpkinImage.srcSet} sizes="(max-width: 759px) 78vw, 350px" alt={item.name} width="700" height="766" fetchPriority="high" /> : null}
+          <span className="seasonal-labels">
+            <span className="seasonal-floating-note seasonal-floating-limited" aria-hidden="true"><span>عرضه</span><strong>محدود!</strong></span>
+            <FloatingMarbleStock />
+          </span>
+          {reducedMotion ? <img className="seasonal-static" src={marbleCutout} srcSet={marbleImage.srcSet} sizes="(max-width: 759px) 78vw, 350px" alt={item.name} width="850" height="774" fetchPriority="high" /> : null}
         </div>
       </div>
       {!reducedMotion ? (
         <div className="seasonal-flight" ref={flightRef} aria-hidden="true">
-          <img src={pumpkinLarge} srcSet={pumpkinImage.srcSet} sizes="(max-width: 759px) 78vw, 350px" width="700" height="766" alt="" fetchPriority="high" decoding="async" />
+          <img src={marbleCutout} srcSet={marbleImage.srcSet} sizes="(max-width: 759px) 78vw, 350px" width="850" height="774" alt="" fetchPriority="high" decoding="async" />
         </div>
       ) : null}
       <article className="seasonal-landing" aria-label={`انتخاب فصل: ${item.name}`}>
         <div className="seasonal-dock" ref={dockRef}>
-          {reducedMotion ? <img src={pumpkinSmall} width="350" height="383" alt="" /> : null}
+          {reducedMotion ? <img src={marbleCutout} width="850" height="774" alt="" /> : null}
+          <div className="seasonal-desktop-stock"><FloatingMarbleStock /></div>
         </div>
         <div className="seasonal-details">
-          <span className="seasonal-badge">فصلی</span>
+          <span className="seasonal-badge">عرضه محدود!</span>
           <h2 id="seasonal-title">{item.name}</h2>
-          <p>{item.description || 'یک مکث شیرین، با طعم پاییز'}</p>
+          {item.description ? <p>{item.description}</p> : null}
           {item.price ? <strong className="seasonal-price">{item.price}</strong> : null}
+          {item.options?.length ? <dl className="seasonal-options" aria-label="قیمت‌های ماربل براونی">
+            {item.options.map(option => <div key={`${option.label}-${option.code || ''}`}>
+              <dt>{option.label}</dt><dd>{option.price}</dd>
+            </div>)}
+          </dl> : null}
         </div>
       </article>
     </section>

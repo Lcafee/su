@@ -143,6 +143,28 @@ uses the same cached document-coordinate path. No timed entrance replays on
 reverse scroll. Mural motion and decorative shaders stay quiet during the scene.
 Admin retains its independent Sahel/Vazirmatn system and operating hierarchy.
 
+Marble Brownie uses this same seasonal composition and scroll path, with its
+850×774 transparent PNG replacing the pumpkin artwork. The original mural,
+maroon/ivory tokens, 22px summary name, 2px badge corners and flat canvas remain
+the visual authority. Description and price variants use the normal menu
+typography. The repeated stock message beneath the product is removed; the
+floating label carries the remaining count.
+There is no separate feature panel, palette, display type scale or entrance.
+The product backdrop may use an asymmetric scarlet contour with a fine offset
+outline, following the mural's flowing language. The user-requested loud
+Marble Brownie labels use the site's existing Peyda ExtraBold 800: a scarlet
+serrated «عرضه محدود!» seal and a tilted ivory stock slip with a 54px live
+numeral and «برش مونده!». The floating quantity reads from the shared stock provider,
+replacing the former fixed daily-cap label. Zero and unknown
+stock use words rather than invented numeric counts. Labels are drawn above
+the PNG, and fade with the backdrop as the original scroll scene docks.
+Both drift vertically by at most 6px, pause offscreen/when hidden, and remain
+static with reduced motion. The summary badge reads «عرضه محدود!».
+Confirmed floating stock uses «فقط … برش مونده!» and sold-out uses
+«این سری تموم شد!». The summary shows the approved product description and
+two price rows instead of duplicate scarcity copy. No live-status badge is
+shown alongside a confirmed quantity.
+
 - **Display:** Peyda 800 for primary public headings; 700 for secondary headings.
 - **Title:** Doran 700 for public menu items and the seasonal item name.
 - **Body:** Vazirmatn 400 with generous Persian line-height for descriptive copy.

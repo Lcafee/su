@@ -1,0 +1,1 @@
+.daily-stock-editor{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:0 0 18px;padding:16px;border:1px solid #ded5d1;border-radius:8px}.daily-stock-editor legend{font-weight:700;padding:0 8px}.daily-stock-editor p{flex-basis:100%;margin:0;font-size:13px}.daily-stock-editor label{display:grid;gap:6px}.daily-stock-editor input{max-width:180px;min-height:44px}

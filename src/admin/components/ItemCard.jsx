@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { MetadataEditor } from "./MetadataEditor";
 import { PriceOptions } from "./PriceOptions";
+import { DailyStockEditor } from './DailyStockEditor';
 
 function ItemCardComponent({
   item,
@@ -150,6 +151,8 @@ function ItemCardComponent({
       </header>
 
       <div className="item-card-body">
+          {(item.publicId === 'item-cd02bda6aac3' || String(item.metadata?.code) === '22001' || item.metadata?.marbleBrownie === true) ?
+            <DailyStockEditor item={item} disabled={disabled} onChange={update} /> : null}
           <PriceOptions options={item.options} advanced={advanced} disabled={disabled}
             onChange={(options) => update({ options })} />
           <div className="item-detail-grid">

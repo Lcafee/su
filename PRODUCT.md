@@ -46,6 +46,18 @@
 
 ## Public behavior
 
+- Marble Brownie replaces the pumpkin promotion and its public menu presentation.
+  It appears once in the introduction on mobile and desktop, and is omitted
+  from catalog rows without deleting its Admin record.
+  The existing seasonal row is prepared in Admin with a dedicated control; price
+  and description are explicitly entered rather than inherited from pumpkin.
+  Owner and cashier can record today's remaining portions (integer 0–10), then
+  save/publish through the existing workflow. Quantity is confirmed for the
+  current Tehran calendar date only; it never automatically restocks.
+  Open pages poll the current published snapshot every five seconds while visible.
+  Yesterday's count, missing configuration and failed requests show unconfirmed
+  availability, never a fabricated live count. Zero means sold out today.
+
 - `/` لندینگ و `/menu` آدرس canonical منو است؛ `menu.html` جزئیات داخلی build.
 - `/menu` یک کنترل محلی برای نمایش دو‌ستونه یا فهرستی دارد و در نخستین بازدید
   نمایش دو‌ستونه را انتخاب می‌کند. `/menu2` فقط مسیر سازگاریِ انتقال به `/menu`
