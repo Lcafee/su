@@ -1,6 +1,4 @@
 import { sitePath } from "../sitePath";
-import { findSeasonalProduct } from './seasonalFeature.mjs';
-import { marbleProduct } from './dailyStock.mjs';
 
 const CURRENT_SNAPSHOT_URL = sitePath("managed-menu/current.json");
 const PREVIOUS_SNAPSHOT_URL = sitePath("managed-menu/previous.json");
@@ -34,9 +32,9 @@ function normalizeSnapshot(snapshot) {
       ...category,
       items: Array.isArray(category.items)
         ? category.items.map((item) => ({
-            ...(findSeasonalProduct([{ items: [item] }]) ? marbleProduct(item) : item),
+            ...item,
             featured: Boolean(item.featured),
-            options: Array.isArray(item.options) && (!findSeasonalProduct([{ items: [item] }]) || item.metadata?.marbleBrownie === true) ? item.options : [],
+            options: Array.isArray(item.options) ? item.options : [],
             image: item.image?.src
               ? {
                   ...item.image,

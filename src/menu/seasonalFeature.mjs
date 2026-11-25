@@ -1,11 +1,17 @@
 const clamp = (value) => Math.max(0, Math.min(1, value));
 
+export const VELOUR_FEATURE = {
+  id: 'seasonal-velour',
+  name: 'ولور',
+  price: '۴۸۰',
+};
+
 export function findSeasonalProduct(categories) {
   for (const category of categories) {
     if (category.archived || category.visible === false) continue;
     const item = category.items?.find((candidate) =>
       !candidate.archived && candidate.visible !== false
-      && (candidate.id === 'item-cd02bda6aac3' || String(candidate.metadata?.code) === '22001'));
+      && candidate.name?.trim() === VELOUR_FEATURE.name);
     if (item) return item;
   }
   return null;

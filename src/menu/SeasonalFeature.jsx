@@ -1,16 +1,23 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import marbleCutout from '../../assets/menu/seasonal/marble-cutout.png';
-import { FloatingMarbleStock } from './MarbleStock';
+import velourCutout from '../../assets/menu/seasonal/velour-cutout.webp';
 
 import { seasonalFrame, seasonalDetailsOpacity } from './seasonalFeature.mjs';
 import '../styles/seasonal-feature.css';
 
-export const marbleImage = {
-  src: marbleCutout,
-
-  width: 850,
-  height: 774,
-};
+function SeasonalLabels({ title, price }) {
+  return (
+    <span className="seasonal-labels" aria-hidden="true">
+      <span className="seasonal-floating-note seasonal-floating-autumn">
+        <span>آیتم</span><strong>پاییزی</strong>
+      </span>
+      <span className="seasonal-floating-note seasonal-floating-special">
+        {title ? <strong>{title}</strong> : null}
+        <span>ویژهٔ ال کافه</span>
+        {price ? <span className="seasonal-preview-price">{price}</span> : null}
+      </span>
+    </span>
+  );
+}
 
 export function SeasonalFeature({ item, reducedMotion }) {
   const rootRef = useRef(null);
@@ -142,29 +149,25 @@ export function SeasonalFeature({ item, reducedMotion }) {
       <div className="seasonal-intro">
         <div className="seasonal-art" ref={sourceRef}>
           <span className="seasonal-halo" aria-hidden="true" />
-          <span className="seasonal-labels">
-            <span className="seasonal-floating-note seasonal-floating-limited" aria-hidden="true"><span>عرضه</span><strong>محدود!</strong></span>
-            <FloatingMarbleStock />
-          </span>
-          {reducedMotion ? <img className="seasonal-static" src={marbleCutout} srcSet={marbleImage.srcSet} sizes="(max-width: 759px) 78vw, 350px" alt={item.name} width="850" height="774" fetchPriority="high" /> : null}
+          <SeasonalLabels title={item.name} price={item.options?.length ? null : item.price} />
+          {reducedMotion ? <img className="seasonal-static" src={velourCutout} alt="" width="768" height="880" fetchPriority="high" /> : null}
         </div>
       </div>
       {!reducedMotion ? (
         <div className="seasonal-flight" ref={flightRef} aria-hidden="true">
-          <img src={marbleCutout} srcSet={marbleImage.srcSet} sizes="(max-width: 759px) 78vw, 350px" width="850" height="774" alt="" fetchPriority="high" decoding="async" />
+          <img src={velourCutout} width="768" height="880" alt="" fetchPriority="high" decoding="async" />
         </div>
       ) : null}
       <article className="seasonal-landing" aria-label={`انتخاب فصل: ${item.name}`}>
         <div className="seasonal-dock" ref={dockRef}>
-          {reducedMotion ? <img src={marbleCutout} width="850" height="774" alt="" /> : null}
-          <div className="seasonal-desktop-stock"><FloatingMarbleStock /></div>
+          {reducedMotion ? <img src={velourCutout} width="768" height="880" alt="" /> : null}
+          <div className="seasonal-desktop-labels"><SeasonalLabels /></div>
         </div>
         <div className="seasonal-details">
-          <span className="seasonal-badge">عرضه محدود!</span>
           <h2 id="seasonal-title">{item.name}</h2>
           {item.description ? <p>{item.description}</p> : null}
           {item.price ? <strong className="seasonal-price">{item.price}</strong> : null}
-          {item.options?.length ? <dl className="seasonal-options" aria-label="قیمت‌های ماربل براونی">
+          {item.options?.length ? <dl className="seasonal-options" aria-label={`قیمت‌های ${item.name}`}>
             {item.options.map(option => <div key={`${option.label}-${option.code || ''}`}>
               <dt>{option.label}</dt><dd>{option.price}</dd>
             </div>)}

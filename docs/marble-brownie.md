@@ -1,5 +1,9 @@
 # Marble Brownie
 
+This page records the November 2026 Marble Brownie promotion. The Velour feature
+returns Marble Brownie to the regular dessert catalog, with its published price
+options and the bundled cutout as a fallback for a missing item photo.
+
 The public seasonal presentation replaces pumpkin with a transparent PNG
 cutout derived from the user's first product photograph on 2026-11-08 using
 the built-in Imagegen edit tool. The cutout preserves the brownie/cream subject

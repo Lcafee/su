@@ -2,16 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { findSeasonalProduct, seasonalFrame, keepSeasonalIntro, seasonalDetailsOpacity } from '../src/menu/seasonalFeature.mjs';
 
-const pumpkin={id:'item-cd02bda6aac3',name:'کیک پامکین',price:'۵۵۰',metadata:{code:'22001'}};
+const marble={id:'item-cd02bda6aac3',name:'ماربل براونی',metadata:{marbleBrownie:true}};
+const velour={id:'item-velour',name:'ولور',price:'۴۸۰'};
 test('uses the published product object so price edits stay authoritative',()=>{
- const updated={...pumpkin,price:'۶۰۰'};
- assert.equal(findSeasonalProduct([{items:[{name:'کیک دیگر'},updated]}]),updated);
+ const updated={...velour,price:'۵۱۰'};
+ assert.equal(findSeasonalProduct([{items:[marble,updated]}]),updated);
 });
 test('does not promote an absent or archived product or category',()=>{
- assert.equal(findSeasonalProduct([{items:[]}]),null);
- assert.equal(findSeasonalProduct([{items:[{...pumpkin,archived:true}]}]),null);
- assert.equal(findSeasonalProduct([{archived:true,items:[pumpkin]}]),null);
- assert.equal(findSeasonalProduct([{items:[{...pumpkin,visible:false}]}]),null);
+ assert.equal(findSeasonalProduct([{items:[marble]}]),null);
+ assert.equal(findSeasonalProduct([{items:[{...velour,archived:true}]}]),null);
+ assert.equal(findSeasonalProduct([{archived:true,items:[velour]}]),null);
+ assert.equal(findSeasonalProduct([{items:[{...velour,visible:false}]}]),null);
 });
 test('only fresh mobile entry keeps the introductory scene; category links keep their destination',()=>{
  assert.equal(keepSeasonalIntro('',true),true);

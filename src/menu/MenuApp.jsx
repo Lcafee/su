@@ -14,17 +14,19 @@ import {
 } from "react";
 
 import { sitePath } from "../sitePath";
+import marbleCutout from "../../assets/menu/seasonal/marble-cutout.png";
 import { MenuBrandMark } from "./MenuBrandMark";
 import { useMenuNavigation } from "./MenuRuntime";
-import { SeasonalFeature, marbleImage } from "./SeasonalFeature.jsx";
-import { MarbleStockProvider } from './MarbleStock';
-import { catalogWithoutSeasonal, findSeasonalProduct } from "./seasonalFeature.mjs";
+import { SeasonalFeature } from "./SeasonalFeature.jsx";
+import { catalogWithoutSeasonal, findSeasonalProduct, VELOUR_FEATURE } from "./seasonalFeature.mjs";
 
 const LazyMetalFx = lazy(() =>
   import("metal-fx").then(({ MetalFx }) => ({ default: MetalFx })),
 );
 
 const SeasonalMotionContext = createContext(false);
+
+const MARBLE_IMAGE = { src: marbleCutout, width: 850, height: 774 };
 
 const PLACEHOLDER_IMAGE = {
   src: sitePath("assets/menu/opt/item-placeholder.webp"),
@@ -401,10 +403,10 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
   const [ready, setReady] = useState(false);
   const [fallback, setFallback] = useState(false);
   const [terminalFallback, setTerminalFallback] = useState(false);
-  const photo = fallback ? PLACEHOLDER_IMAGE : findSeasonalProduct([{ items: [item] }]) ? marbleImage : item.image || PLACEHOLDER_IMAGE;
+  const marble = item.metadata?.marbleBrownie === true || item.name === "ماربل براونی";
+  const photo = fallback ? PLACEHOLDER_IMAGE : item.image || (marble ? MARBLE_IMAGE : PLACEHOLDER_IMAGE);
   const usingPlaceholder = photo === PLACEHOLDER_IMAGE;
-  const featured = item.featured === true;
-  const seasonal = Boolean(findSeasonalProduct([{ items: [item] }]));
+  const featured = item.featured === true && !marble;
   const loadImage = eager || nearby;
 
   useEffect(() => {
@@ -434,7 +436,7 @@ const ProductPhoto = memo(function ProductPhoto({ eager, item, priority }) {
 
   return (
     <div ref={photoRef} className="item-photo t-avatar" data-ready={ready ? "" : undefined}
-      data-seasonal-photo={seasonal ? "" : undefined}
+      data-cutout={photo === MARBLE_IMAGE ? "" : undefined}
       data-featured-frame={featured ? "refined" : undefined}>
       {terminalFallback ? (
         <span className="item-photo-empty" aria-hidden="true" />
@@ -740,9 +742,9 @@ export function MenuApp({
   const metalFxReady = useDeferredEnhancement(true);
   const [menuView, setMenuView] = useState(readMenuViewPreference);
   const [catalogRequested, setCatalogRequested] = useState(false);
-  const seasonalItem = findSeasonalProduct(categories);
+  const seasonalItem = findSeasonalProduct(categories) ?? VELOUR_FEATURE;
   const catalogCategories = useMemo(() => catalogWithoutSeasonal(categories), [categories]);
-  const hasSeasonalIntro = Boolean(seasonalItem);
+  const hasSeasonalIntro = categories.length > 0;
   const [sceneActive, setSceneActive] = useState(hasSeasonalIntro && enhancedMetalFx && !reducedMotion);
   useEffect(() => {
     let last;
@@ -790,7 +792,6 @@ export function MenuApp({
   }, [menuView]);
 
   return (
-    <MarbleStockProvider item={seasonalItem} snapshotSource={snapshotSource}>
     <SeasonalMotionContext.Provider value={sceneActive}>
       <a className="skip" href="#menu">
         رفتن به منو
@@ -853,6 +854,5 @@ export function MenuApp({
       />
       <MenuFooter />
     </SeasonalMotionContext.Provider>
-    </MarbleStockProvider>
   );
 }
