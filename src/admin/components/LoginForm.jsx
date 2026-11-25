@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { BrandMark } from "./BrandMark";
 
 export function LoginForm({ busy, error, onLogin }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
   function handleSubmit(event) {
     event.preventDefault();
-    onLogin(username.trim(), password);
+    if (busy) return;
+
+    const fields = new FormData(event.currentTarget);
+    onLogin(fields.get("username").trim(), fields.get("password"));
   }
 
   return (
@@ -17,15 +16,15 @@ export function LoginForm({ busy, error, onLogin }) {
         <h1 id="login-title">مدیریت منو</h1>
         <p className="login-copy">برای ویرایش منو وارد شوید.</p>
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form id="admin-login" method="post" onSubmit={handleSubmit} className="login-form">
           <label>
             <span>نام کاربری</span>
             <input
               dir="ltr"
+              id="admin-username"
+              type="text"
               name="username"
               autoComplete="username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
               disabled={busy}
               required
               autoFocus
@@ -35,11 +34,10 @@ export function LoginForm({ busy, error, onLogin }) {
             <span>رمز عبور</span>
             <input
               dir="ltr"
+              id="current-password"
               type="password"
               name="password"
               autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
               disabled={busy}
               required
             />

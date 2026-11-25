@@ -191,6 +191,17 @@ async function fetchEditor() {
   return { editorData, workspace };
 }
 
+async function offerPasswordSave(username, password) {
+  if (typeof window.PasswordCredential !== "function" || typeof navigator.credentials?.store !== "function") return;
+
+  try {
+    const credential = new window.PasswordCredential({ id: username, password });
+    await navigator.credentials.store(credential);
+  } catch {
+    // A browser can decline storage without interrupting the sign-in flow.
+  }
+}
+
 function LoadingScreen() {
   return (
     <main className="system-page" aria-busy="true">
@@ -338,6 +349,7 @@ export function AdminApp() {
     loadWorkspace().catch(() => {});
     try {
       const nextSession = await loginSession(username, password);
+      if (nextSession?.authenticated) void offerPasswordSave(username, password);
       const { editorData, workspace: nextWorkspace } = await fetchEditor();
       setWorkspace(nextWorkspace);
       setSession(nextSession);
