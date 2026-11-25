@@ -5,7 +5,6 @@ import {
   getMenuDocument,
   getPublishStatus,
   getSession,
-  loginSession,
   logoutSession,
   retryPublish,
   saveMenuDocument,
@@ -191,17 +190,6 @@ async function fetchEditor() {
   return { editorData, workspace };
 }
 
-async function offerPasswordSave(username, password) {
-  if (typeof window.PasswordCredential !== "function" || typeof navigator.credentials?.store !== "function") return;
-
-  try {
-    const credential = new window.PasswordCredential({ id: username, password });
-    await navigator.credentials.store(credential);
-  } catch {
-    // A browser can decline storage without interrupting the sign-in flow.
-  }
-}
-
 function LoadingScreen() {
   return (
     <main className="system-page" aria-busy="true">
@@ -228,8 +216,10 @@ export function AdminApp() {
   const [phase, setPhase] = useState("loading");
   const [systemError, setSystemError] = useState("");
   const [session, setSession] = useState(null);
-  const [loginBusy, setLoginBusy] = useState(false);
-  const [loginError, setLoginError] = useState("");
+  const [loginError, setLoginError] = useState(() => {
+    const type = document.getElementById("admin-root")?.dataset.loginError;
+    return type ? messageForError({ type }) : "";
+  });
   const [savedDocument, setSavedDocument] = useState(null);
   const [draft, setDraft] = useState(null);
   const [publishStatus, setPublishStatus] = useState(null);
@@ -341,26 +331,6 @@ export function AdminApp() {
     setLoginError("نشست شما پایان یافته است. دوباره وارد شوید.");
     return true;
   }, [menuEditorStorageKey]);
-
-  const handleLogin = useCallback(async (username, password) => {
-    setLoginBusy(true);
-    setLoginError("");
-    // The workspace chunk downloads while the credentials are being checked.
-    loadWorkspace().catch(() => {});
-    try {
-      const nextSession = await loginSession(username, password);
-      if (nextSession?.authenticated) void offerPasswordSave(username, password);
-      const { editorData, workspace: nextWorkspace } = await fetchEditor();
-      setWorkspace(nextWorkspace);
-      setSession(nextSession);
-      applyEditorData(editorData);
-      setMode("simple");
-    } catch (error) {
-      setLoginError(messageForError(error));
-    } finally {
-      setLoginBusy(false);
-    }
-  }, [applyEditorData]);
 
   const mutateDraft = useCallback((updater) => {
     setDraft((current) => updater(current));
@@ -692,7 +662,7 @@ export function AdminApp() {
   if (phase === "loading") return <LoadingScreen />;
   if (phase === "error") return <ErrorScreen message={systemError} onRetry={initialize} />;
   if (!session?.authenticated) {
-    return <LoginForm busy={loginBusy} error={loginError} onLogin={handleLogin} />;
+    return <LoginForm error={loginError} />;
   }
   if (!draft || !savedDocument || !workspace) return <LoadingScreen />;
   const { MenuEditor, ActivityReport } = workspace;

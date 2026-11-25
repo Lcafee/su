@@ -99,6 +99,48 @@ async function login(app) {
   };
 }
 
+test('native login navigates only on success and uses the existing session cookie', async (t) => {
+  const { root, db, config } = fixture();
+  const { app } = await buildApp({ db, config, logger: false });
+  t.after(async () => {
+    await app.close();
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  const submit = (password, origin = config.allowedOrigin) => app.inject({
+    method: 'POST',
+    url: '/api/session/login/form',
+    headers: { origin, 'content-type': 'application/x-www-form-urlencoded' },
+    payload: new URLSearchParams({ username: ' admin ', password }).toString(),
+  });
+  const crossOrigin = await submit('owner-secret', 'https://example.test');
+  assert.equal(crossOrigin.statusCode, 403);
+  assert.equal(crossOrigin.headers['set-cookie'], undefined);
+
+  const invalid = await submit('incorrect-fixture');
+  assert.equal(invalid.statusCode, 401);
+  assert.match(invalid.headers['content-type'], /^text\/html/);
+  assert.match(invalid.body, /data-login-error="invalid_credentials"/);
+  assert.doesNotMatch(invalid.body, /incorrect-fixture/);
+  assert.equal(invalid.headers['set-cookie'], undefined);
+  assert.equal(invalid.headers.location, undefined);
+
+  const valid = await submit('owner-secret');
+  assert.equal(valid.statusCode, 303);
+  assert.equal(valid.headers.location, '/admin/');
+  assert.match(valid.headers['set-cookie'], /Secure; HttpOnly; SameSite=Strict/);
+  const cookie = String(valid.headers['set-cookie']).split(';', 1)[0];
+  const session = await app.inject({ url: '/api/session', headers: { cookie } });
+  assert.equal(session.json().user.username, 'admin');
+
+  const logout = await app.inject({
+    method: 'DELETE', url: '/api/session',
+    headers: { origin: config.allowedOrigin, cookie, 'x-csrf-token': session.json().csrfToken },
+  });
+  assert.deepEqual(logout.json(), { authenticated: false });
+});
+
 test('session, csrf and atomic snapshot flow preserve the admin contract', async (t) => {
   const { root, db, config } = fixture();
   const { app } = await buildApp({ db, config, logger: false });

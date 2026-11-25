@@ -141,6 +141,11 @@ Admin sessions are server-side. Passwords, private environment values, database
 contents, and account secrets never belong in Git, logs, tracked docs, or shell
 history.
 
+The browser sign-in form posts to `/api/session/login/form`. Successful sign-in
+sets the normal session cookie and redirects to `/admin/`. An invalid sign-in
+returns the login page with an HTTP error. JSON clients still use
+`POST /api/session/login`.
+
 Use only the current release's supported account/session tooling. Do not mutate
 credential/session fields with ad-hoc SQLite statements.
 

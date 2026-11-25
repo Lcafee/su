@@ -3,6 +3,7 @@ const clamp = (value) => Math.max(0, Math.min(1, value));
 export const VELOUR_FEATURE = {
   id: 'seasonal-velour',
   name: 'ولور',
+  description: 'کروسان همراه با هات چاکلت مخصوص ال کافه',
   price: '۴۸۰',
 };
 

@@ -1,6 +1,7 @@
 const adminBase = import.meta.env.BASE_URL;
 const siteBase = adminBase.replace(/admin\/?$/, "");
 const apiRoot = `${siteBase}api`;
+export const browserLoginUrl = `${apiRoot}/session/login/form`;
 
 export class ApiError extends Error {
   constructor(response, payload) {
@@ -45,13 +46,6 @@ async function apiRequest(path, { method = "GET", json, body, csrf } = {}) {
 
 export function getSession() {
   return apiRequest("/session");
-}
-
-export function loginSession(username, password) {
-  return apiRequest("/session/login", {
-    method: "POST",
-    json: { username, password },
-  });
 }
 
 export function logoutSession(csrf) {

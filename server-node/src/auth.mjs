@@ -1,10 +1,14 @@
 import crypto from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 import bcrypt from 'bcryptjs';
 
 import { ApiError, requireAllowedOrigin, requireObjectBody, requiredText } from './http.mjs';
 
 const DUMMY_HASH = '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
+const BROWSER_LOGIN_TYPE = 'application/x-www-form-urlencoded';
+const LOGIN_BODY_LIMIT = 32_768;
+const ADMIN_PAGE = new URL('../../dist/admin/index.html', import.meta.url);
 
 function nowSqlUtc(date = new Date()) {
   return date.toISOString().replace('T', ' ').replace('Z', '000');
@@ -214,10 +218,23 @@ async function verifyPassword(password, hash) {
   return bcrypt.compare(password, normalized);
 }
 
+async function browserLoginError(reply, error) {
+  const marker = `data-login-error="${error.type}"`;
+  const adminPage = await readFile(ADMIN_PAGE, 'utf8').catch((readError) => {
+    if (readError.code !== 'ENOENT') throw readError;
+    return '';
+  });
+  const root = '<div id="admin-root"></div>';
+  const html = adminPage.includes(root)
+    ? adminPage.replace(root, `<div id="admin-root" ${marker}></div>`)
+    : `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>ورود به مدیریت منو</title><main ${marker}><p>ورود انجام نشد.</p><a href="/admin/">بازگشت به فرم ورود</a></main></html>`;
+  return reply.code(error.status).type('text/html').send(html);
+}
+
 export function registerAuthRoutes(app, { db, config }) {
   app.get('/api/session', async (request) => sessionPayload(sessionContext(db, config, request)));
 
-  app.post('/api/session/login', { bodyLimit: 32_768 }, async (request, reply) => {
+  async function signIn(request, reply) {
     requireAllowedOrigin(request, config);
     const input = requireObjectBody(request);
     const username = requiredText(input.username, 'username', 191);
@@ -281,6 +298,35 @@ export function registerAuthRoutes(app, { db, config }) {
     return sessionPayload(sessionContext(db, config, {
       headers: { cookie: `${config.security.sessionName}=${sessionId}` },
     }, { touch: false }));
+  }
+
+  app.post('/api/session/login', { bodyLimit: LOGIN_BODY_LIMIT }, signIn);
+
+  app.register(function browserLogin(routes, _options, done) {
+    routes.addContentTypeParser(BROWSER_LOGIN_TYPE, { parseAs: 'string' }, (_request, body, parsed) => {
+      const fields = new URLSearchParams(body);
+      parsed(null, { username: fields.get('username'), password: fields.get('password') });
+    });
+
+    routes.post('/api/session/login/form', { bodyLimit: LOGIN_BODY_LIMIT }, async (request, reply) => {
+      const contentType = request.headers['content-type']?.split(';', 1)[0].trim().toLowerCase();
+      if (contentType !== BROWSER_LOGIN_TYPE) {
+        throw new ApiError(415, 'unsupported_media', 'Browser sign-in requires URL-encoded form data.');
+      }
+
+      try {
+        const session = await signIn(request, reply);
+        if (!session.authenticated) {
+          throw new ApiError(401, 'invalid_credentials', 'The username or password is incorrect.');
+        }
+        return reply.redirect('/admin/', 303);
+      } catch (error) {
+        if (!(error instanceof ApiError) || !['invalid_credentials', 'validation_error'].includes(error.type)) throw error;
+        // Keep failed sign-ins as HTTP errors so password managers can reject them.
+        return browserLoginError(reply, error);
+      }
+    });
+    done();
   });
 
   app.delete('/api/session', async (request, reply) => {
